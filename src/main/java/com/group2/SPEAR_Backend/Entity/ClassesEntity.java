@@ -1,34 +1,41 @@
 package com.group2.SPEAR_Backend.Entity;
+
 import jakarta.persistence.*;
 
-@Entity
-@Table(name="classes")
+import java.util.Set;
 
+@Entity
+@Table(name = "classes")
 public class ClassesEntity {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int cid;
 
-    @Column(name="className")
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "created_by", referencedColumnName = "uid")
+    private UserEntity createdBy;
+
+    @Column(name = "className")
     private String className;
 
-    @Column(name="classCode")
+    @Column(name = "classCode")
     private String classCode;
 
-    @Column(name="section")
+    @Column(name = "section")
     private String section;
 
-    @Column(name="schoolYear")
+    @Column(name = "schoolYear")
     private String schoolYear;
 
-    @Column(name="semester")
+    @Column(name = "semester")
     private String semester;
 
     @Column(name = "classDescription")
     private String classDescription;
 
-
+    @ManyToMany(mappedBy = "enrolledClasses")
+    private Set<UserEntity> students;
 
     public ClassesEntity() {
         super();
@@ -36,7 +43,6 @@ public class ClassesEntity {
 
     public ClassesEntity(int cid, String className, String classCode, String section, String schoolYear,
                          String semester, String classDescription) {
-        super();
         this.cid = cid;
         this.className = className;
         this.classCode = classCode;
@@ -44,8 +50,8 @@ public class ClassesEntity {
         this.schoolYear = schoolYear;
         this.semester = semester;
         this.classDescription = classDescription;
-
     }
+
     public int getCid() {
         return cid;
     }
@@ -90,8 +96,8 @@ public class ClassesEntity {
         return semester;
     }
 
-    public void setSemester(String password) {
-        this.semester = password;
+    public void setSemester(String semester) {  // Corrected parameter name
+        this.semester = semester;
     }
 
     public String getClassDescription() {
@@ -102,6 +108,11 @@ public class ClassesEntity {
         this.classDescription = classDescription;
     }
 
+    public Set<UserEntity> getStudents() {
+        return students;
+    }
 
-
+    public void setStudents(Set<UserEntity> students) {
+        this.students = students;
+    }
 }

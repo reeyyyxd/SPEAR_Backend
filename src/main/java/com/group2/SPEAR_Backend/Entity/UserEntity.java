@@ -1,6 +1,8 @@
 package com.group2.SPEAR_Backend.Entity;
 import jakarta.persistence.*;
 
+import java.util.Set;
+
 
 @Entity
 @Table(name="users")
@@ -31,6 +33,22 @@ public class UserEntity {
 
     @Column(name = "role")
     private String role;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_teams",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "team_id")
+    )
+    private Set<TeamEntity> teams;
+
+    @ManyToMany
+    @JoinTable(
+            name = "enrollment",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "class_id")
+    )
+    private Set<ClassesEntity> enrolledClasses;
 
 
 
@@ -115,5 +133,19 @@ public class UserEntity {
         this.interest = interest;
     }
 
+    public Set<TeamEntity> getTeams() {
+        return teams;
+    }
 
+    public void setTeams(Set<TeamEntity> teams) {
+        this.teams = teams;
+    }
+
+    public Set<ClassesEntity> getEnrolledClasses() {
+        return enrolledClasses;
+    }
+
+    public void setEnrolledClasses(Set<ClassesEntity> enrolledClasses) {
+        this.enrolledClasses = enrolledClasses;
+    }
 }

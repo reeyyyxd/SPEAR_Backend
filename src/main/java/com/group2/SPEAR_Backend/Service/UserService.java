@@ -1,5 +1,9 @@
 package com.group2.SPEAR_Backend.Service;
 
+import com.group2.SPEAR_Backend.Entity.ClassesEntity;
+import com.group2.SPEAR_Backend.Entity.TeamEntity;
+import com.group2.SPEAR_Backend.Repository.ClassesRepository;
+import com.group2.SPEAR_Backend.Repository.TeamRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.group2.SPEAR_Backend.Entity.UserEntity;
@@ -13,6 +17,31 @@ public class UserService {
 
     @Autowired
     UserRepository spearRepo;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private TeamRepository teamRepository;
+
+    @Autowired
+    private ClassesRepository classesRepository;
+
+    public UserEntity enrollUserInClass(int userId, int classId) {
+        UserEntity user = userRepository.findById(userId).orElseThrow();
+        ClassesEntity classEntity = classesRepository.findById(classId).orElseThrow();
+
+        user.getEnrolledClasses().add(classEntity);
+        return userRepository.save(user);
+    }
+
+    public UserEntity addUserToTeam(int userId, int teamId) {
+        UserEntity user = userRepository.findById(userId).orElseThrow();
+        TeamEntity team = teamRepository.findById(teamId).orElseThrow();
+
+        user.getTeams().add(team);
+        return userRepository.save(user);
+    }
 
     public UserEntity createUser(UserEntity insert) {
         return spearRepo.save(insert);
@@ -32,6 +61,7 @@ public class UserService {
             s.setLastname(newUser.getLastname());
             s.setEmail(newUser.getEmail());
             s.setPassword(newUser.getPassword());
+            s.setInterest(newUser.getInterest());
 
         } catch (NoSuchElementException ex) {
             throw new NoSuchElementException("User " + uid + " not found");
@@ -56,15 +86,15 @@ public class UserService {
         try {
             if (user != null && user.getPassword().equals(password)) {
                 if (user.getRole().equalsIgnoreCase("yes")) {
-                    return "Teacher"; // User is a teacher
+                    return "Teacher";
                 } else if (user.getRole().equalsIgnoreCase("yes") && user.getRole().equalsIgnoreCase("yes")) {
                     return "Student";
                 } else if (user.getRole().equalsIgnoreCase("yes")) {
-                    return "Student"; // User is a student
+                    return "Student";
                 } else if (user.getRole() == null && user.getRole() == null) {
                     return "Wait. Admin will verify you.";
                 } else {
-                    return "Admin"; // User is an admin
+                    return "Admin";
                 }
             } else {
                 return "Invalid email or password";

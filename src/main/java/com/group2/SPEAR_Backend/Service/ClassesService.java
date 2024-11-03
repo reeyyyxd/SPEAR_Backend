@@ -12,10 +12,11 @@ import java.util.NoSuchElementException;
 public class ClassesService {
 
     @Autowired
-    ClassesRepository classesRepository;
+    private ClassesRepository classesRepository;
 
     // Create class
     public ClassesEntity createClass(ClassesEntity newClass) {
+        // Additional validation can be added here if needed
         return classesRepository.save(newClass);
     }
 
@@ -26,20 +27,17 @@ public class ClassesService {
 
     // Update class
     public ClassesEntity updateClass(int id, ClassesEntity updatedClass) {
-        try {
-            ClassesEntity existingClass = classesRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Class with id " + id + " not found"));
-
-            existingClass.setClassName(updatedClass.getClassName());
-            existingClass.setClassCode(updatedClass.getClassCode());
-            existingClass.setSection(updatedClass.getSection());
-            existingClass.setSchoolYear(updatedClass.getSchoolYear());
-            existingClass.setSemester(updatedClass.getSemester());
-            existingClass.setClassDescription(updatedClass.getClassDescription());
-
-            return classesRepository.save(existingClass);
-        } catch (NoSuchElementException e) {
-            throw new NoSuchElementException("Class with id " + id + " not found");
-        }
+        return classesRepository.findById(id)
+                .map(existingClass -> {
+                    existingClass.setClassName(updatedClass.getClassName());
+                    existingClass.setClassCode(updatedClass.getClassCode());
+                    existingClass.setSection(updatedClass.getSection());
+                    existingClass.setSchoolYear(updatedClass.getSchoolYear());
+                    existingClass.setSemester(updatedClass.getSemester());
+                    existingClass.setClassDescription(updatedClass.getClassDescription());
+                    return classesRepository.save(existingClass);
+                })
+                .orElseThrow(() -> new NoSuchElementException("Class with id " + id + " not found"));
     }
 
     // Delete class
@@ -48,7 +46,7 @@ public class ClassesService {
             classesRepository.deleteById(id);
             return "Class with id " + id + " deleted";
         } else {
-            return "Class with id " + id + " not found";
+            throw new NoSuchElementException("Class with id " + id + " not found");
         }
     }
 

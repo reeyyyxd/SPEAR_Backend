@@ -10,8 +10,18 @@ public class ProjectProposalEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int pid;
 
+    // Relationship with the User entity
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "proposed_by", referencedColumnName = "uid")
+    private UserEntity proposedBy;
+
     @Column(name = "projectName")
     private String projectName;
+
+    // Relationship with the Classes entity
+    @ManyToOne
+    @JoinColumn(name = "class_proposal", referencedColumnName = "cid")
+    private ClassesEntity classProposal;
 
     @Column(name = "description")
     private String description;
@@ -26,9 +36,11 @@ public class ProjectProposalEntity {
         super();
     }
 
-    public ProjectProposalEntity(int pid, String projectName, String description, String status, String reason) {
+    public ProjectProposalEntity(int pid, UserEntity proposedBy, String projectName, ClassesEntity classProposal, String description, String status, String reason) {
         this.pid = pid;
+        this.proposedBy = proposedBy;
         this.projectName = projectName;
+        this.classProposal = classProposal;
         this.description = description;
         this.status = status;
         this.reason = reason;
@@ -42,12 +54,28 @@ public class ProjectProposalEntity {
         this.pid = pid;
     }
 
+    public UserEntity getProposedBy() {
+        return proposedBy;
+    }
+
+    public void setProposedBy(UserEntity proposedBy) {
+        this.proposedBy = proposedBy;
+    }
+
     public String getProjectName() {
         return projectName;
     }
 
     public void setProjectName(String projectName) {
         this.projectName = projectName;
+    }
+
+    public ClassesEntity getClassProposal() {
+        return classProposal;
+    }
+
+    public void setClassProposal(ClassesEntity classProposal) {
+        this.classProposal = classProposal;
     }
 
     public String getDescription() {
