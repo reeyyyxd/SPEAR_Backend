@@ -11,7 +11,6 @@ public class TeamEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int tid;
 
-    // Many-to-one relationship with ProjectProposalEntity
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "project_id", referencedColumnName = "pid")
     private ProjectProposalEntity project;
@@ -19,15 +18,16 @@ public class TeamEntity {
     @Column(name = "groupno")
     private int groupNo;
 
-    // Many-to-one relationship with UserEntity as team leader
+    @Column(name = "groupName")
+    private String groupName;
+
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "leader_id", referencedColumnName = "uid")
-    private UserEntity leader;
+    @JoinColumn(name = "leader_id", referencedColumnName = "proposed_by")
+    private ProjectProposalEntity leader;
 
     @Column(name = "memberid")
     private int memberId;
 
-    // Many-to-many relationship with users
     @ManyToMany(mappedBy = "teams")
     private Set<UserEntity> users;
 
@@ -35,12 +35,13 @@ public class TeamEntity {
         super();
     }
 
-    public TeamEntity(int tid, ProjectProposalEntity project, int groupNo, UserEntity leader, int memberId) {
+    public TeamEntity(int tid, ProjectProposalEntity project, int groupNo, ProjectProposalEntity leader, int memberId, String groupName) {
         this.tid = tid;
         this.project = project;
         this.groupNo = groupNo;
         this.leader = leader;
         this.memberId = memberId;
+        this.groupName = groupName;
     }
 
     public int getTid() {
@@ -67,11 +68,11 @@ public class TeamEntity {
         this.groupNo = groupNo;
     }
 
-    public UserEntity getLeader() {
+    public ProjectProposalEntity getLeader() {
         return leader;
     }
 
-    public void setLeader(UserEntity leader) {
+    public void setLeader(ProjectProposalEntity leader) {
         this.leader = leader;
     }
 
@@ -89,5 +90,13 @@ public class TeamEntity {
 
     public void setUsers(Set<UserEntity> users) {
         this.users = users;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 }
