@@ -1,41 +1,66 @@
 package com.group2.SPEAR_Backend.Controller;
 
 import com.group2.SPEAR_Backend.Model.User;
+import com.group2.SPEAR_Backend.DTO.UserDTO;
 import com.group2.SPEAR_Backend.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/user")
 @CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
-    @Autowired
-    UserService uServ;
+        @Autowired
+        private UserService uServ;
+
+        @PostMapping("/auth/register")
+        public ResponseEntity<UserDTO> register(@RequestBody UserDTO reg){
+            return ResponseEntity.ok(uServ.register(reg));
+        }
+
+        @PostMapping("/auth/login")
+        public ResponseEntity<UserDTO> login(@RequestBody UserDTO req){
+            return ResponseEntity.ok(uServ.login(req));
+        }
+
+        @PostMapping("/auth/refresh")
+        public ResponseEntity<UserDTO> refreshToken(@RequestBody UserDTO req){
+            return ResponseEntity.ok(uServ.refreshToken(req));
+        }
+
+        @GetMapping("/admin/getUsers")
+        public ResponseEntity<UserDTO> getAllUsers(){
+            return ResponseEntity.ok(uServ.getAllUsers());
+
+        }
+
+        @GetMapping("/admin/getUsers/{userId}")
+        public ResponseEntity<UserDTO> getUSerByID(@PathVariable Integer userId){
+            return ResponseEntity.ok(uServ.getUsersById(userId));
+
+        }
+
+        @PutMapping("/admin/update/{userId}")
+        public ResponseEntity<UserDTO> updateUser(@PathVariable Integer userId, @RequestBody User reqres){
+            return ResponseEntity.ok(uServ.updateUser(userId, reqres));
+        }
+
+        @GetMapping("/adminuser/get-profile")
+        public ResponseEntity<UserDTO> getMyProfile(){
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String email = authentication.getName();
+            UserDTO response = uServ.getMyInfo(email);
+            return  ResponseEntity.status(response.getStatusCode()).body(response);
+        }
+
+        @DeleteMapping("/admin/delete/{userId}")
+        public ResponseEntity<UserDTO> deleteUSer(@PathVariable Integer userId){
+            return ResponseEntity.ok(uServ.deleteUser(userId));
+        }
 
 
-    @PostMapping("/register")
-    public User registerUser(@RequestBody User s) {
-        return uServ.registerUser(s);
+
     }
-
-    @GetMapping("/seeAllUsers")
-    public List<User> getAll() {
-        return uServ.seeAllUser();
-    }
-
-
-    @PutMapping("/updateUser/{id}")
-    public User updateUser(@PathVariable int id, @RequestBody User newUser) {
-        return uServ.updateUser(id, newUser);
-    }
-
-    @DeleteMapping("/deleteUser/{id}")
-    public String deleteUser(@PathVariable int id) {
-        return uServ.deleteUser(id);
-    }
-
-
-}
