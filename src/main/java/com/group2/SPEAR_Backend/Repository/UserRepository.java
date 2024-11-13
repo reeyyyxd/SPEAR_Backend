@@ -1,8 +1,7 @@
 package com.group2.SPEAR_Backend.Repository;
-import com.group2.SPEAR_Backend.Entity.UserEntity;
+import com.group2.SPEAR_Backend.Model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
-public interface UserRepository extends JpaRepository <UserEntity, Integer> {
-    UserEntity findByEmail (String email);
+public interface UserRepository extends JpaRepository <User, Integer> {
+    User findByEmail (String email);
 }

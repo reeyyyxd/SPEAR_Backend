@@ -1,6 +1,6 @@
 package com.group2.SPEAR_Backend.Controller;
 
-import com.group2.SPEAR_Backend.Entity.UserEntity;
+import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -9,45 +9,33 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
     @Autowired
-    UserService spearServ;
+    UserService uServ;
 
 
-    @PostMapping("/createUser")
-    public UserEntity createUser(@RequestBody UserEntity s) {
-        return spearServ.createUser(s);
+    @PostMapping("/register")
+    public User registerUser(@RequestBody User s) {
+        return uServ.registerUser(s);
     }
 
     @GetMapping("/seeAllUsers")
-    public List<UserEntity> getAll() {
-        return spearServ.seeAllUser();
+    public List<User> getAll() {
+        return uServ.seeAllUser();
     }
 
 
     @PutMapping("/updateUser/{id}")
-    public UserEntity updateUser(@PathVariable int id, @RequestBody UserEntity newUser) {
-        return spearServ.updateUser(id, newUser);
+    public User updateUser(@PathVariable int id, @RequestBody User newUser) {
+        return uServ.updateUser(id, newUser);
     }
 
     @DeleteMapping("/deleteUser/{id}")
     public String deleteUser(@PathVariable int id) {
-        return spearServ.deleteUser(id);
+        return uServ.deleteUser(id);
     }
 
-    @PostMapping("/login")
-    public String loginUser(@RequestBody UserEntity loginRequest) {
-        String email = loginRequest.getEmail();
-        String password = loginRequest.getPassword();
 
-        String userType = spearServ.validateUserCredentials(email, password);
-
-        if (!userType.equals("Invalid email or password")) {
-            return "Login successful as " + userType;
-        } else {
-            return "Invalid email or password";
-        }
-    }
 }
