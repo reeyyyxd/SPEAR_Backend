@@ -33,6 +33,8 @@ public class User implements UserDetails {
     @Column(name = "role")
     private String role;
 
+    private Boolean isDeleted;
+
 
 
     @Override
@@ -72,14 +74,25 @@ public class User implements UserDetails {
     }
 
     public User(String firstname, String lastname, String email,
-                String password, String role) {
+                String password, String role, boolean isDeleted) {
         super();
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
         this.password = password;
         this.role = role;
+        this.isDeleted = isDeleted;
 
+    }
+
+    public User(int uid, String firstname, String lastname, String email, String password, String role, Boolean isDeleted) {
+        this.uid = uid;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.isDeleted = isDeleted;
     }
 
     public int getUid() {
@@ -128,6 +141,13 @@ public class User implements UserDetails {
 
     public void setRole(String role) {
         this.role = role;
+    }
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
 
