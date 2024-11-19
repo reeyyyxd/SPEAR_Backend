@@ -33,9 +33,17 @@ public class User implements UserDetails {
     @Column(name = "role")
     private String role;
 
-    private Boolean isDeleted;
+    private Boolean isDeleted = false;
 
+    // Getter
+    public Boolean getIsDeleted() {
+        return isDeleted != null ? isDeleted : false; // Default to false if null
+    }
 
+    // Setter
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
