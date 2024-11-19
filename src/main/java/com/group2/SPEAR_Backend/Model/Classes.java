@@ -19,6 +19,9 @@ public class Classes {
     @Column(name = "course_type", nullable = false)
     private String courseType; // Capstone or Non-Capstone
 
+    @Column(name = "course_name", nullable = false, unique = true)
+    private String courseName;
+
     @Column(name = "course_code", nullable = false, unique = true)
     private String courseCode;
 
@@ -33,6 +36,9 @@ public class Classes {
 
     @Column(name = "course_description", columnDefinition = "TEXT")
     private String courseDescription;
+
+    @Column(name = "class_key", nullable = false, unique = true)
+    private String classKey;
 
 //    @Column(name = "created_date", nullable = false)
 //    private LocalDate createdDate;
@@ -53,7 +59,7 @@ public class Classes {
     }
 
 
-    public Classes(User createdBy, String courseType, String courseCode, String section, String schoolYear, String semester, String courseDescription, boolean isDeleted) {
+    public Classes(User createdBy, String courseType, String courseCode, String section, String schoolYear, String semester, String courseName, String classKey,  String courseDescription, boolean isDeleted) {
         this.createdBy = createdBy;
         this.courseType = courseType;
         this.courseCode = courseCode;
@@ -62,6 +68,8 @@ public class Classes {
         this.semester = semester;
         this.courseDescription = courseDescription;
         this.isDeleted = isDeleted;
+        this.classKey = classKey;
+        this.courseName = courseName;
     }
 
     public Long getCid() {
@@ -135,4 +143,22 @@ public class Classes {
     public void setDeleted(boolean isDeleted) {
         this.isDeleted = isDeleted;
     }
+
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
+    }
+
+    public String getClassKey() {
+        return classKey;
+    }
+
+    public void setClassKey(String classKey) {
+        this.classKey = classKey;
+    }
+
+
 }

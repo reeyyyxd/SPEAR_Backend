@@ -20,4 +20,7 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
 
     List<Classes> findAllByIsDeletedFalse();
 
+    @Query("SELECT c FROM Classes c WHERE c.isDeleted = false AND c.cid = :classId")
+    Optional<Classes> findActiveClassById(@Param("classId") Long classId);
+
 }

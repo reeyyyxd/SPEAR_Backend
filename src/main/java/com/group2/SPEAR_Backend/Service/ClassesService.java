@@ -38,17 +38,19 @@ public class ClassesService {
             }
             User createdby = optionalUser.get();
 
-            //code generator
-            String generatedClassCode = ClassCodeGenerator.generateClassCode();
+            // code generator
+            String generatedClassKey = ClassCodeGenerator.generateClassCode();
 
             Classes newClass = new Classes();
             newClass.setCourseType(classRequest.getCourseType());
-            newClass.setCourseCode(generatedClassCode);
+            newClass.setCourseCode(classRequest.getCourseCode());
             newClass.setSection(classRequest.getSection());
             newClass.setSchoolYear(classRequest.getSchoolYear());
             newClass.setSemester(classRequest.getSemester());
             newClass.setCourseDescription(classRequest.getCourseDescription());
-            newClass.setCreatedBy(createdby); // Attach managed User
+            newClass.setCourseName(classRequest.getCourseName());
+            newClass.setClassKey(generatedClassKey);
+            newClass.setCreatedBy(createdby);
             newClass.setIsDeleted(false);
             Classes savedClass = cRepo.save(newClass);
 
@@ -142,17 +144,45 @@ public class ClassesService {
         try {
             Optional<Classes> classOptional = cRepo.findById(classId);
             if (classOptional.isPresent()) {
-                cRepo.deleteById(classId);
-                response.setStatusCode(200);
-                response.setMessage("Class deleted successfully");
+                Classes classToDelete = classOptional.get();
+                if (!classToDelete.getIsDeleted()) {
+                    classToDelete.setIsDeleted(true);
+                    cRepo.save(classToDelete);
+                    response.setStatusCode(200);
+                    response.setMessage("Class deleted successfully");
+                } else {
+                    response.setStatusCode(400);
+                    response.setMessage("Class deleted successfully");
+                }
             } else {
                 response.setStatusCode(404);
                 response.setMessage("Class with ID '" + classId + "' not found");
             }
         } catch (Exception e) {
             response.setStatusCode(500);
-            response.setMessage("Error occurred while deleting class: " + e.getMessage());
+            response.setMessage("Error occurred: " + e.getMessage());
         }
         return response;
     }
+
+    public ClassesDTO getClassKeyByCourseCode(String courseCode) {
+        ClassesDTO response = new ClassesDTO();
+        try {
+            Classes classByCourseCode = cRepo.findByCourseCode(courseCode);
+            if (classByCourseCode != null) {
+                response.setClassKey(classByCourseCode.getClassKey());
+                response.setStatusCode(200);
+                response.setMessage("ClassKey for course code '" + courseCode + "' retrieved successfully.");
+            } else {
+                response.setStatusCode(404);
+                response.setMessage("No class found with course code: " + courseCode);
+            }
+        } catch (Exception e) {
+            response.setStatusCode(500);
+            response.setError(e.getMessage());
+            response.setMessage("Error occurred while fetching classKey by course code.");
+        }
+        return response;
+    }
+
 }

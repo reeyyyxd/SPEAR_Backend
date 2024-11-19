@@ -27,6 +27,8 @@ public class ClassesDTO {
     private List<Classes> classesList;
     private User createdBy;
     private boolean isDeleted;
+    private String courseName;
+    private String classKey;
 
     // Getters and Setters
 
@@ -140,5 +142,21 @@ public class ClassesDTO {
 
     public void setDeleted(boolean deleted) {
         isDeleted = deleted;
+    }
+
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
+    }
+
+    public String getClassKey() {
+        return classKey;
+    }
+
+    public void setClassKey(String classKey) {
+        this.classKey = classKey;
     }
 }
