@@ -1,8 +1,11 @@
 package com.group2.SPEAR_Backend.Service;
 
+import com.group2.SPEAR_Backend.ClassCodeGenerator;
 import com.group2.SPEAR_Backend.Model.Classes;
+import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.Repository.ClassesRepository;
 import com.group2.SPEAR_Backend.DTO.ClassesDTO;
+import com.group2.SPEAR_Backend.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,32 +15,48 @@ import java.util.Optional;
 @Service
 public class ClassesService {
 
-    private final ClassesRepository classesRepository;
+    private final ClassesRepository cRepo;
 
     @Autowired
-    public ClassesService(ClassesRepository classesRepository) {
-        this.classesRepository = classesRepository;
+    public ClassesService(ClassesRepository cRepo) {
+        this.cRepo = cRepo;
     }
 
-    // Create a new class
+    @Autowired
+    UserRepository uRepo;
+
     public ClassesDTO createClass(ClassesDTO classRequest) {
         ClassesDTO response = new ClassesDTO();
         try {
+            User user = classRequest.getCreatedBy();
+            Optional<User> optionalUser = uRepo.findById(user.getUid());
+
+            if (optionalUser.isEmpty()) {
+                response.setStatusCode(404);
+                response.setMessage("User not found");
+                return response;
+            }
+            User createdby = optionalUser.get();
+
+            //code generator
+            String generatedClassCode = ClassCodeGenerator.generateClassCode();
+
             Classes newClass = new Classes();
             newClass.setCourseType(classRequest.getCourseType());
-            newClass.setCourseCode(classRequest.getCourseCode());
+            newClass.setCourseCode(generatedClassCode);
             newClass.setSection(classRequest.getSection());
             newClass.setSchoolYear(classRequest.getSchoolYear());
             newClass.setSemester(classRequest.getSemester());
             newClass.setCourseDescription(classRequest.getCourseDescription());
+            newClass.setCreatedBy(createdby); // Attach managed User
+            newClass.setIsDeleted(false);
+            Classes savedClass = cRepo.save(newClass);
 
-            Classes savedClass = classesRepository.save(newClass);
-            if (savedClass.getId() != null) {
+            if (savedClass.getCid() != null) {
                 response.setClasses(savedClass);
                 response.setStatusCode(200);
                 response.setMessage("Class created successfully");
             }
-
         } catch (Exception e) {
             response.setStatusCode(500);
             response.setError(e.getMessage());
@@ -46,11 +65,12 @@ public class ClassesService {
         return response;
     }
 
-    // Get all classes
+
+
     public ClassesDTO getAllClasses() {
         ClassesDTO response = new ClassesDTO();
         try {
-            List<Classes> classesList = classesRepository.findAll();
+            List<Classes> classesList = cRepo.findAllByIsDeletedFalse();
             if (!classesList.isEmpty()) {
                 response.setClassesList(classesList);
                 response.setStatusCode(200);
@@ -66,11 +86,12 @@ public class ClassesService {
         return response;
     }
 
+
     // Get a class by course code
     public ClassesDTO getClassByCourseCode(String courseCode) {
         ClassesDTO response = new ClassesDTO();
         try {
-            Classes classByCourseCode = classesRepository.findByCourseCode(courseCode);
+            Classes classByCourseCode = cRepo.findByCourseCode(courseCode);
             if (classByCourseCode != null) {
                 response.setClasses(classByCourseCode);
                 response.setStatusCode(200);
@@ -90,7 +111,7 @@ public class ClassesService {
     public ClassesDTO updateClass(Long classId, ClassesDTO classRequest) {
         ClassesDTO response = new ClassesDTO();
         try {
-            Optional<Classes> classOptional = classesRepository.findById(classId);
+            Optional<Classes> classOptional = cRepo.findById(classId);
             if (classOptional.isPresent()) {
                 Classes existingClass = classOptional.get();
                 existingClass.setCourseType(classRequest.getCourseType());
@@ -100,7 +121,7 @@ public class ClassesService {
                 existingClass.setSemester(classRequest.getSemester());
                 existingClass.setCourseDescription(classRequest.getCourseDescription());
 
-                Classes updatedClass = classesRepository.save(existingClass);
+                Classes updatedClass = cRepo.save(existingClass);
                 response.setClasses(updatedClass);
                 response.setStatusCode(200);
                 response.setMessage("Class updated successfully");
@@ -119,9 +140,9 @@ public class ClassesService {
     public ClassesDTO deleteClass(Long classId) {
         ClassesDTO response = new ClassesDTO();
         try {
-            Optional<Classes> classOptional = classesRepository.findById(classId);
+            Optional<Classes> classOptional = cRepo.findById(classId);
             if (classOptional.isPresent()) {
-                classesRepository.deleteById(classId);
+                cRepo.deleteById(classId);
                 response.setStatusCode(200);
                 response.setMessage("Class deleted successfully");
             } else {

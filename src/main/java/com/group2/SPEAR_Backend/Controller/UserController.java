@@ -16,12 +16,12 @@ public class UserController {
     @Autowired
     private UserService uServ;
 
-    @PostMapping("/auth/register")
+    @PostMapping("/register")
     public ResponseEntity<UserDTO> register(@RequestBody UserDTO reg){
         return ResponseEntity.ok(uServ.register(reg));
     }
 
-    @PostMapping("/auth/login")
+    @PostMapping("/login")
     public ResponseEntity<UserDTO> login(@RequestBody UserDTO req){
         return ResponseEntity.ok(uServ.login(req));
     }
