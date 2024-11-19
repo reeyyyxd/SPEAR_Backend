@@ -113,9 +113,8 @@ public class UserService implements UserDetailsService {
 
     public UserDTO getAllUsers() {
         UserDTO userDTO = new UserDTO();
-
         try {
-            List<User> result = userRepo.findAll();
+            List<User> result = userRepo.findByIsDeletedFalse();
             if (!result.isEmpty()) {
                 userDTO.setUserList(result);
                 userDTO.setStatusCode(200);
@@ -140,6 +139,7 @@ public class UserService implements UserDetailsService {
             userDTO.setUser(usersById);
             userDTO.setStatusCode(200);
             userDTO.setMessage("Users with id '" + id + "' found successfully");
+            userDTO.setDeleted(usersById.isDeleted());
         } catch (Exception e) {
             userDTO.setStatusCode(500);
             userDTO.setMessage("Error occurred: " + e.getMessage());
@@ -148,21 +148,25 @@ public class UserService implements UserDetailsService {
     }
 
 
+
     public UserDTO deleteUser(Integer userId) {
         UserDTO userDTO = new UserDTO();
         try {
             Optional<User> userOptional = userRepo.findById(userId);
             if (userOptional.isPresent()) {
-                userRepo.deleteById(userId);
+                User existingUser = userOptional.get();
+                existingUser.setIsDeleted(true);
+                userRepo.save(existingUser);
+
                 userDTO.setStatusCode(200);
                 userDTO.setMessage("User deleted successfully");
             } else {
                 userDTO.setStatusCode(404);
-                userDTO.setMessage("User not found for deletion");
+                userDTO.setMessage("User not found");
             }
         } catch (Exception e) {
             userDTO.setStatusCode(500);
-            userDTO.setMessage("Error occurred while deleting user: " + e.getMessage());
+            userDTO.setMessage("Error occurred:" + e.getMessage());
         }
         return userDTO;
     }
@@ -177,10 +181,10 @@ public class UserService implements UserDetailsService {
                 existingUser.setFirstname(updatedUser.getFirstname());
                 existingUser.setLastname(updatedUser.getLastname());
                 existingUser.setRole(updatedUser.getRole());
+                existingUser.setIsDeleted(updatedUser.isDeleted());  // Update isDeleted if provided
 
                 // Check if password is present in the request
                 if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
-                    // Encode the password and update it
                     existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
                 }
 
@@ -188,13 +192,14 @@ public class UserService implements UserDetailsService {
                 userDTO.setUser(savedUser);
                 userDTO.setStatusCode(200);
                 userDTO.setMessage("User updated successfully");
+                userDTO.setDeleted(savedUser.isDeleted());
             } else {
                 userDTO.setStatusCode(404);
-                userDTO.setMessage("User not found for update");
+                userDTO.setMessage("User not found");
             }
         } catch (Exception e) {
             userDTO.setStatusCode(500);
-            userDTO.setMessage("Error occurred while updating user: " + e.getMessage());
+            userDTO.setMessage("Error occurred:" + e.getMessage());
         }
         return userDTO;
     }
@@ -223,4 +228,3 @@ public class UserService implements UserDetailsService {
 
 
 }
-
