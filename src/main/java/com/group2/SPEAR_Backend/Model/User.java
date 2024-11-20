@@ -35,12 +35,10 @@ public class User implements UserDetails {
 
     private Boolean isDeleted = false;
 
-    // Getter
     public Boolean getIsDeleted() {
         return isDeleted != null ? isDeleted : false; // Default to false if null
     }
 
-    // Setter
     public void setIsDeleted(Boolean isDeleted) {
         this.isDeleted = isDeleted;
     }

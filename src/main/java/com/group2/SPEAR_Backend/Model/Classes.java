@@ -9,10 +9,18 @@ public class Classes {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long cid;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "createdBy", referencedColumnName = "uid")
+    private User createdBy;
+
 
     @Column(name = "course_type", nullable = false)
     private String courseType; // Capstone or Non-Capstone
+
+    @Column(name = "course_name", nullable = false, unique = true)
+    private String courseName;
 
     @Column(name = "course_code", nullable = false, unique = true)
     private String courseCode;
@@ -29,21 +37,55 @@ public class Classes {
     @Column(name = "course_description", columnDefinition = "TEXT")
     private String courseDescription;
 
-    @Column(name = "created_date", nullable = false)
-    private LocalDate createdDate;
+    @Column(name = "class_key", nullable = false, unique = true)
+    private String classKey;
 
-    // Default Constructor
-    public Classes() {
-        this.createdDate = LocalDate.now();
+//    @Column(name = "created_date", nullable = false)
+//    private LocalDate createdDate;
+
+    private Boolean isDeleted = false;
+
+    public Boolean getIsDeleted() {
+        return isDeleted != null ? isDeleted : false; // Default to false if null
     }
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+
+    public Classes(){
+        super();
+    }
+
+
+    public Classes(User createdBy, String courseType, String courseCode, String section, String schoolYear, String semester, String courseName, String classKey,  String courseDescription, boolean isDeleted) {
+        this.createdBy = createdBy;
+        this.courseType = courseType;
+        this.courseCode = courseCode;
+        this.section = section;
+        this.schoolYear = schoolYear;
+        this.semester = semester;
+        this.courseDescription = courseDescription;
+        this.isDeleted = isDeleted;
+        this.classKey = classKey;
+        this.courseName = courseName;
+    }
+
+    public Long getCid() {
+        return cid;
+    }
+
+    public void setCid(Long cid) {
+        this.cid = cid;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
     }
 
     public String getCourseType() {
@@ -94,11 +136,29 @@ public class Classes {
         this.courseDescription = courseDescription;
     }
 
-    public LocalDate getCreatedDate() {
-        return createdDate;
+    public boolean isDeleted() {
+        return isDeleted;
     }
 
-    public void setCreatedDate(LocalDate createdDate) {
-        this.createdDate = createdDate;
+    public void setDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
+
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
+    }
+
+    public String getClassKey() {
+        return classKey;
+    }
+
+    public void setClassKey(String classKey) {
+        this.classKey = classKey;
+    }
+
+
 }

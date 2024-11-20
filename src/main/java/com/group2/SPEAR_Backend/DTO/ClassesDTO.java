@@ -3,6 +3,7 @@ package com.group2.SPEAR_Backend.DTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.group2.SPEAR_Backend.Model.Classes;
+import com.group2.SPEAR_Backend.Model.User;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public class ClassesDTO {
     private String error;
     private String message;
 
-    private Long id;
+    private Long uid;
     private String courseType;
     private String courseCode;
     private String section;
@@ -24,6 +25,10 @@ public class ClassesDTO {
 
     private Classes classes;
     private List<Classes> classesList;
+    private User createdBy;
+    private boolean isDeleted;
+    private String courseName;
+    private String classKey;
 
     // Getters and Setters
 
@@ -51,12 +56,12 @@ public class ClassesDTO {
         this.message = message;
     }
 
-    public Long getId() {
-        return id;
+    public Long getUid() {
+        return uid;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setUid(Long uid) {
+        this.uid = uid;
     }
 
     public String getCourseType() {
@@ -121,5 +126,37 @@ public class ClassesDTO {
 
     public void setClassesList(List<Classes> classesList) {
         this.classesList = classesList;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
+    }
+
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
+    }
+
+    public String getClassKey() {
+        return classKey;
+    }
+
+    public void setClassKey(String classKey) {
+        this.classKey = classKey;
     }
 }

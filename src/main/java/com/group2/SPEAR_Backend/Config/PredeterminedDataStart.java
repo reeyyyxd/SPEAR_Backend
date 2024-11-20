@@ -22,7 +22,6 @@ public class PredeterminedDataStart {
     public void init() {
         if(urepo.count() == 0) {
 
-
             User admin = new User();
             admin.setFirstname("Application");
             admin.setLastname("Admin");
