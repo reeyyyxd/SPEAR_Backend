@@ -31,7 +31,7 @@ public class UserController {
             return ResponseEntity.ok(uServ.refreshToken(req));
         }
 
-        @GetMapping("/admin/getUsers")
+        @GetMapping("/admin/get-all-users")
         public ResponseEntity<UserDTO> getAllUsers(){
             return ResponseEntity.ok(uServ.getAllUsers());
 
