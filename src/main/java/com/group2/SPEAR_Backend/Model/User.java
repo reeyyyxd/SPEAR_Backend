@@ -5,6 +5,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -42,6 +43,9 @@ public class User implements UserDetails {
     public void setIsDeleted(Boolean isDeleted) {
         this.isDeleted = isDeleted;
     }
+
+    @ManyToMany(mappedBy = "enrolledStudents")
+    private Set<Classes> enrolledClasses = new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -154,6 +158,14 @@ public class User implements UserDetails {
 
     public void setDeleted(boolean isDeleted) {
         this.isDeleted = isDeleted;
+    }
+
+    public Set<Classes> getEnrolledClasses() {
+        return enrolledClasses;
+    }
+
+    public void setEnrolledClasses(Set<Classes> enrolledClasses) {
+        this.enrolledClasses = enrolledClasses;
     }
 
 

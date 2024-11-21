@@ -2,6 +2,8 @@ package com.group2.SPEAR_Backend.Model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "classes")
@@ -16,28 +18,28 @@ public class Classes {
     private User createdBy;
 
 
-    @Column(name = "course_type", nullable = false)
+    @Column(name = "course_type")
     private String courseType; // Capstone or Non-Capstone
 
-    @Column(name = "course_name", nullable = false, unique = true)
+    @Column(name = "course_name")
     private String courseName;
 
-    @Column(name = "course_code", nullable = false, unique = true)
+    @Column(name = "course_code")
     private String courseCode;
 
-    @Column(name = "section", nullable = false)
+    @Column(name = "section")
     private String section;
 
-    @Column(name = "school_year", nullable = false)
+    @Column(name = "school_year")
     private String schoolYear;
 
-    @Column(name = "semester", nullable = false)
+    @Column(name = "semester")
     private String semester;
 
-    @Column(name = "course_description", columnDefinition = "TEXT")
+    @Column(name = "course_description")
     private String courseDescription;
 
-    @Column(name = "class_key", nullable = false, unique = true)
+    @Column(name = "class_key", unique = true)
     private String classKey;
 
 //    @Column(name = "created_date", nullable = false)
@@ -52,6 +54,14 @@ public class Classes {
     public void setIsDeleted(Boolean isDeleted) {
         this.isDeleted = isDeleted;
     }
+
+    @ManyToMany
+    @JoinTable(
+            name = "class_enrollments",
+            joinColumns = @JoinColumn(name = "class_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> enrolledStudents = new HashSet<>();
 
 
     public Classes(){
@@ -159,6 +169,15 @@ public class Classes {
     public void setClassKey(String classKey) {
         this.classKey = classKey;
     }
+
+    public Set<User> getEnrolledStudents() {
+        return enrolledStudents;
+    }
+
+    public void setEnrolledStudents(Set<User> enrolledStudents) {
+        this.enrolledStudents = enrolledStudents;
+    }
+
 
 
 }

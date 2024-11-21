@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -55,8 +57,15 @@ public class ClassesController {
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
-
-
+    @PostMapping("/student/enroll")
+    public ResponseEntity<ClassesDTO> enrollStudentByClassKey(
+            @RequestBody Map<String, String> requestBody,
+            Principal principal) {
+        String classKey = requestBody.get("classKey");
+        String email = principal.getName();
+        ClassesDTO response = classesService.enrollStudentByClassKey(classKey, email);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
 
 
 

@@ -185,4 +185,49 @@ public class ClassesService {
         return response;
     }
 
+    public ClassesDTO enrollStudentByClassKey(String classKey, String email) {
+        ClassesDTO response = new ClassesDTO();
+
+        try {
+            Optional<Classes> optionalClass = cRepo.findByClassKey(classKey);
+            if (optionalClass.isEmpty()) {
+                response.setStatusCode(404);
+                response.setMessage("Class not found or is deleted");
+                return response;
+            }
+
+            Classes clazz = optionalClass.get();
+
+            Optional<User> optionalUser = uRepo.findByEmail(email);
+            if (optionalUser.isEmpty()) {
+                response.setStatusCode(404);
+                response.setMessage("User not found");
+                return response;
+            }
+
+            User student = optionalUser.get();
+            //kung na enroll na
+            if (clazz.getEnrolledStudents().contains(student)) {
+                response.setStatusCode(400);
+                response.setMessage("Student is already enrolled in the class");
+                return response;
+            }
+            //kung wala
+            clazz.getEnrolledStudents().add(student);
+            cRepo.save(clazz);
+            response.setStatusCode(200);
+            response.setMessage("Student enrolled successfully");
+            response.setClasses(clazz);
+        } catch (Exception e) {
+            response.setStatusCode(500);
+            response.setMessage("Error occurred while enrolling student: " + e.getMessage());
+        }
+
+        return response;
+    }
+
+
+
+
+
 }

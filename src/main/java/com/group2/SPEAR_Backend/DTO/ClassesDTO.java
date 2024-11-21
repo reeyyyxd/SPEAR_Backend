@@ -30,6 +30,8 @@ public class ClassesDTO {
     private String courseName;
     private String classKey;
 
+    private List<User> enrolledStudents;
+
     // Getters and Setters
 
     public int getStatusCode() {
@@ -158,5 +160,13 @@ public class ClassesDTO {
 
     public void setClassKey(String classKey) {
         this.classKey = classKey;
+    }
+
+    public List<User> getEnrolledStudents() {
+        return enrolledStudents;
+    }
+
+    public void setEnrolledStudents(List<User> enrolledStudents) {
+        this.enrolledStudents = enrolledStudents;
     }
 }
