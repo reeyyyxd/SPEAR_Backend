@@ -9,6 +9,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
@@ -32,10 +34,10 @@ public class UserController {
     }
 
     @GetMapping("/admin/get-all-users")
-    public ResponseEntity<UserDTO> getAllUsers(){
+    public ResponseEntity<UserDTO> getAllUsers() {
         return ResponseEntity.ok(uServ.getAllUsers());
-
     }
+
 
     @GetMapping("/admin/getUsers/{userId}")
     public ResponseEntity<UserDTO> getUSerByID(@PathVariable Integer userId){
@@ -59,6 +61,31 @@ public class UserController {
     @DeleteMapping("/admin/delete/{userId}")
     public ResponseEntity<UserDTO> deleteUSer(@PathVariable Integer userId){
         return ResponseEntity.ok(uServ.deleteUser(userId));
+    }
+
+    @GetMapping("/admin/users/active")
+    public ResponseEntity<List<UserDTO>> getAllActiveUsers() {
+        return ResponseEntity.ok(uServ.getAllActiveUsers());
+    }
+
+    @GetMapping("/admin/users/active-students")
+    public ResponseEntity<List<UserDTO>> getAllActiveStudents() {
+        return ResponseEntity.ok(uServ.getAllActiveStudents());
+    }
+
+    @GetMapping("/admin/users/active-teachers")
+    public ResponseEntity<List<UserDTO>> getAllActiveTeachers() {
+        return ResponseEntity.ok(uServ.getAllActiveTeachers());
+    }
+
+    @GetMapping("/admin/users/deleted-teachers")
+    public ResponseEntity<List<UserDTO>> getAllSoftDeletedTeachers() {
+        return ResponseEntity.ok(uServ.getAllSoftDeletedTeachers());
+    }
+
+    @GetMapping("/admin/users/deleted-students")
+    public ResponseEntity<List<UserDTO>> getAllSoftDeletedStudents() {
+        return ResponseEntity.ok(uServ.getAllSoftDeletedStudents());
     }
 
 

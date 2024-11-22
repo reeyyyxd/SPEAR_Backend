@@ -15,13 +15,6 @@ import java.util.List;
         private String refreshToken;
         private String expirationTime;
 
-        public String getFirstname() {
-            return firstname;
-        }
-
-        public String getLastname() {
-            return lastname;
-        }
 
         private String firstname;
         private String lastname;
@@ -32,6 +25,24 @@ import java.util.List;
         private User user;
         private List<User> userList;
 
+        public UserDTO(int statusCode, String message, String firstname, String lastname, String email, String role) {
+            this.statusCode = statusCode;
+            this.message = message;
+            this.firstname = firstname;
+            this.lastname = lastname;
+            this.email = email;
+            this.role = role;
+        }
+
+
+        public UserDTO(int statusCode, String message, List<User> userList) {
+            this.statusCode = statusCode;
+            this.message = message;
+            this.userList = userList;
+        }
+
+
+        public UserDTO() {}
         public int getStatusCode() {
             return statusCode;
         }
@@ -134,5 +145,12 @@ import java.util.List;
 
         public void setDeleted(boolean deleted) {
             isDeleted = deleted;
+        }
+        public String getFirstname() {
+            return firstname;
+        }
+
+        public String getLastname() {
+            return lastname;
         }
     }

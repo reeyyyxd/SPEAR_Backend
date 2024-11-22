@@ -1,13 +1,14 @@
 package com.group2.SPEAR_Backend.Controller;
 
-import com.group2.SPEAR_Backend.DTO.ClassesDTO;
+import
+        com.group2.SPEAR_Backend.DTO.ClassesDTO;
+import com.group2.SPEAR_Backend.Repository.UserRepository;
 import com.group2.SPEAR_Backend.Service.ClassesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -15,57 +16,81 @@ import java.util.Map;
 public class ClassesController {
 
 
-    //remove requestmapping
-    // all teacher's control = put /teacher
-    // all student's control = put /student
-    //TODO: enroll the fucking students
+
 
 
     @Autowired
-    private ClassesService classesService;
+    private ClassesService cServ;
+
+    @Autowired
+    private UserRepository uRepo;
 
 
+    //all teacher services
     @PostMapping("/teacher/createClass")
     public ResponseEntity<ClassesDTO> createClass(@RequestBody ClassesDTO classRequest) {
-        ClassesDTO response = classesService.createClass(classRequest);
+        ClassesDTO response = cServ.createClass(classRequest);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
+// super nono mka guba og server
+//    @GetMapping("/teacher/getallclasses")
+//    public ResponseEntity<ClassesDTO> getAllClasses() {
+//        ClassesDTO response = cServ.getAllClasses();
+//        return ResponseEntity.status(response.getStatusCode()).body(response);
+//    }
 
-    @GetMapping("/teacher/getallclasses")
-    public ResponseEntity<ClassesDTO> getAllClasses() {
-        ClassesDTO response = classesService.getAllClasses();
-        return ResponseEntity.status(response.getStatusCode()).body(response);
-    }
 
 
     @PutMapping("/teacher/updateClass/{id}")
     public ResponseEntity<ClassesDTO> updateClass(@PathVariable Long id, @RequestBody ClassesDTO updatedClass) {
-        ClassesDTO response = classesService.updateClass(id, updatedClass);
+        ClassesDTO response = cServ.updateClass(id, updatedClass);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
     @DeleteMapping("/teacher/deleteClass/{id}")
     public ResponseEntity<ClassesDTO> deleteClass(@PathVariable Long id) {
-        ClassesDTO response = classesService.deleteClass(id);
+        ClassesDTO response = cServ.deleteClass(id);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
-    @GetMapping("/teacher/getclassKey/{courseCode}")
-    public ResponseEntity<ClassesDTO> getClassKeyByCourseCode(@PathVariable String courseCode) {
-        ClassesDTO response = classesService.getClassKeyByCourseCode(courseCode);
+    @GetMapping("/teacher/getclassKey/{courseCode}/{section}")
+    public ResponseEntity<ClassesDTO> getClassKeyByCourseCodeAndSection(
+            @PathVariable String courseCode,
+            @PathVariable String section) {
+        ClassesDTO response = cServ.getClassKeyByCourseCodeAndSection(courseCode, section);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
+
+
+    //all student services
     @PostMapping("/student/enroll")
     public ResponseEntity<ClassesDTO> enrollStudentByClassKey(
             @RequestBody Map<String, String> requestBody,
             Principal principal) {
         String classKey = requestBody.get("classKey");
         String email = principal.getName();
-        ClassesDTO response = classesService.enrollStudentByClassKey(classKey, email);
+        ClassesDTO response = cServ.enrollStudentByClassKey(classKey, email);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
+
+
+
+    @GetMapping("/class/{classId}/total-users")
+    public ResponseEntity<Object[]> getTotalUsersInClass(@PathVariable Long classId) {
+        Object[] totalUsers = cServ.getTotalUsersInClass(classId);
+        if (totalUsers == null) {
+            return ResponseEntity.status(404).body(null);
+        }
+        return ResponseEntity.ok(totalUsers);
+    }
+
+
+
+
+
+
 
 
 

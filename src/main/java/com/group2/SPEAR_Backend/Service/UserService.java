@@ -131,7 +131,6 @@ public class UserService implements UserDetailsService {
         }
     }
 
-
     public UserDTO getUsersById(Integer id) {
         UserDTO userDTO = new UserDTO();
         try {
@@ -224,6 +223,26 @@ public class UserService implements UserDetailsService {
         }
         return userDTO;
 
+    }
+
+    public List<UserDTO> getAllActiveUsers() {
+        return userRepo.fetchAllUsersNotDeleted();
+    }
+
+    public List<UserDTO> getAllActiveStudents() {
+        return userRepo.fetchAllActiveStudents();
+    }
+
+    public List<UserDTO> getAllActiveTeachers() {
+        return userRepo.fetchAllActiveTeachers();
+    }
+
+    public List<UserDTO> getAllSoftDeletedTeachers() {
+        return userRepo.fetchAllSoftDeletedTeachers();
+    }
+
+    public List<UserDTO> getAllSoftDeletedStudents() {
+        return userRepo.fetchAllSoftDeletedStudents();
     }
 
 

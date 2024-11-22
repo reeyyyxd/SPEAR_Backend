@@ -15,6 +15,7 @@ public class ClassesDTO {
     private String error;
     private String message;
 
+    private Long cid;
     private Long uid;
     private String courseType;
     private String courseCode;
@@ -25,15 +26,41 @@ public class ClassesDTO {
 
     private Classes classes;
     private List<Classes> classesList;
-    private User createdBy;
+    private User createdBy; // Changed back to User type
     private boolean isDeleted;
     private String courseName;
     private String classKey;
-
     private List<User> enrolledStudents;
 
-    // Getters and Setters
+    public ClassesDTO() {
+        super();
+    }
 
+    public ClassesDTO(String courseType, String courseCode, String section, String schoolYear, String semester, String courseDescription, String courseName, String classKey, User createdBy) {
+        this.courseType = courseType;
+        this.courseCode = courseCode;
+        this.section = section;
+        this.schoolYear = schoolYear;
+        this.semester = semester;
+        this.courseDescription = courseDescription;
+        this.courseName = courseName;
+        this.classKey = classKey;
+        this.createdBy = createdBy;
+    }
+
+    public ClassesDTO(int statusCode, String message, List<Classes> classesList) {
+        this.statusCode = statusCode;
+        this.message = message;
+        this.classesList = classesList;
+    }
+
+    public ClassesDTO(int statusCode, String message, String error) {
+        this.statusCode = statusCode;
+        this.message = message;
+        this.error = error;
+    }
+
+    // Getters and setters
     public int getStatusCode() {
         return statusCode;
     }
