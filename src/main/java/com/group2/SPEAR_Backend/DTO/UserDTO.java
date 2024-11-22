@@ -41,6 +41,12 @@ import java.util.List;
             this.userList = userList;
         }
 
+        public UserDTO(int statusCode, String message, String firstname, String lastname, String role) {
+            this.firstname = firstname;
+            this.lastname = lastname;
+            this.role = role;
+        }
+
 
         public UserDTO() {}
         public int getStatusCode() {

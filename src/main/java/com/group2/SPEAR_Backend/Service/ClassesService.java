@@ -1,6 +1,7 @@
 package com.group2.SPEAR_Backend.Service;
 
 import com.group2.SPEAR_Backend.ClassCodeGenerator;
+import com.group2.SPEAR_Backend.DTO.UserDTO;
 import com.group2.SPEAR_Backend.Model.Classes;
 import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.Repository.ClassesRepository;
@@ -24,6 +25,7 @@ public class ClassesService {
 
     @Autowired
     UserRepository uRepo;
+
 
     public ClassesDTO createClass(ClassesDTO classRequest) {
         ClassesDTO response;
@@ -224,6 +226,30 @@ public class ClassesService {
 
     public Object[] getTotalUsersInClass(Long classId) {
         return cRepo.findTotalUsersInClass(classId);
+    }
+
+    public List<ClassesDTO> getClassesCreatedByUser(int userId) {
+        try {
+            return cRepo.fetchClassesByCreator(userId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching classes created by user: " + e.getMessage());
+        }
+    }
+
+    public List<UserDTO> getStudentsInClass(String classKey) {
+        try {
+            return cRepo.fetchStudentsInClass(classKey);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching students in class: " + e.getMessage());
+        }
+    }
+
+    public List<ClassesDTO> getClassesForStudent(int studentId) {
+        try {
+            return cRepo.fetchClassesForStudent(studentId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching classes for student: " + e.getMessage());
+        }
     }
 
 

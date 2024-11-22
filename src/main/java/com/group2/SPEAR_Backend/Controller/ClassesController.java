@@ -2,6 +2,7 @@ package com.group2.SPEAR_Backend.Controller;
 
 import
         com.group2.SPEAR_Backend.DTO.ClassesDTO;
+import com.group2.SPEAR_Backend.DTO.UserDTO;
 import com.group2.SPEAR_Backend.Repository.UserRepository;
 import com.group2.SPEAR_Backend.Service.ClassesService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -64,7 +66,6 @@ public class ClassesController {
 
 
 
-    //all student services
     @PostMapping("/student/enroll")
     public ResponseEntity<ClassesDTO> enrollStudentByClassKey(
             @RequestBody Map<String, String> requestBody,
@@ -74,7 +75,6 @@ public class ClassesController {
         ClassesDTO response = cServ.enrollStudentByClassKey(classKey, email);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
-
 
 
     @GetMapping("/class/{classId}/total-users")
@@ -87,7 +87,23 @@ public class ClassesController {
     }
 
 
+    @GetMapping("/teacher/classes-created/{userId}")
+    public ResponseEntity<List<ClassesDTO>> getClassesCreatedByUser(@PathVariable int userId) {
+        List<ClassesDTO> response = cServ.getClassesCreatedByUser(userId);
+        return ResponseEntity.ok(response);
+    }
 
+    @GetMapping("/class/{classKey}/students")
+    public ResponseEntity<List<UserDTO>> getStudentsInClass(@PathVariable String classKey) {
+        List<UserDTO> response = cServ.getStudentsInClass(classKey);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/student/{studentId}/enrolled-classes")
+    public ResponseEntity<List<ClassesDTO>> getClassesForStudent(@PathVariable int studentId) {
+        List<ClassesDTO> response = cServ.getClassesForStudent(studentId);
+        return ResponseEntity.ok(response);
+    }
 
 
 

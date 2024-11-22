@@ -32,6 +32,10 @@ public class ClassesDTO {
     private String classKey;
     private List<User> enrolledStudents;
 
+    private String firstname;
+    private String lastname;
+    private String role;
+
     public ClassesDTO() {
         super();
     }
@@ -58,6 +62,38 @@ public class ClassesDTO {
         this.statusCode = statusCode;
         this.message = message;
         this.error = error;
+    }
+
+    // Constructor for class data with user details
+    public ClassesDTO(String classKey, String courseCode, String courseDescription, String courseName,
+                      String courseType, String schoolYear, String section, String semester,
+                      String firstname, String lastname, String role) {
+        this.classKey = classKey;
+        this.courseCode = courseCode;
+        this.courseDescription = courseDescription;
+        this.courseName = courseName;
+        this.courseType = courseType;
+        this.schoolYear = schoolYear;
+        this.section = section;
+        this.semester = semester;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.role = role;
+    }
+
+    // Constructor for classes that students are enrolled in
+    public ClassesDTO(String courseCode, String courseDescription, String courseName,
+                      String courseType, String schoolYear, String section, String semester, User createdBy) {
+        this.courseCode = courseCode;
+        this.courseDescription = courseDescription;
+        this.courseName = courseName;
+        this.courseType = courseType;
+        this.schoolYear = schoolYear;
+        this.section = section;
+        this.semester = semester;
+        this.firstname = createdBy.getFirstname();
+        this.lastname = createdBy.getLastname();
+        this.role = createdBy.getRole();
     }
 
     // Getters and setters
@@ -196,4 +232,38 @@ public class ClassesDTO {
     public void setEnrolledStudents(List<User> enrolledStudents) {
         this.enrolledStudents = enrolledStudents;
     }
+
+    public Long getCid() {
+        return cid;
+    }
+
+    public void setCid(Long cid) {
+        this.cid = cid;
+    }
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+
 }
