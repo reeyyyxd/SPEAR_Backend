@@ -24,14 +24,16 @@ import java.util.List;
         private boolean isDeleted;
         private User user;
         private List<User> userList;
+        private String interests;
 
-        public UserDTO(int statusCode, String message, String firstname, String lastname, String email, String role) {
+        public UserDTO(int statusCode, String message, String firstname, String lastname, String email, String role, String interests) {
             this.statusCode = statusCode;
             this.message = message;
             this.firstname = firstname;
             this.lastname = lastname;
             this.email = email;
             this.role = role;
+            this.interests =interests;
         }
 
 
@@ -41,9 +43,10 @@ import java.util.List;
             this.userList = userList;
         }
 
-        public UserDTO(int statusCode, String message, String firstname, String lastname, String role) {
+        public UserDTO(int statusCode, String message, String firstname, String lastname, String email, String role) {
             this.firstname = firstname;
             this.lastname = lastname;
+            this.email = email;
             this.role = role;
         }
 
@@ -158,5 +161,13 @@ import java.util.List;
 
         public String getLastname() {
             return lastname;
+        }
+
+        public String getInterests() {
+            return interests != null ? interests : "Teachers only";
+        }
+
+        public void setInterests(String interests) {
+            this.interests = interests;
         }
     }

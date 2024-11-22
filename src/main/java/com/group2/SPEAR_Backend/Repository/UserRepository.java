@@ -21,7 +21,7 @@ public interface UserRepository extends JpaRepository <User, Integer> {
             "FROM User u WHERE u.isDeleted = false")
     List<UserDTO> fetchAllUsersNotDeleted();
 
-    @Query("SELECT new com.group2.SPEAR_Backend.DTO.UserDTO(200, 'User retrieved successfully', u.firstname, u.lastname, u.email, u.role) " +
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.UserDTO(200, 'User retrieved successfully', u.firstname, u.lastname, u.email, u.role, u.interests) " +
             "FROM User u WHERE u.role = 'STUDENT' AND u.isDeleted = false")
     List<UserDTO> fetchAllActiveStudents();
 
@@ -36,4 +36,8 @@ public interface UserRepository extends JpaRepository <User, Integer> {
     @Query("SELECT new com.group2.SPEAR_Backend.DTO.UserDTO(200, 'User retrieved successfully', u.firstname, u.lastname, u.email, u.role) " +
             "FROM User u WHERE u.role = 'STUDENT' AND u.isDeleted = true")
     List<UserDTO> fetchAllSoftDeletedStudents();
+
+    @Query("SELECT u.interests FROM User u WHERE u.uid = :teacherId AND u.role = 'TEACHER' AND u.isDeleted = false")
+    Optional<String> findInterestsByTeacherId(@Param("teacherId") int teacherId);
+
 }

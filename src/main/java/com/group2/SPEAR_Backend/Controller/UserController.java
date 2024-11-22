@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -46,8 +47,18 @@ public class UserController {
     }
 
     @PutMapping("/admin/update/{userId}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Integer userId, @RequestBody User reqres){
-        return ResponseEntity.ok(uServ.updateUser(userId, reqres));
+    public ResponseEntity<UserDTO> updateAdmin(@PathVariable Integer userId, @RequestBody User reqBody) {
+        return ResponseEntity.ok(uServ.updateAdmin(userId, reqBody));
+    }
+
+    @PutMapping("/teacher/update/{userId}")
+    public ResponseEntity<UserDTO> updateTeacher(@PathVariable Integer userId, @RequestBody User reqBody) {
+        return ResponseEntity.ok(uServ.updateTeacher(userId, reqBody));
+    }
+
+    @PutMapping("/student/update/{userId}")
+    public ResponseEntity<UserDTO> updateStudent(@PathVariable Integer userId, @RequestBody User reqBody) {
+        return ResponseEntity.ok(uServ.updateStudent(userId, reqBody));
     }
 
     @GetMapping("/adminuser/get-profile")
@@ -87,6 +98,14 @@ public class UserController {
     public ResponseEntity<List<UserDTO>> getAllSoftDeletedStudents() {
         return ResponseEntity.ok(uServ.getAllSoftDeletedStudents());
     }
+
+    @GetMapping("/{teacherId}/interests")
+    public ResponseEntity<String> getInterestsByTeacherId(@PathVariable int teacherId) {
+        return ResponseEntity.ok(uServ.getInterestsByTeacherId(teacherId));
+    }
+
+
+
 
 
 

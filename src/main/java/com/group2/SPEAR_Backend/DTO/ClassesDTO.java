@@ -26,7 +26,7 @@ public class ClassesDTO {
 
     private Classes classes;
     private List<Classes> classesList;
-    private User createdBy; // Changed back to User type
+    private User createdBy;
     private boolean isDeleted;
     private String courseName;
     private String classKey;
@@ -64,7 +64,7 @@ public class ClassesDTO {
         this.error = error;
     }
 
-    // Constructor for class data with user details
+    // class data with user details
     public ClassesDTO(String classKey, String courseCode, String courseDescription, String courseName,
                       String courseType, String schoolYear, String section, String semester,
                       String firstname, String lastname, String role) {
@@ -81,7 +81,7 @@ public class ClassesDTO {
         this.role = role;
     }
 
-    // Constructor for classes that students are enrolled in
+    //classes that students are enrolled in
     public ClassesDTO(String courseCode, String courseDescription, String courseName,
                       String courseType, String schoolYear, String section, String semester, User createdBy) {
         this.courseCode = courseCode;
@@ -96,7 +96,7 @@ public class ClassesDTO {
         this.role = createdBy.getRole();
     }
 
-    // Getters and setters
+
     public int getStatusCode() {
         return statusCode;
     }

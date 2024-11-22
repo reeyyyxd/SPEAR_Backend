@@ -36,23 +36,21 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
     @Query("SELECT c.courseName, COUNT(u) + 1 FROM Classes c LEFT JOIN c.enrolledStudents u WHERE c.cid = :classId GROUP BY c.cid")
     Object[] findTotalUsersInClass(@Param("classId") Long classId);
 
-    // Fetch all classes created by a specific user that are not soft-deleted
+
     @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO(c.classKey, c.courseCode, c.courseDescription, c.courseName, c.courseType, c.schoolYear, c.section, c.semester, u.firstname, u.lastname, u.role) " +
             "FROM Classes c JOIN c.createdBy u " +
             "WHERE c.isDeleted = false AND u.uid = :userId")
-    List<ClassesDTO> fetchClassesByCreator(@Param("userId") int userId);
+    List<ClassesDTO> findClassesByCreator(@Param("userId") int userId);
 
-    // Fetch all students (not soft-deleted) enrolled in a specific class
     @Query("SELECT new com.group2.SPEAR_Backend.DTO.UserDTO(200, 'User retrieved successfully', u.firstname, u.lastname, u.role) " +
             "FROM Classes c JOIN c.enrolledStudents u " +
             "WHERE c.classKey = :classKey AND u.isDeleted = false AND u.role = 'STUDENT'")
-    List<UserDTO> fetchStudentsInClass(@Param("classKey") String classKey);
+    List<UserDTO> findStudentsInClass(@Param("classKey") String classKey);
 
-    // Fetch all classes that students are enrolled into
     @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO(c.courseCode, c.courseDescription, c.courseName, c.courseType, c.schoolYear, c.section, c.semester, c.createdBy) " +
             "FROM Classes c JOIN c.enrolledStudents u " +
             "WHERE u.uid = :studentId AND c.isDeleted = false")
-    List<ClassesDTO> fetchClassesForStudent(@Param("studentId") int studentId);
+    List<ClassesDTO> findClassesEnrolledByStudent(@Param("studentId") int studentId);
 }
 
 

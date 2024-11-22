@@ -36,13 +36,10 @@ public class User implements UserDetails {
 
     private Boolean isDeleted = false;
 
-    public Boolean getIsDeleted() {
-        return isDeleted != null ? isDeleted : false; // Default to false if null
-    }
+    @Column(name = "interests")
+    private String interests;
 
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
-    }
+
 
     @ManyToMany(mappedBy = "enrolledStudents")
     private Set<Classes> enrolledClasses = new HashSet<>();
@@ -166,6 +163,22 @@ public class User implements UserDetails {
 
     public void setEnrolledClasses(Set<Classes> enrolledClasses) {
         this.enrolledClasses = enrolledClasses;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted != null ? isDeleted : false; // Default to false if null
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
+    public String getInterests() {
+        return interests != null ? interests : "Teachers only";
+    }
+
+    public void setInterests(String interests) {
+        this.interests = interests;
     }
 
 

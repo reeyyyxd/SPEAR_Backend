@@ -48,6 +48,15 @@ public class UserService implements UserDetailsService {
             ourUser.setFirstname(registrationRequest.getFirstname());
             ourUser.setLastname(registrationRequest.getLastname());
             ourUser.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
+
+            if ("TEACHER".equalsIgnoreCase(ourUser.getRole())) {
+                ourUser.setInterests(
+                        (registrationRequest.getInterests() != null && !registrationRequest.getInterests().isEmpty())
+                                ? registrationRequest.getInterests()
+                                : "Teachers only"
+                );
+            }
+
             User ourUsersResult = userRepo.save(ourUser);
             if (ourUsersResult.getUid()>0) {
                 resp.setUser((ourUsersResult));
@@ -170,38 +179,91 @@ public class UserService implements UserDetailsService {
         return userDTO;
     }
 
-    public UserDTO updateUser(Integer userId, User updatedUser) {
+    public UserDTO updateAdmin(Integer userId, User updatedUser) {
         UserDTO userDTO = new UserDTO();
         try {
-            Optional<User> userOptional = userRepo.findById(userId);
-            if (userOptional.isPresent()) {
-                User existingUser = userOptional.get();
-                existingUser.setEmail(updatedUser.getEmail());
-                existingUser.setFirstname(updatedUser.getFirstname());
-                existingUser.setLastname(updatedUser.getLastname());
-                existingUser.setRole(updatedUser.getRole());
-                existingUser.setIsDeleted(updatedUser.isDeleted());  // Update isDeleted if provided
+            User existingUser = userRepo.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-                // Check if password is present in the request
-                if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
-                    existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
-                }
-
-                User savedUser = userRepo.save(existingUser);
-                userDTO.setUser(savedUser);
-                userDTO.setStatusCode(200);
-                userDTO.setMessage("User updated successfully");
-                userDTO.setDeleted(savedUser.isDeleted());
-            } else {
-                userDTO.setStatusCode(404);
-                userDTO.setMessage("User not found");
+            if (updatedUser.getEmail() != null) existingUser.setEmail(updatedUser.getEmail());
+            if (updatedUser.getFirstname() != null) existingUser.setFirstname(updatedUser.getFirstname());
+            if (updatedUser.getLastname() != null) existingUser.setLastname(updatedUser.getLastname());
+            if (updatedUser.getRole() != null) existingUser.setRole(updatedUser.getRole());
+            if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
+                existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
             }
+            if (updatedUser.getInterests() != null) existingUser.setInterests(updatedUser.getInterests());
+            existingUser.setIsDeleted(updatedUser.isDeleted());
+
+            User savedUser = userRepo.save(existingUser);
+            userDTO.setUser(savedUser);
+            userDTO.setStatusCode(200);
+            userDTO.setMessage("User updated successfully by Admin");
         } catch (Exception e) {
             userDTO.setStatusCode(500);
-            userDTO.setMessage("Error occurred:" + e.getMessage());
+            userDTO.setMessage("Error occurred: " + e.getMessage());
         }
         return userDTO;
     }
+
+    public UserDTO updateTeacher(Integer userId, User updatedUser) {
+        UserDTO userDTO = new UserDTO();
+        try {
+            User existingUser = userRepo.findById(userId)
+                    .filter(user -> "TEACHER".equalsIgnoreCase(user.getRole()))
+                    .orElseThrow(() -> new RuntimeException("Teacher not found"));
+
+            existingUser.setEmail(updatedUser.getEmail());
+            existingUser.setFirstname(updatedUser.getFirstname());
+            existingUser.setLastname(updatedUser.getLastname());
+
+            if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
+                existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+            }
+
+            if (updatedUser.getInterests() != null && !updatedUser.getInterests().isEmpty()) {
+                existingUser.setInterests(updatedUser.getInterests());
+            } else {
+                existingUser.setInterests("Teachers only");
+            }
+
+            User savedUser = userRepo.save(existingUser);
+            userDTO.setUser(savedUser);
+            userDTO.setStatusCode(200);
+            userDTO.setMessage("User updated successfully by Teacher");
+        } catch (Exception e) {
+            userDTO.setStatusCode(500);
+            userDTO.setMessage("Error occurred: " + e.getMessage());
+        }
+        return userDTO;
+    }
+
+    public UserDTO updateStudent(Integer userId, User updatedUser) {
+        UserDTO userDTO = new UserDTO();
+        try {
+            User existingUser = userRepo.findById(userId)
+                    .filter(user -> "STUDENT".equalsIgnoreCase(user.getRole()))
+                    .orElseThrow(() -> new RuntimeException("Student not found"));
+
+            existingUser.setEmail(updatedUser.getEmail());
+            existingUser.setFirstname(updatedUser.getFirstname());
+            existingUser.setLastname(updatedUser.getLastname());
+
+            if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
+                existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+            }
+
+            User savedUser = userRepo.save(existingUser);
+            userDTO.setUser(savedUser);
+            userDTO.setStatusCode(200);
+            userDTO.setMessage("User updated successfully by Student");
+        } catch (Exception e) {
+            userDTO.setStatusCode(500);
+            userDTO.setMessage("Error occurred: " + e.getMessage());
+        }
+        return userDTO;
+    }
+
 
 
     public UserDTO getMyInfo(String email){
@@ -224,6 +286,12 @@ public class UserService implements UserDetailsService {
         return userDTO;
 
     }
+
+    public String getInterestsByTeacherId(int teacherId) {
+        return userRepo.findInterestsByTeacherId(teacherId)
+                .orElseThrow(() -> new RuntimeException("Teacher not found or no interests set"));
+    }
+
 
     public List<UserDTO> getAllActiveUsers() {
         return userRepo.fetchAllUsersNotDeleted();

@@ -230,7 +230,7 @@ public class ClassesService {
 
     public List<ClassesDTO> getClassesCreatedByUser(int userId) {
         try {
-            return cRepo.fetchClassesByCreator(userId);
+            return cRepo.findClassesByCreator(userId);
         } catch (Exception e) {
             throw new RuntimeException("Error fetching classes created by user: " + e.getMessage());
         }
@@ -238,7 +238,7 @@ public class ClassesService {
 
     public List<UserDTO> getStudentsInClass(String classKey) {
         try {
-            return cRepo.fetchStudentsInClass(classKey);
+            return cRepo.findStudentsInClass(classKey);
         } catch (Exception e) {
             throw new RuntimeException("Error fetching students in class: " + e.getMessage());
         }
@@ -246,7 +246,7 @@ public class ClassesService {
 
     public List<ClassesDTO> getClassesForStudent(int studentId) {
         try {
-            return cRepo.fetchClassesForStudent(studentId);
+            return cRepo.findClassesEnrolledByStudent(studentId);
         } catch (Exception e) {
             throw new RuntimeException("Error fetching classes for student: " + e.getMessage());
         }
