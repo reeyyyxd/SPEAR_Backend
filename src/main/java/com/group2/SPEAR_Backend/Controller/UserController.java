@@ -9,58 +9,104 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
-        @Autowired
-        private UserService uServ;
+    @Autowired
+    private UserService uServ;
 
-        @PostMapping("/register")
-        public ResponseEntity<UserDTO> register(@RequestBody UserDTO reg){
-            return ResponseEntity.ok(uServ.register(reg));
-        }
+    @PostMapping("/register")
+    public ResponseEntity<UserDTO> register(@RequestBody UserDTO reg){
+        return ResponseEntity.ok(uServ.register(reg));
+    }
 
-        @PostMapping("/login")
-        public ResponseEntity<UserDTO> login(@RequestBody UserDTO req){
-            return ResponseEntity.ok(uServ.login(req));
-        }
+    @PostMapping("/login")
+    public ResponseEntity<UserDTO> login(@RequestBody UserDTO req){
+        return ResponseEntity.ok(uServ.login(req));
+    }
 
-        @PostMapping("/auth/refresh")
-        public ResponseEntity<UserDTO> refreshToken(@RequestBody UserDTO req){
-            return ResponseEntity.ok(uServ.refreshToken(req));
-        }
+    @PostMapping("/auth/refresh")
+    public ResponseEntity<UserDTO> refreshToken(@RequestBody UserDTO req){
+        return ResponseEntity.ok(uServ.refreshToken(req));
+    }
 
-        @GetMapping("/admin/get-all-users")
-        public ResponseEntity<UserDTO> getAllUsers(){
-            return ResponseEntity.ok(uServ.getAllUsers());
-
-        }
-
-        @GetMapping("/admin/getUsers/{userId}")
-        public ResponseEntity<UserDTO> getUSerByID(@PathVariable Integer userId){
-            return ResponseEntity.ok(uServ.getUsersById(userId));
-
-        }
-
-        @PutMapping("/admin/update/{userId}")
-        public ResponseEntity<UserDTO> updateUser(@PathVariable Integer userId, @RequestBody User reqres){
-            return ResponseEntity.ok(uServ.updateUser(userId, reqres));
-        }
-
-        @GetMapping("/adminuser/get-profile")
-        public ResponseEntity<UserDTO> getMyProfile(){
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String email = authentication.getName();
-            UserDTO response = uServ.getMyInfo(email);
-            return  ResponseEntity.status(response.getStatusCode()).body(response);
-        }
-
-        @DeleteMapping("/admin/delete/{userId}")
-        public ResponseEntity<UserDTO> deleteUSer(@PathVariable Integer userId){
-            return ResponseEntity.ok(uServ.deleteUser(userId));
-        }
+    @GetMapping("/admin/get-all-users")
+    public ResponseEntity<UserDTO> getAllUsers() {
+        return ResponseEntity.ok(uServ.getAllUsers());
+    }
 
 
+    @GetMapping("/admin/getUsers/{userId}")
+    public ResponseEntity<UserDTO> getUSerByID(@PathVariable Integer userId){
+        return ResponseEntity.ok(uServ.getUsersById(userId));
 
     }
+
+    @PutMapping("/admin/update/{userId}")
+    public ResponseEntity<UserDTO> updateAdmin(@PathVariable Integer userId, @RequestBody User reqBody) {
+        return ResponseEntity.ok(uServ.updateAdmin(userId, reqBody));
+    }
+
+    @PutMapping("/teacher/update/{userId}")
+    public ResponseEntity<UserDTO> updateTeacher(@PathVariable Integer userId, @RequestBody User reqBody) {
+        return ResponseEntity.ok(uServ.updateTeacher(userId, reqBody));
+    }
+
+    @PutMapping("/student/update/{userId}")
+    public ResponseEntity<UserDTO> updateStudent(@PathVariable Integer userId, @RequestBody User reqBody) {
+        return ResponseEntity.ok(uServ.updateStudent(userId, reqBody));
+    }
+
+    @GetMapping("/adminuser/get-profile")
+    public ResponseEntity<UserDTO> getMyProfile(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        UserDTO response = uServ.getMyInfo(email);
+        return  ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    @DeleteMapping("/admin/delete/{userId}")
+    public ResponseEntity<UserDTO> deleteUSer(@PathVariable Integer userId){
+        return ResponseEntity.ok(uServ.deleteUser(userId));
+    }
+
+    @GetMapping("/admin/users/active")
+    public ResponseEntity<List<UserDTO>> getAllActiveUsers() {
+        return ResponseEntity.ok(uServ.getAllActiveUsers());
+    }
+
+    @GetMapping("/admin/users/active-students")
+    public ResponseEntity<List<UserDTO>> getAllActiveStudents() {
+        return ResponseEntity.ok(uServ.getAllActiveStudents());
+    }
+
+    @GetMapping("/admin/users/active-teachers")
+    public ResponseEntity<List<UserDTO>> getAllActiveTeachers() {
+        return ResponseEntity.ok(uServ.getAllActiveTeachers());
+    }
+
+    @GetMapping("/admin/users/deleted-teachers")
+    public ResponseEntity<List<UserDTO>> getAllSoftDeletedTeachers() {
+        return ResponseEntity.ok(uServ.getAllSoftDeletedTeachers());
+    }
+
+    @GetMapping("/admin/users/deleted-students")
+    public ResponseEntity<List<UserDTO>> getAllSoftDeletedStudents() {
+        return ResponseEntity.ok(uServ.getAllSoftDeletedStudents());
+    }
+
+    @GetMapping("/{teacherId}/interests")
+    public ResponseEntity<String> getInterestsByTeacherId(@PathVariable int teacherId) {
+        return ResponseEntity.ok(uServ.getInterestsByTeacherId(teacherId));
+    }
+
+
+
+
+
+
+}

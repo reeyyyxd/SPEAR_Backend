@@ -1,6 +1,7 @@
 package com.group2.SPEAR_Backend.Service;
 
 import com.group2.SPEAR_Backend.ClassCodeGenerator;
+import com.group2.SPEAR_Backend.DTO.UserDTO;
 import com.group2.SPEAR_Backend.Model.Classes;
 import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.Repository.ClassesRepository;
@@ -25,20 +26,15 @@ public class ClassesService {
     @Autowired
     UserRepository uRepo;
 
+
     public ClassesDTO createClass(ClassesDTO classRequest) {
-        ClassesDTO response = new ClassesDTO();
+        ClassesDTO response;
         try {
-            User user = classRequest.getCreatedBy();
-            Optional<User> optionalUser = uRepo.findById(user.getUid());
-
+            Optional<User> optionalUser = uRepo.findById(classRequest.getCreatedBy().getUid());
             if (optionalUser.isEmpty()) {
-                response.setStatusCode(404);
-                response.setMessage("User not found");
-                return response;
+                return new ClassesDTO(404, "User not found", (List<Classes>) null);
             }
-            User createdby = optionalUser.get();
-
-            // code generator
+            User createdBy = optionalUser.get();
             String generatedClassKey = ClassCodeGenerator.generateClassCode();
 
             Classes newClass = new Classes();
@@ -50,43 +46,46 @@ public class ClassesService {
             newClass.setCourseDescription(classRequest.getCourseDescription());
             newClass.setCourseName(classRequest.getCourseName());
             newClass.setClassKey(generatedClassKey);
-            newClass.setCreatedBy(createdby);
+            newClass.setCreatedBy(createdBy);
             newClass.setIsDeleted(false);
             Classes savedClass = cRepo.save(newClass);
 
-            if (savedClass.getCid() != null) {
-                response.setClasses(savedClass);
-                response.setStatusCode(200);
-                response.setMessage("Class created successfully");
-            }
+            response = new ClassesDTO(
+                    savedClass.getCourseType(),
+                    savedClass.getCourseCode(),
+                    savedClass.getSection(),
+                    savedClass.getSchoolYear(),
+                    savedClass.getSemester(),
+                    savedClass.getCourseDescription(),
+                    savedClass.getCourseName(),
+                    savedClass.getClassKey(),
+                    savedClass.getCreatedBy()
+            );
+            response.setStatusCode(200);
+            response.setMessage("Class created successfully");
         } catch (Exception e) {
-            response.setStatusCode(500);
-            response.setError(e.getMessage());
-            response.setMessage("Error occurred while creating class");
+            response = new ClassesDTO(500, "Error occurred while creating class", e.getMessage());
         }
         return response;
     }
 
 
+//    super mortal sin (figure this one later)
+//    public ClassesDTO getAllClasses() {
+//        ClassesDTO response;
+//        try {
+//            List<Classes> classesList = cRepo.findAllByIsDeletedFalse();
+//            if (!classesList.isEmpty()) {
+//                response = new ClassesDTO(200, "Classes retrieved successfully", classesList);
+//            } else {
+//                response = new ClassesDTO(404, "No classes found", (List<Classes>) null);
+//            }
+//        } catch (Exception e) {
+//            response = new ClassesDTO(500, "Error occurred while fetching classes", e.getMessage());
+//        }
+//        return response;
+//    }
 
-    public ClassesDTO getAllClasses() {
-        ClassesDTO response = new ClassesDTO();
-        try {
-            List<Classes> classesList = cRepo.findAllByIsDeletedFalse();
-            if (!classesList.isEmpty()) {
-                response.setClassesList(classesList);
-                response.setStatusCode(200);
-                response.setMessage("Classes retrieved successfully");
-            } else {
-                response.setStatusCode(404);
-                response.setMessage("No classes found");
-            }
-        } catch (Exception e) {
-            response.setStatusCode(500);
-            response.setMessage("Error occurred while fetching classes: " + e.getMessage());
-        }
-        return response;
-    }
 
 
     // Get a class by course code
@@ -109,7 +108,6 @@ public class ClassesService {
         return response;
     }
 
-    // Update a class
     public ClassesDTO updateClass(Long classId, ClassesDTO classRequest) {
         ClassesDTO response = new ClassesDTO();
         try {
@@ -138,7 +136,6 @@ public class ClassesService {
         return response;
     }
 
-    // Delete a class
     public ClassesDTO deleteClass(Long classId) {
         ClassesDTO response = new ClassesDTO();
         try {
@@ -165,24 +162,98 @@ public class ClassesService {
         return response;
     }
 
-    public ClassesDTO getClassKeyByCourseCode(String courseCode) {
-        ClassesDTO response = new ClassesDTO();
+    public ClassesDTO getClassKeyByCourseCodeAndSection(String courseCode, String section) {
+        ClassesDTO response;
         try {
-            Classes classByCourseCode = cRepo.findByCourseCode(courseCode);
-            if (classByCourseCode != null) {
-                response.setClassKey(classByCourseCode.getClassKey());
+            Classes classByCourseCodeAndSection = cRepo.findByCourseCodeAndSection(courseCode, section);
+            if (classByCourseCodeAndSection != null) {
+                response = new ClassesDTO();
+                response.setClassKey(classByCourseCodeAndSection.getClassKey());
                 response.setStatusCode(200);
-                response.setMessage("ClassKey for course code '" + courseCode + "' retrieved successfully.");
+                response.setMessage("ClassKey for course code and section retrieved successfully");
             } else {
-                response.setStatusCode(404);
-                response.setMessage("No class found with course code: " + courseCode);
+                response = new ClassesDTO(404, "No class found with course code and section", (List<Classes>) null);
             }
         } catch (Exception e) {
-            response.setStatusCode(500);
-            response.setError(e.getMessage());
-            response.setMessage("Error occurred while fetching classKey by course code.");
+            response = new ClassesDTO(500, "Error occurred while fetching classKey", e.getMessage());
         }
         return response;
     }
+
+
+
+    public ClassesDTO enrollStudentByClassKey(String classKey, String email) {
+        ClassesDTO response = new ClassesDTO();
+
+        try {
+            Optional<Classes> optionalClass = cRepo.findByClassKey(classKey);
+            if (optionalClass.isEmpty()) {
+                response.setStatusCode(404);
+                response.setMessage("Class not found or is deleted");
+                return response;
+            }
+
+            Classes clazz = optionalClass.get();
+
+            Optional<User> optionalUser = uRepo.findByEmail(email);
+            if (optionalUser.isEmpty()) {
+                response.setStatusCode(404);
+                response.setMessage("User not found");
+                return response;
+            }
+
+            User student = optionalUser.get();
+            //kung na enroll na
+            if (clazz.getEnrolledStudents().contains(student)) {
+                response.setStatusCode(400);
+                response.setMessage("Student is already enrolled in the class");
+                return response;
+            }
+            //kung wala
+            clazz.getEnrolledStudents().add(student);
+            cRepo.save(clazz);
+            response.setStatusCode(200);
+            response.setMessage("Student enrolled successfully");
+            response.setClasses(clazz);
+        } catch (Exception e) {
+            response.setStatusCode(500);
+            response.setMessage("Error occurred while enrolling student: " + e.getMessage());
+        }
+
+        return response;
+    }
+
+
+    public Object[] getTotalUsersInClass(Long classId) {
+        return cRepo.findTotalUsersInClass(classId);
+    }
+
+    public List<ClassesDTO> getClassesCreatedByUser(int userId) {
+        try {
+            return cRepo.findClassesByCreator(userId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching classes created by user: " + e.getMessage());
+        }
+    }
+
+    public List<UserDTO> getStudentsInClass(String classKey) {
+        try {
+            return cRepo.findStudentsInClass(classKey);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching students in class: " + e.getMessage());
+        }
+    }
+
+    public List<ClassesDTO> getClassesForStudent(int studentId) {
+        try {
+            return cRepo.findClassesEnrolledByStudent(studentId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching classes for student: " + e.getMessage());
+        }
+    }
+
+
+
+
 
 }

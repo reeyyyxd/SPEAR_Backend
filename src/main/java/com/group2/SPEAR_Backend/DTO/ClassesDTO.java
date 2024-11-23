@@ -15,6 +15,7 @@ public class ClassesDTO {
     private String error;
     private String message;
 
+    private Long cid;
     private Long uid;
     private String courseType;
     private String courseCode;
@@ -29,8 +30,72 @@ public class ClassesDTO {
     private boolean isDeleted;
     private String courseName;
     private String classKey;
+    private List<User> enrolledStudents;
 
-    // Getters and Setters
+    private String firstname;
+    private String lastname;
+    private String role;
+
+    public ClassesDTO() {
+        super();
+    }
+
+    public ClassesDTO(String courseType, String courseCode, String section, String schoolYear, String semester, String courseDescription, String courseName, String classKey, User createdBy) {
+        this.courseType = courseType;
+        this.courseCode = courseCode;
+        this.section = section;
+        this.schoolYear = schoolYear;
+        this.semester = semester;
+        this.courseDescription = courseDescription;
+        this.courseName = courseName;
+        this.classKey = classKey;
+        this.createdBy = createdBy;
+    }
+
+    public ClassesDTO(int statusCode, String message, List<Classes> classesList) {
+        this.statusCode = statusCode;
+        this.message = message;
+        this.classesList = classesList;
+    }
+
+    public ClassesDTO(int statusCode, String message, String error) {
+        this.statusCode = statusCode;
+        this.message = message;
+        this.error = error;
+    }
+
+    // class data with user details
+    public ClassesDTO(String classKey, String courseCode, String courseDescription, String courseName,
+                      String courseType, String schoolYear, String section, String semester,
+                      String firstname, String lastname, String role) {
+        this.classKey = classKey;
+        this.courseCode = courseCode;
+        this.courseDescription = courseDescription;
+        this.courseName = courseName;
+        this.courseType = courseType;
+        this.schoolYear = schoolYear;
+        this.section = section;
+        this.semester = semester;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.role = role;
+    }
+
+    //classes that students are enrolled in
+    public ClassesDTO(String courseCode, String courseDescription, String courseName,
+                      String courseType, String schoolYear, String section, String semester, User createdBy) {
+        this.courseCode = courseCode;
+        this.courseDescription = courseDescription;
+        this.courseName = courseName;
+        this.courseType = courseType;
+        this.schoolYear = schoolYear;
+        this.section = section;
+        this.semester = semester;
+        this.firstname = createdBy.getFirstname();
+        this.lastname = createdBy.getLastname();
+        this.role = createdBy.getRole();
+    }
+
 
     public int getStatusCode() {
         return statusCode;
@@ -159,4 +224,46 @@ public class ClassesDTO {
     public void setClassKey(String classKey) {
         this.classKey = classKey;
     }
+
+    public List<User> getEnrolledStudents() {
+        return enrolledStudents;
+    }
+
+    public void setEnrolledStudents(List<User> enrolledStudents) {
+        this.enrolledStudents = enrolledStudents;
+    }
+
+    public Long getCid() {
+        return cid;
+    }
+
+    public void setCid(Long cid) {
+        this.cid = cid;
+    }
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+
 }
