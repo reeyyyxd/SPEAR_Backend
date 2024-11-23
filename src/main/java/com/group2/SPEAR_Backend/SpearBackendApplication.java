@@ -16,6 +16,4 @@ public class SpearBackendApplication {
 		SpringApplication.run(SpearBackendApplication.class, args);
 		logger.info("payrr");
 	}
-
-
 }

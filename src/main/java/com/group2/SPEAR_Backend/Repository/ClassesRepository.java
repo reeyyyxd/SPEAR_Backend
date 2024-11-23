@@ -22,7 +22,6 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
 
     List<Classes> findAllByIsDeletedFalse();
 
-
     @Query("SELECT c FROM Classes c WHERE c.isDeleted = false AND c.cid = :classId")
     Optional<Classes> findActiveClassById(@Param("classId") Long classId);
 
@@ -33,11 +32,11 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
     Classes findByCourseCodeAndSection(@Param("courseCode") String courseCode, @Param("section") String section);
 
 
-    @Query("SELECT c.courseName, COUNT(u) + 1 FROM Classes c LEFT JOIN c.enrolledStudents u WHERE c.cid = :classId GROUP BY c.cid")
+    @Query("SELECT c.courseDescription, COUNT(u) + 1 FROM Classes c LEFT JOIN c.enrolledStudents u WHERE c.cid = :classId GROUP BY c.cid")
     Object[] findTotalUsersInClass(@Param("classId") Long classId);
 
 
-    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO(c.classKey, c.courseCode, c.courseDescription, c.courseName, c.courseType, c.schoolYear, c.section, c.semester, u.firstname, u.lastname, u.role) " +
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO(c.classKey, c.courseCode, c.courseDescription, c.courseDescription, c.courseType, c.schoolYear, c.section, c.semester, u.firstname, u.lastname, u.role) " +
             "FROM Classes c JOIN c.createdBy u " +
             "WHERE c.isDeleted = false AND u.uid = :userId")
     List<ClassesDTO> findClassesByCreator(@Param("userId") int userId);
@@ -47,7 +46,7 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
             "WHERE c.classKey = :classKey AND u.isDeleted = false AND u.role = 'STUDENT'")
     List<UserDTO> findStudentsInClass(@Param("classKey") String classKey);
 
-    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO(c.courseCode, c.courseDescription, c.courseName, c.courseType, c.schoolYear, c.section, c.semester, c.createdBy) " +
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO(c.courseCode, c.courseDescription, c.courseDescription, c.courseType, c.schoolYear, c.section, c.semester, c.createdBy) " +
             "FROM Classes c JOIN c.enrolledStudents u " +
             "WHERE u.uid = :studentId AND c.isDeleted = false")
     List<ClassesDTO> findClassesEnrolledByStudent(@Param("studentId") int studentId);

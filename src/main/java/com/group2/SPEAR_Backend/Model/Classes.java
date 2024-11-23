@@ -11,18 +11,15 @@ public class Classes {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "cid")  // Make sure this column exists in the database
     private Long cid;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "createdBy", referencedColumnName = "uid")
+    @JoinColumn(name = "created_by", referencedColumnName = "uid") // Corrected column mapping
     private User createdBy;
-
 
     @Column(name = "course_type")
     private String courseType; // Capstone or Non-Capstone
-
-    @Column(name = "course_name")
-    private String courseName;
 
     @Column(name = "course_code")
     private String courseCode;
@@ -42,18 +39,11 @@ public class Classes {
     @Column(name = "class_key", unique = true)
     private String classKey;
 
-//    @Column(name = "created_date", nullable = false)
-//    private LocalDate createdDate;
+    @Column(name = "created_date", nullable = false)
+    private LocalDate createdDate;
 
+    @Column(name = "is_deleted")
     private Boolean isDeleted = false;
-
-    public Boolean getIsDeleted() {
-        return isDeleted != null ? isDeleted : false; // Default to false if null
-    }
-
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
-    }
 
     @ManyToMany
     @JoinTable(
@@ -63,13 +53,12 @@ public class Classes {
     )
     private Set<User> enrolledStudents = new HashSet<>();
 
-
-    public Classes(){
+    public Classes() {
         super();
     }
 
-
-    public Classes(User createdBy, String courseType, String courseCode, String section, String schoolYear, String semester, String courseName, String classKey,  String courseDescription, boolean isDeleted) {
+    public Classes(User createdBy, String courseType, String courseCode, String section, String schoolYear,
+                   String semester, String classKey, String courseDescription, boolean isDeleted) {
         this.createdBy = createdBy;
         this.courseType = courseType;
         this.courseCode = courseCode;
@@ -79,9 +68,10 @@ public class Classes {
         this.courseDescription = courseDescription;
         this.isDeleted = isDeleted;
         this.classKey = classKey;
-        this.courseName = courseName;
+        this.createdDate = LocalDate.now(); // Initialize createdDate here
     }
 
+    // Getters and Setters
     public Long getCid() {
         return cid;
     }
@@ -147,19 +137,11 @@ public class Classes {
     }
 
     public boolean isDeleted() {
-        return isDeleted;
+        return isDeleted != null ? isDeleted : false; // Default to false if null
     }
 
     public void setDeleted(boolean isDeleted) {
         this.isDeleted = isDeleted;
-    }
-
-    public String getCourseName() {
-        return courseName;
-    }
-
-    public void setCourseName(String courseName) {
-        this.courseName = courseName;
     }
 
     public String getClassKey() {
@@ -178,6 +160,19 @@ public class Classes {
         this.enrolledStudents = enrolledStudents;
     }
 
+    public LocalDate getCreatedDate() {
+        return createdDate;
+    }
 
+    public void setCreatedDate(LocalDate createdDate) {
+        this.createdDate = createdDate;
+    }
 
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
 }

@@ -10,6 +10,7 @@ import com.group2.SPEAR_Backend.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,11 +45,12 @@ public class ClassesService {
             newClass.setSchoolYear(classRequest.getSchoolYear());
             newClass.setSemester(classRequest.getSemester());
             newClass.setCourseDescription(classRequest.getCourseDescription());
-            newClass.setCourseName(classRequest.getCourseName());
             newClass.setClassKey(generatedClassKey);
             newClass.setCreatedBy(createdBy);
             newClass.setIsDeleted(false);
+            newClass.setCreatedDate(LocalDate.now());
             Classes savedClass = cRepo.save(newClass);
+
 
             response = new ClassesDTO(
                     savedClass.getCourseType(),
@@ -57,7 +59,6 @@ public class ClassesService {
                     savedClass.getSchoolYear(),
                     savedClass.getSemester(),
                     savedClass.getCourseDescription(),
-                    savedClass.getCourseName(),
                     savedClass.getClassKey(),
                     savedClass.getCreatedBy()
             );

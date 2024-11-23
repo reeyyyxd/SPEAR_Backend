@@ -17,10 +17,6 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:5173")
 public class ClassesController {
 
-
-
-
-
     @Autowired
     private ClassesService cServ;
 
@@ -29,7 +25,7 @@ public class ClassesController {
 
 
     //all teacher services
-    @PostMapping("/teacher/createClass")
+    @PostMapping("/teacher/create-class")
     public ResponseEntity<ClassesDTO> createClass(@RequestBody ClassesDTO classRequest) {
         ClassesDTO response = cServ.createClass(classRequest);
         return ResponseEntity.status(response.getStatusCode()).body(response);
@@ -75,7 +71,6 @@ public class ClassesController {
         ClassesDTO response = cServ.enrollStudentByClassKey(classKey, email);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
-
 
     @GetMapping("/class/{classId}/total-users")
     public ResponseEntity<Object[]> getTotalUsersInClass(@PathVariable Long classId) {

@@ -28,7 +28,6 @@ public class ClassesDTO {
     private List<Classes> classesList;
     private User createdBy;
     private boolean isDeleted;
-    private String courseName;
     private String classKey;
     private List<User> enrolledStudents;
 
@@ -40,14 +39,13 @@ public class ClassesDTO {
         super();
     }
 
-    public ClassesDTO(String courseType, String courseCode, String section, String schoolYear, String semester, String courseDescription, String courseName, String classKey, User createdBy) {
+    public ClassesDTO(String courseType, String courseCode, String section, String schoolYear, String semester, String courseDescription, String classKey, User createdBy) {
         this.courseType = courseType;
         this.courseCode = courseCode;
         this.section = section;
         this.schoolYear = schoolYear;
         this.semester = semester;
         this.courseDescription = courseDescription;
-        this.courseName = courseName;
         this.classKey = classKey;
         this.createdBy = createdBy;
     }
@@ -65,13 +63,12 @@ public class ClassesDTO {
     }
 
     // class data with user details
-    public ClassesDTO(String classKey, String courseCode, String courseDescription, String courseName,
+    public ClassesDTO(String classKey, String courseCode, String courseDescription,
                       String courseType, String schoolYear, String section, String semester,
                       String firstname, String lastname, String role) {
         this.classKey = classKey;
         this.courseCode = courseCode;
         this.courseDescription = courseDescription;
-        this.courseName = courseName;
         this.courseType = courseType;
         this.schoolYear = schoolYear;
         this.section = section;
@@ -82,11 +79,10 @@ public class ClassesDTO {
     }
 
     //classes that students are enrolled in
-    public ClassesDTO(String courseCode, String courseDescription, String courseName,
+    public ClassesDTO(String courseCode, String courseDescription,
                       String courseType, String schoolYear, String section, String semester, User createdBy) {
         this.courseCode = courseCode;
         this.courseDescription = courseDescription;
-        this.courseName = courseName;
         this.courseType = courseType;
         this.schoolYear = schoolYear;
         this.section = section;
@@ -207,14 +203,6 @@ public class ClassesDTO {
 
     public void setDeleted(boolean deleted) {
         isDeleted = deleted;
-    }
-
-    public String getCourseName() {
-        return courseName;
-    }
-
-    public void setCourseName(String courseName) {
-        this.courseName = courseName;
     }
 
     public String getClassKey() {
