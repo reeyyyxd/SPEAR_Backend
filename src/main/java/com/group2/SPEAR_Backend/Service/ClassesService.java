@@ -36,6 +36,10 @@ public class ClassesService {
                 return new ClassesDTO(404, "User not found", (List<Classes>) null);
             }
             User createdBy = optionalUser.get();
+
+            if (!"TEACHER".equalsIgnoreCase(createdBy.getRole())) {
+                return new ClassesDTO(403, "Only users with the TEACHER role can create a class", (List<Classes>) null);
+            }
             String generatedClassKey = ClassCodeGenerator.generateClassCode();
 
             Classes newClass = new Classes();
@@ -215,7 +219,6 @@ public class ClassesService {
             cRepo.save(clazz);
             response.setStatusCode(200);
             response.setMessage("Student enrolled successfully");
-            response.setClasses(clazz);
         } catch (Exception e) {
             response.setStatusCode(500);
             response.setMessage("Error occurred while enrolling student: " + e.getMessage());

@@ -78,6 +78,8 @@ public class ClassesDTO {
         this.role = role;
     }
 
+
+
     //classes that students are enrolled in
     public ClassesDTO(String courseCode, String courseDescription,
                       String courseType, String schoolYear, String section, String semester, User createdBy) {
@@ -91,6 +93,8 @@ public class ClassesDTO {
         this.lastname = createdBy.getLastname();
         this.role = createdBy.getRole();
     }
+
+
 
 
     public int getStatusCode() {

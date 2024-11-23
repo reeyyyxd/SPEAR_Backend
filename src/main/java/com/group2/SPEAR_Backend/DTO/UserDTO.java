@@ -50,6 +50,15 @@ public class UserDTO {
         this.role = role;
     }
 
+    //for getting users in a class
+    public UserDTO(int statusCode, String message, String firstname, String lastname, String role) {
+        this.statusCode = statusCode;
+        this.message = message;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.role = role;
+    }
+
 
     public UserDTO() {}
     public int getStatusCode() {
