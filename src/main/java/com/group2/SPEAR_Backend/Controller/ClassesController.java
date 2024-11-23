@@ -100,6 +100,13 @@ public class ClassesController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/teacher/remove-student")
+    public ResponseEntity<ClassesDTO> removeStudentFromClass(@RequestBody Map<String, String> requestBody) {
+        String classKey = requestBody.get("classKey");
+        String email = requestBody.get("email");
+        ClassesDTO response = cServ.removeStudentFromClass(classKey, email);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
 
 
 

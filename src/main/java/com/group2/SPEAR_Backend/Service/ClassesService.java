@@ -255,9 +255,47 @@ public class ClassesService {
             throw new RuntimeException("Error fetching classes for student: " + e.getMessage());
         }
     }
+    public ClassesDTO removeStudentFromClass(String classKey, String email) {
+        ClassesDTO response = new ClassesDTO();
 
+        try {
+            // Find the class by classKey
+            Optional<Classes> optionalClass = cRepo.findByClassKey(classKey);
+            if (optionalClass.isEmpty()) {
+                response.setStatusCode(404);
+                response.setMessage("Class not found or is deleted");
+                return response;
+            }
 
+            Classes clazz = optionalClass.get();
 
+            // Find the user by email
+            Optional<User> optionalUser = uRepo.findByEmail(email);
+            if (optionalUser.isEmpty()) {
+                response.setStatusCode(404);
+                response.setMessage("User not found");
+                return response;
+            }
 
+            User student = optionalUser.get();
+
+            // Remove the student from the class
+            if (!clazz.getEnrolledStudents().contains(student)) {
+                response.setStatusCode(400);
+                response.setMessage("Student is not enrolled in this class");
+                return response;
+            }
+
+            clazz.getEnrolledStudents().remove(student);
+            cRepo.save(clazz);
+            response.setStatusCode(200);
+            response.setMessage("Student removed successfully from the class");
+        } catch (Exception e) {
+            response.setStatusCode(500);
+            response.setMessage("Error occurred while removing student: " + e.getMessage());
+        }
+
+        return response;
+    }
 
 }
