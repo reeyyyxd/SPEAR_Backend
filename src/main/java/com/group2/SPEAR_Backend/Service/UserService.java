@@ -75,12 +75,10 @@ public class UserService implements UserDetailsService {
     public UserDTO login(UserDTO loginRequest){
         UserDTO response = new UserDTO();
         try {
-            authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(),
-                            loginRequest.getPassword()));
-            var user = userRepo.findByEmail(loginRequest.getEmail()).orElseThrow();
-            var jwt = jwtUtil.generateToken(user);
-            var refreshToken = jwtUtil.generateRefreshToken(new HashMap<>(), user);
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+            User user = userRepo.findByEmail(loginRequest.getEmail()).orElseThrow();
+            String jwt = jwtUtil.generateToken(user);
+            String refreshToken = jwtUtil.generateRefreshToken(new HashMap<>(), user);
             response.setStatusCode(200);
             response.setToken(jwt);
             response.setRole(user.getRole());
@@ -88,7 +86,10 @@ public class UserService implements UserDetailsService {
             response.setExpirationTime("24Hrs");
             response.setMessage("Successfully Logged In");
 
-        }catch (Exception e){
+            // Set the UID in the response
+            response.setUid(user.getUid());
+
+        } catch (Exception e) {
             response.setStatusCode(500);
             response.setMessage(e.getMessage());
         }

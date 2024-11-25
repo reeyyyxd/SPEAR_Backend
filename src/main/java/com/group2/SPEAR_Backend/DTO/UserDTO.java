@@ -1,4 +1,5 @@
 package com.group2.SPEAR_Backend.DTO;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.group2.SPEAR_Backend.Model.User;
@@ -6,7 +7,6 @@ import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-
 public class UserDTO {
     private int statusCode;
     private String error;
@@ -14,8 +14,6 @@ public class UserDTO {
     private String token;
     private String refreshToken;
     private String expirationTime;
-
-
     private String firstname;
     private String lastname;
     private String role;
@@ -26,16 +24,20 @@ public class UserDTO {
     private List<User> userList;
     private String interests;
 
-    public UserDTO(int statusCode, String message, String firstname, String lastname, String email, String role, String interests) {
+    // New field for UID
+    private Integer uid;
+
+    // Constructor to include uid
+    public UserDTO(int statusCode, String message, String firstname, String lastname, String email, String role, String interests, Integer uid) {
         this.statusCode = statusCode;
         this.message = message;
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
         this.role = role;
-        this.interests =interests;
+        this.interests = interests;
+        this.uid = uid;  // Set the UID
     }
-
 
     public UserDTO(int statusCode, String message, List<User> userList) {
         this.statusCode = statusCode;
@@ -59,8 +61,8 @@ public class UserDTO {
         this.role = role;
     }
 
-
     public UserDTO() {}
+
     public int getStatusCode() {
         return statusCode;
     }
@@ -164,6 +166,7 @@ public class UserDTO {
     public void setDeleted(boolean deleted) {
         isDeleted = deleted;
     }
+
     public String getFirstname() {
         return firstname;
     }
@@ -178,5 +181,14 @@ public class UserDTO {
 
     public void setInterests(String interests) {
         this.interests = interests;
+    }
+
+    // Getter and Setter for UID
+    public Integer getUid() {
+        return uid;
+    }
+
+    public void setUid(Integer uid) {
+        this.uid = uid;
     }
 }
