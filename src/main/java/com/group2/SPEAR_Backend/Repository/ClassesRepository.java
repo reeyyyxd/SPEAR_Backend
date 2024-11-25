@@ -41,12 +41,13 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
             "WHERE c.isDeleted = false AND u.uid = :userId")
     List<ClassesDTO> findClassesByCreator(@Param("userId") int userId);
 
-    @Query("SELECT new com.group2.SPEAR_Backend.DTO.UserDTO(200, 'User retrieved successfully', u.firstname, u.lastname, u.email, u.role, 'default') " +
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.UserDTO(200, 'User retrieved successfully', u.firstname, u.lastname, u.email, u.role) " +
             "FROM Classes c JOIN c.enrolledStudents u " +
             "WHERE c.classKey = :classKey AND u.isDeleted = false AND u.role = 'STUDENT'")
     List<UserDTO> findStudentsInClass(@Param("classKey") String classKey);
 
-    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO(c.courseCode, c.courseDescription, c.courseDescription, c.courseType, c.schoolYear, c.section, c.semester, c.createdBy) " +
+
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO(c.courseCode,c.courseDescription, c.courseType, c.schoolYear, c.section, c.semester, c.createdBy) " +
             "FROM Classes c JOIN c.enrolledStudents u " +
             "WHERE u.uid = :studentId AND c.isDeleted = false")
     List<ClassesDTO> findClassesEnrolledByStudent(@Param("studentId") int studentId);
