@@ -1,41 +1,48 @@
 package com.group2.SPEAR_Backend.Controller;
 
+import com.group2.SPEAR_Backend.DTO.ProjectProposalDTO;
 import com.group2.SPEAR_Backend.Model.ProjectProposal;
 import com.group2.SPEAR_Backend.Service.ProjectProposalService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/projectProposals")
 @CrossOrigin(origins = "http://localhost:5173")
 public class ProjectProposalController {
 
     @Autowired
-    ProjectProposalService projectProposalService;
+    private ProjectProposalService ppServ;
 
-    // Create a new project proposal
     @PostMapping("/create")
-    public ProjectProposal createProjectProposal(@RequestBody ProjectProposal proposal) {
-        return projectProposalService.createProjectProposal(proposal);
+    public ResponseEntity<Map<String, String>> createProposal(@RequestBody ProjectProposalDTO dto) {
+        ppServ.createProjectProposal(dto);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Proposal created");
+        return ResponseEntity.ok(response);
     }
 
-    // Get all project proposals
+
     @GetMapping("/all")
-    public List<ProjectProposal> getAllProjectProposals() {
-        return projectProposalService.getAllProjectProposals();
+    public ResponseEntity<List<ProjectProposal>> getAllProposals() {
+        return ResponseEntity.ok(ppServ.getAllProjectProposals());
     }
 
-    // Update a project proposal by id
-    @PutMapping("/update/{id}")
-    public ProjectProposal updateProjectProposal(@PathVariable int id, @RequestBody ProjectProposal updatedProposal) {
-        return projectProposalService.updateProjectProposal(id, updatedProposal);
+    @PutMapping("/{id}/status")
+    public ResponseEntity<ProjectProposal> updateProposalStatus(
+            @PathVariable int id,
+            @RequestParam String status,
+            @RequestParam(required = false) String reason) {
+        ProjectProposal updatedProposal = ppServ.updateProposalStatus(id, status, reason);
+        return ResponseEntity.ok(updatedProposal);
     }
 
-    // Delete a project proposal by id
     @DeleteMapping("/delete/{id}")
-    public String deleteProjectProposal(@PathVariable int id) {
-        return projectProposalService.deleteProjectProposal(id);
+    public ResponseEntity<String> deleteProposal(@PathVariable int id) {
+        return ResponseEntity.ok(ppServ.deleteProjectProposal(id));
     }
 }

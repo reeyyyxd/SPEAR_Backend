@@ -10,7 +10,6 @@ public class ProjectProposal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int pid;
 
-    // Relationship with the User entity
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "proposed_by", referencedColumnName = "uid")
     private User proposedBy;
@@ -18,7 +17,6 @@ public class ProjectProposal {
     @Column(name = "projectName")
     private String projectName;
 
-    // Relationship with the Classes entity
     @ManyToOne
     @JoinColumn(name = "class_proposal", referencedColumnName = "cid")
     private Classes classProposal;
@@ -27,7 +25,7 @@ public class ProjectProposal {
     private String description;
 
     @Column(name = "status")
-    private String status;
+    private String status = "PENDING";
 
     @Column(name = "reason")
     private String reason;
@@ -36,15 +34,21 @@ public class ProjectProposal {
         super();
     }
 
-    public ProjectProposal(User proposedBy, String projectName, Classes classProposal, String description, String status, String reason) {
+    public ProjectProposal(User proposedBy, String projectName, Classes classProposal, String description, String status) {
         this.proposedBy = proposedBy;
         this.projectName = projectName;
         this.classProposal = classProposal;
         this.description = description;
-        this.status = status;
-        this.reason = reason;
+        this.status = "PENDING";
     }
 
+    public ProjectProposal(User proposedBy, String projectName, Classes classProposal, String description) {
+        this.proposedBy = proposedBy;
+        this.projectName = projectName;
+        this.classProposal = classProposal;
+        this.description = description;
+        this.status = "PENDING";
+    }
     public int getPid() {
         return pid;
     }
@@ -100,4 +104,7 @@ public class ProjectProposal {
     public void setReason(String reason) {
         this.reason = reason;
     }
+
+
+
 }

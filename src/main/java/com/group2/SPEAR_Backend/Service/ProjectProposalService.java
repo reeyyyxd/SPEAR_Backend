@@ -1,7 +1,12 @@
 package com.group2.SPEAR_Backend.Service;
 
+import com.group2.SPEAR_Backend.DTO.ProjectProposalDTO;
+import com.group2.SPEAR_Backend.Model.Classes;
 import com.group2.SPEAR_Backend.Model.ProjectProposal;
+import com.group2.SPEAR_Backend.Model.User;
+import com.group2.SPEAR_Backend.Repository.ClassesRepository;
 import com.group2.SPEAR_Backend.Repository.ProjectProposalRepository;
+import com.group2.SPEAR_Backend.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,41 +17,45 @@ import java.util.NoSuchElementException;
 public class ProjectProposalService {
 
     @Autowired
-    ProjectProposalRepository projectProposalRepository;
+    private ProjectProposalRepository ppRepo;
 
-    // Create new project proposal
-    public ProjectProposal createProjectProposal(ProjectProposal proposal) {
-        return projectProposalRepository.save(proposal);
+    @Autowired
+    private ClassesRepository classesRepo;
+
+    @Autowired
+    private UserRepository userRepo;
+
+    public ProjectProposal createProjectProposal(ProjectProposalDTO dto) {
+        User user = userRepo.findById(dto.getProposedById())
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.getProposedById()));
+
+        Classes clazz = classesRepo.findById(dto.getClassId())
+                .orElseThrow(() -> new RuntimeException("Class not found with ID: " + dto.getClassId()));
+
+        ProjectProposal proposal = new ProjectProposal(user, dto.getProjectName(), clazz, dto.getDescription());
+        return ppRepo.save(proposal);
     }
 
-    // Get all project proposals
     public List<ProjectProposal> getAllProjectProposals() {
-        return projectProposalRepository.findAll();
+        return ppRepo.findAll();
     }
 
-    // Update project proposal
-    public ProjectProposal updateProjectProposal(int id, ProjectProposal updatedProposal) {
-        try {
-            ProjectProposal existingProposal = projectProposalRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Project proposal with id " + id + " not found"));
+    public ProjectProposal updateProposalStatus(int id, String status, String reason) {
+        ProjectProposal proposal = ppRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Project proposal with ID " + id + " not found"));
 
-            existingProposal.setProjectName(updatedProposal.getProjectName());
-            existingProposal.setDescription(updatedProposal.getDescription());
-            existingProposal.setStatus(updatedProposal.getStatus());
-            existingProposal.setReason(updatedProposal.getReason());
+        proposal.setStatus(status);
+        proposal.setReason(reason);
 
-            return projectProposalRepository.save(existingProposal);
-        } catch (NoSuchElementException e) {
-            throw new NoSuchElementException("Project proposal with id " + id + " not found");
-        }
+        return ppRepo.save(proposal);
     }
 
-    // Delete project proposal
     public String deleteProjectProposal(int id) {
-        if (projectProposalRepository.existsById(id)) {
-            projectProposalRepository.deleteById(id);
-            return "Project proposal with id " + id + " deleted";
+        if (ppRepo.existsById(id)) {
+            ppRepo.deleteById(id);
+            return "Project proposal with ID " + id + " deleted";
         } else {
-            return "Project proposal with id " + id + " not found";
+            return "Project proposal with ID " + id + " not found";
         }
     }
 }

@@ -11,15 +11,15 @@ public class Classes {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "cid")  // Make sure this column exists in the database
+    @Column(name = "cid")
     private Long cid;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "created_by", referencedColumnName = "uid") // Corrected column mapping
+    @JoinColumn(name = "created_by", referencedColumnName = "uid")
     private User createdBy;
 
     @Column(name = "course_type")
-    private String courseType; // Capstone or Non-Capstone
+    private String courseType;
 
     @Column(name = "course_code")
     private String courseCode;
@@ -68,7 +68,7 @@ public class Classes {
         this.courseDescription = courseDescription;
         this.isDeleted = isDeleted;
         this.classKey = classKey;
-        this.createdDate = LocalDate.now(); // Initialize createdDate here
+        this.createdDate = LocalDate.now();
     }
 
     // Getters and Setters
