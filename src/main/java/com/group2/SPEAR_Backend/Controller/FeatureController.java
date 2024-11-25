@@ -2,6 +2,7 @@ package com.group2.SPEAR_Backend.Controller;
 
 import java.util.List;
 
+import com.group2.SPEAR_Backend.DTO.FeatureDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,9 +29,11 @@ public class FeatureController {
         return fServ.getAllFeatures();
     }
 
-    // Get features by project ID
     @GetMapping("/features/project/{projectId}")
-    public List<Feature> getFeaturesByProject(@PathVariable int projectId) {
-        return fServ.getFeaturesByProjectId(projectId);
+    public List<FeatureDTO> getFeaturesByProject(@PathVariable int projectId) {
+        return fServ.getFeaturesByProjectId(projectId).stream()
+                .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
+                .toList();
     }
+
 }
