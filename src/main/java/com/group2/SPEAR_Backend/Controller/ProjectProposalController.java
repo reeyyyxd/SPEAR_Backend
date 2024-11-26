@@ -18,7 +18,7 @@ public class ProjectProposalController {
     @Autowired
     private ProjectProposalService ppServ;
 
-    @PostMapping("/create")
+    @PostMapping("/student/create")
     public ResponseEntity<Map<String, String>> createProposal(@RequestBody ProjectProposalDTO dto) {
         ppServ.createProjectProposal(dto);
         Map<String, String> response = new HashMap<>();
@@ -26,23 +26,36 @@ public class ProjectProposalController {
         return ResponseEntity.ok(response);
     }
 
-
-    @GetMapping("/all")
-    public ResponseEntity<List<ProjectProposal>> getAllProposals() {
-        return ResponseEntity.ok(ppServ.getAllProjectProposals());
+    @PutMapping("student/delete/{id}")
+    public ResponseEntity<Map<String, String>> deleteProposal(@PathVariable int id) {
+        String message = ppServ.deleteProjectProposal(id);
+        return ResponseEntity.ok(Map.of("message", message));
     }
 
-    @PutMapping("/{id}/status")
-    public ResponseEntity<ProjectProposal> updateProposalStatus(
+    @GetMapping("/proposals/class/with-features/{classId}")
+    public ResponseEntity<List<ProjectProposalDTO>> getProposalsByClassWithFeatures(@PathVariable Long classId) {
+        List<ProjectProposalDTO> proposals = ppServ.getProposalsByClassWithFeatures(classId);
+        return ResponseEntity.ok(proposals);
+    }
+
+    @PutMapping("/teacher/status/{id}")
+    public ResponseEntity<Map<String, String>> updateProposalStatus(
             @PathVariable int id,
-            @RequestParam String status,
-            @RequestParam(required = false) String reason) {
-        ProjectProposal updatedProposal = ppServ.updateProposalStatus(id, status, reason);
-        return ResponseEntity.ok(updatedProposal);
+            @RequestBody Map<String, String> payload) {
+        try {
+            String status = payload.get("status");
+            String reason = payload.get("reason");
+            ppServ.updateProposalStatus(id, status, reason);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Proposal status updated to " + status);
+            if ("DENIED".equalsIgnoreCase(status)) {
+                response.put("reason", reason);
+            }
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteProposal(@PathVariable int id) {
-        return ResponseEntity.ok(ppServ.deleteProjectProposal(id));
-    }
 }

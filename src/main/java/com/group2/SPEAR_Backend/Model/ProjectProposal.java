@@ -30,16 +30,23 @@ public class ProjectProposal {
     @Column(name = "reason")
     private String reason;
 
+    @ManyToOne
+    @JoinColumn(name = "adviser", referencedColumnName = "uid", nullable = true)
+    private User adviser;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
+
     public ProjectProposal() {
-        super();
     }
 
-    public ProjectProposal(User proposedBy, String projectName, Classes classProposal, String description, String status) {
+    public ProjectProposal(User proposedBy, String projectName, Classes classProposal, String description, User adviser) {
         this.proposedBy = proposedBy;
         this.projectName = projectName;
         this.classProposal = classProposal;
         this.description = description;
         this.status = "PENDING";
+        this.adviser = adviser;
     }
 
     public ProjectProposal(User proposedBy, String projectName, Classes classProposal, String description) {
@@ -105,6 +112,19 @@ public class ProjectProposal {
         this.reason = reason;
     }
 
+    public User getAdviser() {
+        return adviser;
+    }
 
+    public void setAdviser(User adviser) {
+        this.adviser = adviser;
+    }
 
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        isDeleted = deleted;
+    }
 }

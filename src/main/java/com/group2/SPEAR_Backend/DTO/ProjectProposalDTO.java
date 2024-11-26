@@ -1,6 +1,6 @@
 package com.group2.SPEAR_Backend.DTO;
-import com.group2.SPEAR_Backend.Model.Classes;
-import com.group2.SPEAR_Backend.Model.User;
+
+import java.util.List;
 
 public class ProjectProposalDTO {
 
@@ -11,12 +11,15 @@ public class ProjectProposalDTO {
     private String reason;
     private int proposedById;
     private Long classId;
+    private Integer adviserId;
+    private Boolean isDeleted;
+    private List<FeatureDTO> features;
 
+    public ProjectProposalDTO() {}
 
-    public ProjectProposalDTO() {
-    }
-
-    public ProjectProposalDTO(int pid, String projectName, String description, String status, String reason, int proposedById, Long classId) {
+    //non-capstone
+    public ProjectProposalDTO(int pid, String projectName, String description, String status, String reason,
+                              int proposedById, Long classId, Boolean isDeleted) {
         this.pid = pid;
         this.projectName = projectName;
         this.description = description;
@@ -24,6 +27,35 @@ public class ProjectProposalDTO {
         this.reason = reason;
         this.proposedById = proposedById;
         this.classId = classId;
+        this.isDeleted = isDeleted;
+    }
+
+    //capstone
+    public ProjectProposalDTO(int pid, String projectName, String description, String status, String reason,
+                              int proposedById, Long classId, Integer adviserId, Boolean isDeleted) {
+        this.pid = pid;
+        this.projectName = projectName;
+        this.description = description;
+        this.status = status;
+        this.reason = reason;
+        this.proposedById = proposedById;
+        this.classId = classId;
+        this.adviserId = adviserId;
+        this.isDeleted = isDeleted;
+    }
+    //with features
+    public ProjectProposalDTO(int pid, String projectName, String description, String status, String reason,
+                              int proposedById, Long classId, Integer adviserId, Boolean isDeleted, List<FeatureDTO> features) {
+        this.pid = pid;
+        this.projectName = projectName;
+        this.description = description;
+        this.status = status;
+        this.reason = reason;
+        this.proposedById = proposedById;
+        this.classId = classId;
+        this.adviserId = adviserId;
+        this.isDeleted = isDeleted;
+        this.features = features;
     }
 
     public int getPid() {
@@ -80,5 +112,21 @@ public class ProjectProposalDTO {
 
     public void setClassId(Long classId) {
         this.classId = classId;
+    }
+
+    public Integer getAdviserId() {
+        return adviserId;
+    }
+
+    public void setAdviserId(Integer adviserId) {
+        this.adviserId = adviserId;
+    }
+
+    public List<FeatureDTO> getFeatures() {
+        return features;
+    }
+
+    public void setFeatures(List<FeatureDTO> features) {
+        this.features = features;
     }
 }

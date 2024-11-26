@@ -22,8 +22,6 @@ public class FeatureController {
         fServ.addFeature(feature, projectId);
         return ResponseEntity.ok("Feature now added");
     }
-
-    // Get all features
     @GetMapping("/getAllFeatures")
     public List<Feature> getAllFeatures() {
         return fServ.getAllFeatures();

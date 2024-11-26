@@ -10,7 +10,7 @@ public class Feature {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int fid;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "project_id", referencedColumnName = "pid")
     private ProjectProposal project;
 

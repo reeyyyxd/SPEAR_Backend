@@ -18,11 +18,10 @@ public class FeatureService {
     private FeatureRepository fRepo;
 
     @Autowired
-    private ProjectProposalRepository projectProposalRepository;
+    private ProjectProposalRepository ppRepo;
 
-    // Add a feature to a project
     public Feature addFeature(Feature feature, int projectId) {
-        Optional<ProjectProposal> optionalProjectProposal = projectProposalRepository.findById(projectId);
+        Optional<ProjectProposal> optionalProjectProposal = ppRepo.findById(projectId);
 
         if (optionalProjectProposal.isPresent()) {
             ProjectProposal project = optionalProjectProposal.get();
@@ -33,12 +32,10 @@ public class FeatureService {
         }
     }
 
-    // Get all features
     public List<Feature> getAllFeatures() {
         return fRepo.findAll();
     }
 
-    // Get features for a specific project proposal
     public List<Feature> getFeaturesByProjectId(int projectId) {
         return fRepo.findByProjectId(projectId);
     }

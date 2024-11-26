@@ -176,7 +176,7 @@ public class UserDTO {
     }
 
     public String getInterests() {
-        return interests != null ? interests : "Teachers only";
+        return interests;
     }
 
     public void setInterests(String interests) {

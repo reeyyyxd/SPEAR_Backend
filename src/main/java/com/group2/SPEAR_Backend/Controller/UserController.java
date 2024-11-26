@@ -89,6 +89,11 @@ public class UserController {
         return ResponseEntity.ok(uServ.getAllActiveTeachers());
     }
 
+    @GetMapping("/student/users/advisers")
+    public ResponseEntity<List<UserDTO>> getAllAdvisers() {
+        return ResponseEntity.ok(uServ.getAllActiveTeachers());
+    }
+
     @GetMapping("/admin/users/deleted-teachers")
     public ResponseEntity<List<UserDTO>> getAllSoftDeletedTeachers() {
         return ResponseEntity.ok(uServ.getAllSoftDeletedTeachers());

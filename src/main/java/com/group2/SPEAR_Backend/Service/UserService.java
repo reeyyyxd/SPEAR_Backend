@@ -38,7 +38,7 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public UserDTO register(UserDTO registrationRequest){
+    public UserDTO register(UserDTO registrationRequest) {
         UserDTO resp = new UserDTO();
 
         try {
@@ -50,26 +50,23 @@ public class UserService implements UserDetailsService {
             ourUser.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
 
             if ("TEACHER".equalsIgnoreCase(ourUser.getRole())) {
-                ourUser.setInterests(
-                        (registrationRequest.getInterests() != null && !registrationRequest.getInterests().isEmpty())
-                                ? registrationRequest.getInterests()
-                                : "Teachers only"
-                );
+                ourUser.setInterests(registrationRequest.getInterests());
             }
 
             User ourUsersResult = userRepo.save(ourUser);
-            if (ourUsersResult.getUid()>0) {
+            if (ourUsersResult.getUid() > 0) {
                 resp.setUser((ourUsersResult));
                 resp.setMessage("User Saved Successfully");
                 resp.setStatusCode(200);
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
             resp.setStatusCode(500);
             resp.setError(e.getMessage());
         }
         return resp;
     }
+
 
 
     public UserDTO login(UserDTO loginRequest){
@@ -313,6 +310,8 @@ public class UserService implements UserDetailsService {
     public List<UserDTO> getAllSoftDeletedStudents() {
         return userRepo.fetchAllSoftDeletedStudents();
     }
+
+
 
 
 }
