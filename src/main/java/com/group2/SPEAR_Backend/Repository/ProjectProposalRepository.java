@@ -14,4 +14,21 @@ public interface ProjectProposalRepository extends JpaRepository<ProjectProposal
 
     @Query("SELECT p FROM ProjectProposal p WHERE p.classProposal.cid = :classId AND p.isDeleted = false")
     List<ProjectProposal> findByClassIdNotDeleted(@Param("classId") Long classId);
+
+    // Fetch project proposals and features from a specific class and student
+    @Query("SELECT p FROM ProjectProposal p WHERE p.classProposal.cid = :classId AND p.proposedBy.uid = :studentId AND p.isDeleted = false")
+    List<ProjectProposal> findByClassAndStudent(@Param("classId") Long classId, @Param("studentId") int studentId);
+
+    // Fetch project proposals and features by adviser
+    @Query("SELECT p FROM ProjectProposal p WHERE p.adviser.uid = :adviserId AND p.isDeleted = false")
+    List<ProjectProposal> findByAdviser(@Param("adviserId") int adviserId);
+
+    // Fetch all projects by status
+    @Query("SELECT p FROM ProjectProposal p WHERE p.status = :status AND p.isDeleted = false")
+    List<ProjectProposal> findByStatus(@Param("status") String status);
+
+    @Query("SELECT p FROM ProjectProposal p WHERE p.classProposal.cid = :classId AND p.status = :status AND p.isDeleted = false")
+    List<ProjectProposal> findByClassAndStatus(@Param("classId") Long classId, @Param("status") String status);
+
+
 }
