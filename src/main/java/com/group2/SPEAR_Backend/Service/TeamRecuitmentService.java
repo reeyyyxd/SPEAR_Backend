@@ -54,18 +54,19 @@ public class TeamRecuitmentService {
             if (team.getMembers().size() >= 5) {
                 throw new IllegalStateException("Team is already full.");
             }
-
             recruitment.setStatus(TeamRecuitment.Status.ACCEPTED);
             team.getMembers().add(recruitment.getStudent());
             tRepo.save(team);
         } else {
             recruitment.setStatus(TeamRecuitment.Status.REJECTED);
         }
+
         // optional nga ngano
         recruitment.setReason(leaderReason);
 
         trRepo.save(recruitment);
     }
+
 
     public List<TeamRecuitment> getPendingApplicationsByTeam(int teamId) {
         return trRepo.findPendingByTeamId(teamId);

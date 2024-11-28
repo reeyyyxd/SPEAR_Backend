@@ -41,4 +41,7 @@ public interface UserRepository extends JpaRepository <User, Integer> {
     @Query("SELECT u.interests FROM User u WHERE u.uid = :teacherId AND u.role = 'TEACHER' AND u.isDeleted = false")
     Optional<String> findInterestsByTeacherId(@Param("teacherId") int teacherId);
 
+    @Query("SELECT CONCAT(u.firstname, ' ', u.lastname) FROM User u WHERE u.uid = :userId")
+    String findFullNameById(@Param("userId") int userId);
+
 }

@@ -18,9 +18,9 @@ public class FeatureController {
     private FeatureService fServ;
 
     @PostMapping("/addFeature")
-    public ResponseEntity<String> addFeature(@RequestBody Feature feature, @RequestParam int projectId) {
-        fServ.addFeature(feature, projectId);
-        return ResponseEntity.ok("Feature now added");
+    public ResponseEntity<String> addMultipleFeatures(@RequestBody List<FeatureDTO> features, @RequestParam int projectId) {
+        fServ.addFeature(features, projectId);
+        return ResponseEntity.ok("Features added successfully.");
     }
     @GetMapping("/getAllFeatures")
     public List<Feature> getAllFeatures() {

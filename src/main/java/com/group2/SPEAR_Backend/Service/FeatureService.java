@@ -3,6 +3,7 @@ package com.group2.SPEAR_Backend.Service;
 import java.util.List;
 import java.util.Optional;
 
+import com.group2.SPEAR_Backend.DTO.FeatureDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,16 +21,15 @@ public class FeatureService {
     @Autowired
     private ProjectProposalRepository ppRepo;
 
-    public Feature addFeature(Feature feature, int projectId) {
-        Optional<ProjectProposal> optionalProjectProposal = ppRepo.findById(projectId);
+    public void addFeature(List<FeatureDTO> features, int projectId) {
+        ProjectProposal project = ppRepo.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project Proposal not found with ID: " + projectId));
 
-        if (optionalProjectProposal.isPresent()) {
-            ProjectProposal project = optionalProjectProposal.get();
-            feature.setProject(project);
-            return fRepo.save(feature);
-        } else {
-            throw new RuntimeException("Project Proposal not found with ID: " + projectId);
-        }
+        List<Feature> featureEntities = features.stream()
+                .map(dto -> new Feature(dto.getFeatureTitle(), dto.getFeatureDescription(), project))
+                .toList();
+
+        fRepo.saveAll(featureEntities);
     }
 
     public List<Feature> getAllFeatures() {

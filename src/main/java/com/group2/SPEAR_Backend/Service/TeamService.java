@@ -1,5 +1,7 @@
 package com.group2.SPEAR_Backend.Service;
 
+import com.group2.SPEAR_Backend.DTO.StatusDTO;
+import com.group2.SPEAR_Backend.DTO.TeamDTO;
 import com.group2.SPEAR_Backend.Model.Classes;
 import com.group2.SPEAR_Backend.Model.ProjectProposal;
 import com.group2.SPEAR_Backend.Model.Team;
@@ -7,6 +9,7 @@ import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.Repository.ProjectProposalRepository;
 import com.group2.SPEAR_Backend.Repository.TeamRepository;
 import com.group2.SPEAR_Backend.Repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +30,7 @@ public class TeamService {
     private UserRepository uRepo;
 
 
+    @Transactional
     public Team createTeam(int projectId, String groupName) {
         ProjectProposal project = ppRepo.findById(projectId)
                 .filter(p -> "APPROVED".equalsIgnoreCase(p.getStatus()))
@@ -38,9 +42,11 @@ public class TeamService {
         if (leader == null) {
             throw new IllegalStateException("Leader cannot be null. Ensure the proposal has an owner.");
         }
-
         Team newTeam = new Team(project, leader, classRef, groupName);
-        return tRepo.save(newTeam);
+        Team savedTeam = tRepo.save(newTeam);
+
+        savedTeam.getMembers().add(leader);
+        return tRepo.save(savedTeam);
     }
 
     public Team updateGroupName(int teamId, String groupName) {
@@ -60,20 +66,36 @@ public class TeamService {
         return "Team with ID " + teamId + " has been deleted.";
     }
 
-    public Team openRecruitment(int teamId) {
+    public StatusDTO openRecruitment(int teamId) {
         Team team = tRepo.findById(teamId)
                 .filter(t -> !t.isDeleted())
                 .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
         team.setRecruitmentOpen(true);
-        return tRepo.save(team);
+        tRepo.save(team);
+
+        String leaderFullName = uRepo.findFullNameById(team.getLeader().getUid());
+
+        return new StatusDTO(
+                team.getGroupName(),
+                leaderFullName,
+                "Team is open for recruitment"
+        );
     }
 
-    public Team closeRecruitment(int teamId) {
+    public StatusDTO closeRecruitment(int teamId) {
         Team team = tRepo.findById(teamId)
                 .filter(t -> !t.isDeleted())
                 .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
         team.setRecruitmentOpen(false);
-        return tRepo.save(team);
+        tRepo.save(team);
+
+        String leaderFullName = uRepo.findFullNameById(team.getLeader().getUid());
+
+        return new StatusDTO(
+                team.getGroupName(),
+                leaderFullName,
+                "Team is not available for recruitment"
+        );
     }
 
     public Team kickMember(int teamId, int memberId) {
@@ -93,13 +115,35 @@ public class TeamService {
         }
     }
 
-    public List<Team> getAllActiveTeams() {
-        return tRepo.findAllActiveTeams();
+    public List<TeamDTO> getAllActiveTeams() {
+        return tRepo.findAllActiveTeams().stream()
+                .map(team -> new TeamDTO(
+                        team.getTid(),
+                        team.getGroupName(),
+                        team.getProject().getProjectName(), // Extract projectName
+                        team.getProject().getPid(),
+                        team.getLeader().getUid(),
+                        team.getClassRef().getCid(),
+                        team.getMembers().stream().map(User::getUid).toList(),
+                        team.isRecruitmentOpen()
+                ))
+                .toList();
     }
 
-    public Team getTeamById(int teamId) {
-        return tRepo.findById(teamId)
-                .filter(team -> !team.isDeleted())
+    public TeamDTO getTeamById(int teamId) {
+        Team team = tRepo.findById(teamId)
+                .filter(t -> !t.isDeleted())
                 .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
+        return new TeamDTO(
+                team.getTid(),
+                team.getGroupName(),
+                team.getProject().getProjectName(), // Extract projectName
+                team.getProject().getPid(),
+                team.getLeader().getUid(),
+                team.getClassRef().getCid(),
+                team.getMembers().stream().map(User::getUid).toList(),
+                team.isRecruitmentOpen()
+        );
     }
+
 }

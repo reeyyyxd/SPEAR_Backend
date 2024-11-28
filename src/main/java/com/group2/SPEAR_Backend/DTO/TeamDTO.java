@@ -8,23 +8,31 @@ public class TeamDTO {
 
     private int tid;
     private String groupName;
+    private String projectName;
     private int projectId;
     private int leaderId;
-    private int classId;
+    private Long classId;
     private List<Integer> memberIds;
     private boolean isRecruitmentOpen;
 
     public TeamDTO() {
     }
 
-    public TeamDTO(int tid, String groupName, int projectId, int leaderId, int classId, List<Integer> memberIds, boolean isRecruitmentOpen) {
+    public TeamDTO(int tid, String groupName, String projectName, int projectId, int leaderId, Long classId, List<Integer> memberIds, boolean isRecruitmentOpen) {
         this.tid = tid;
         this.groupName = groupName;
-
+        this.projectName = projectName;
         this.projectId = projectId;
         this.leaderId = leaderId;
         this.classId = classId;
         this.memberIds = memberIds;
+        this.isRecruitmentOpen = isRecruitmentOpen;
+    }
+
+    public TeamDTO(int tid, String groupName, String projectName, boolean isRecruitmentOpen) {
+        this.tid = tid;
+        this.groupName = groupName;
+        this.projectName = projectName;
         this.isRecruitmentOpen = isRecruitmentOpen;
     }
 
@@ -60,11 +68,11 @@ public class TeamDTO {
         this.leaderId = leaderId;
     }
 
-    public int getClassId() {
+    public Long getClassId() {
         return classId;
     }
 
-    public void setClassId(int classId) {
+    public void setClassId(Long classId) {
         this.classId = classId;
     }
 
@@ -82,5 +90,12 @@ public class TeamDTO {
 
     public void setRecruitmentOpen(boolean recruitmentOpen) {
         isRecruitmentOpen = recruitmentOpen;
+    }
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
     }
 }

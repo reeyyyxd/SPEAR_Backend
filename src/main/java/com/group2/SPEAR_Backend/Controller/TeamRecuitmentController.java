@@ -31,7 +31,7 @@ public class TeamRecuitmentController {
         return trServ.getPendingApplicationsByTeam(teamId);
     }
 
-    @PostMapping("student/review/{recruitmentId}")
+    @PostMapping("/student/review/{recruitmentId}")
     public ResponseEntity<String> reviewApplication(
             @PathVariable int recruitmentId,
             @RequestParam boolean isAccepted,
