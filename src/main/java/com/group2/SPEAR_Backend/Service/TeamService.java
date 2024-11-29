@@ -2,11 +2,10 @@ package com.group2.SPEAR_Backend.Service;
 
 import com.group2.SPEAR_Backend.DTO.StatusDTO;
 import com.group2.SPEAR_Backend.DTO.TeamDTO;
-import com.group2.SPEAR_Backend.Model.Classes;
-import com.group2.SPEAR_Backend.Model.ProjectProposal;
-import com.group2.SPEAR_Backend.Model.Team;
-import com.group2.SPEAR_Backend.Model.User;
+import com.group2.SPEAR_Backend.DTO.UserDTO;
+import com.group2.SPEAR_Backend.Model.*;
 import com.group2.SPEAR_Backend.Repository.ProjectProposalRepository;
+import com.group2.SPEAR_Backend.Repository.TeamRecuitmentRepository;
 import com.group2.SPEAR_Backend.Repository.TeamRepository;
 import com.group2.SPEAR_Backend.Repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -29,6 +28,9 @@ public class TeamService {
     @Autowired
     private UserRepository uRepo;
 
+    @Autowired
+    private TeamRecuitmentRepository trRepo;
+
 
     @Transactional
     public Team createTeam(int projectId, String groupName) {
@@ -42,11 +44,17 @@ public class TeamService {
         if (leader == null) {
             throw new IllegalStateException("Leader cannot be null. Ensure the proposal has an owner.");
         }
+
         Team newTeam = new Team(project, leader, classRef, groupName);
+
+        newTeam.getMembers().add(leader);
         Team savedTeam = tRepo.save(newTeam);
 
-        savedTeam.getMembers().add(leader);
-        return tRepo.save(savedTeam);
+        if (savedTeam.getMembers().size() > 4) {
+            throw new IllegalStateException("Team cannot have more than 5 members.");
+        }
+
+        return savedTeam;
     }
 
     public Team updateGroupName(int teamId, String groupName) {
@@ -98,7 +106,8 @@ public class TeamService {
         );
     }
 
-    public Team kickMember(int teamId, int memberId) {
+    @Transactional
+    public void kickMember(int teamId, int memberId) {
         Team team = tRepo.findById(teamId)
                 .filter(t -> !t.isDeleted())
                 .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
@@ -109,18 +118,36 @@ public class TeamService {
 
         if (memberToRemove.isPresent()) {
             team.getMembers().remove(memberToRemove.get());
-            return tRepo.save(team);
+
+            Optional<TeamRecuitment> recruitmentRecord = trRepo.findByTeamIdAndStudentId(teamId, memberId);
+
+            if (recruitmentRecord.isPresent()) {
+                TeamRecuitment recruitment = recruitmentRecord.get();
+                recruitment.setStatus(TeamRecuitment.Status.REJECTED);
+                recruitment.setReason("Kicked by team leader.");
+                trRepo.save(recruitment);
+            } else {
+                TeamRecuitment newRecruitmentRecord = new TeamRecuitment();
+                newRecruitmentRecord.setTeam(team);
+                newRecruitmentRecord.setStudent(memberToRemove.get());
+                newRecruitmentRecord.setStatus(TeamRecuitment.Status.REJECTED);
+                newRecruitmentRecord.setReason("Kicked by team leader (direct addition).");
+                trRepo.save(newRecruitmentRecord);
+            }
+
+            tRepo.save(team);
         } else {
             throw new NoSuchElementException("Member with ID " + memberId + " not found in the team.");
         }
     }
+
 
     public List<TeamDTO> getAllActiveTeams() {
         return tRepo.findAllActiveTeams().stream()
                 .map(team -> new TeamDTO(
                         team.getTid(),
                         team.getGroupName(),
-                        team.getProject().getProjectName(), // Extract projectName
+                        team.getProject().getProjectName(),
                         team.getProject().getPid(),
                         team.getLeader().getUid(),
                         team.getClassRef().getCid(),
@@ -137,7 +164,7 @@ public class TeamService {
         return new TeamDTO(
                 team.getTid(),
                 team.getGroupName(),
-                team.getProject().getProjectName(), // Extract projectName
+                team.getProject().getProjectName(),
                 team.getProject().getPid(),
                 team.getLeader().getUid(),
                 team.getClassRef().getCid(),
@@ -145,5 +172,52 @@ public class TeamService {
                 team.isRecruitmentOpen()
         );
     }
+
+    @Transactional
+    public Team transferLeadership(int teamId, int newLeaderId) {
+        Team team = tRepo.findById(teamId)
+                .filter(t -> !t.isDeleted())
+                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
+
+        User newLeader = uRepo.findById(newLeaderId)
+                .orElseThrow(() -> new NoSuchElementException("User with ID " + newLeaderId + " not found."));
+
+        if (!team.getMembers().contains(newLeader)) {
+            throw new IllegalStateException("The new leader must be a current member of the team.");
+        }
+
+        team.setLeader(newLeader);
+        return tRepo.save(team);
+    }
+
+    @Transactional
+    public Team addPreferredMember(int teamId, int memberId) {
+        Team team = tRepo.findById(teamId)
+                .filter(t -> !t.isDeleted())
+                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
+
+        if (team.getMembers().size() >= 4) {
+            throw new IllegalStateException("Team already has the maximum number of members.");
+        }
+
+        User newMember = uRepo.findById(memberId)
+                .orElseThrow(() -> new NoSuchElementException("User with ID " + memberId + " not found."));
+
+        Classes teamClass = team.getClassRef();
+
+        if (!teamClass.getEnrolledStudents().contains(newMember)) {
+            throw new IllegalStateException("The new member must be enrolled in the same class as the team.");
+        }
+
+        team.getMembers().add(newMember);
+
+        return tRepo.save(team);
+    }
+
+
+
+
+
+
 
 }

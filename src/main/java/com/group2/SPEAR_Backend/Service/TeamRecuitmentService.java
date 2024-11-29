@@ -1,10 +1,12 @@
 package com.group2.SPEAR_Backend.Service;
 
+import com.group2.SPEAR_Backend.DTO.TeamRecuitmentDTO;
 import com.group2.SPEAR_Backend.Model.Team;
 import com.group2.SPEAR_Backend.Model.TeamRecuitment;
 import com.group2.SPEAR_Backend.Repository.TeamRecuitmentRepository;
 import com.group2.SPEAR_Backend.Repository.TeamRepository;
 import com.group2.SPEAR_Backend.Model.User;
+import com.group2.SPEAR_Backend.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,9 @@ public class TeamRecuitmentService {
 
     @Autowired
     private TeamRepository tRepo;
+
+    @Autowired
+    private UserRepository uRepo;
 
     @Transactional
     public TeamRecuitment applyToTeam(int teamId, User student, String role, String reason) {
@@ -51,7 +56,7 @@ public class TeamRecuitmentService {
         Team team = recruitment.getTeam();
 
         if (isAccepted) {
-            if (team.getMembers().size() >= 5) {
+            if (team.getMembers().size() >= 4) {
                 throw new IllegalStateException("Team is already full.");
             }
             recruitment.setStatus(TeamRecuitment.Status.ACCEPTED);
@@ -59,16 +64,31 @@ public class TeamRecuitmentService {
             tRepo.save(team);
         } else {
             recruitment.setStatus(TeamRecuitment.Status.REJECTED);
+            //leader only (madala rana sa frontend)
+            recruitment.setReason(leaderReason != null ? leaderReason : "No reason provided.");
         }
-
-        // optional nga ngano
-        recruitment.setReason(leaderReason);
 
         trRepo.save(recruitment);
     }
 
 
-    public List<TeamRecuitment> getPendingApplicationsByTeam(int teamId) {
-        return trRepo.findPendingByTeamId(teamId);
+    public List<TeamRecuitmentDTO> getPendingApplicationsByTeam(int teamId) {
+        return trRepo.findPendingByTeamId(teamId).stream()
+                .map(recruitment -> {
+                    String studentName = uRepo.findFullNameById(recruitment.getStudent().getUid());
+                    return new TeamRecuitmentDTO(
+                            recruitment.getTrid(),
+                            recruitment.getTeam().getTid(),
+                            recruitment.getStudent().getUid(),
+                            studentName,
+                            recruitment.getRole(),
+                            recruitment.getReason(),
+                            recruitment.getStatus()
+                    );
+                })
+                .toList();
     }
+
+
+
 }

@@ -14,7 +14,8 @@ public class TeamRecuitmentDTO {
 
     public TeamRecuitmentDTO() {}
 
-    public TeamRecuitmentDTO(int teamId, int studentId, String studentName, String role, String reason, Status status) {
+    public TeamRecuitmentDTO(int trid, int teamId, int studentId, String studentName, String role, String reason, Status status) {
+        this.trid = trid;
         this.teamId = teamId;
         this.studentId = studentId;
         this.studentName = studentName;
@@ -22,7 +23,6 @@ public class TeamRecuitmentDTO {
         this.reason = reason;
         this.status = status;
     }
-
 
     public int getTrid() {
         return trid;

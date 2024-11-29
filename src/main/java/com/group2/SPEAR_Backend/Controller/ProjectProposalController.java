@@ -20,11 +20,41 @@ public class ProjectProposalController {
     private ProjectProposalService ppServ;
 
     @PostMapping("/student/create-proposal")
-    public ResponseEntity<Map<String, String>> createProposal(@RequestBody ProjectProposalDTO dto) {
-        ppServ.createProjectProposal(dto);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Proposal created");
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Map<String, String>> createProposalWithFeatures(
+            @RequestBody Map<String, Object> payload) {
+
+        try {
+            int proposedById = (int) payload.get("proposedById");
+            String projectName = (String) payload.get("projectName");
+            String description = (String) payload.get("description");
+            Long classId = Long.valueOf((int) payload.get("classId"));
+            Integer adviserId = payload.get("adviserId") != null ? (int) payload.get("adviserId") : null;
+
+            ProjectProposalDTO dto = new ProjectProposalDTO(
+                    0,
+                    projectName,
+                    description,
+                    "PENDING",
+                    null,
+                    proposedById,
+                    classId,
+                    adviserId,
+                    false
+            );
+
+            List<Map<String, String>> featurePayload = (List<Map<String, String>>) payload.get("features");
+            List<FeatureDTO> features = featurePayload != null
+                    ? featurePayload.stream()
+                    .map(f -> new FeatureDTO(f.get("featureTitle"), f.get("featureDescription")))
+                    .toList()
+                    : null;
+
+            ppServ.createProjectProposal(dto, features);
+
+            return ResponseEntity.ok(Map.of("message", "Proposal with features created successfully."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PutMapping("/student/update-proposal/{proposalId}")

@@ -2,7 +2,9 @@ package com.group2.SPEAR_Backend.Controller;
 
 import com.group2.SPEAR_Backend.DTO.StatusDTO;
 import com.group2.SPEAR_Backend.DTO.TeamDTO;
+import com.group2.SPEAR_Backend.DTO.UserDTO;
 import com.group2.SPEAR_Backend.Model.Team;
+import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.Service.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -69,8 +71,12 @@ public class TeamController {
 
 
     @DeleteMapping("/student/{teamId}/kick-member/{memberId}")
-    public Team kickMember(@PathVariable int teamId, @PathVariable int memberId) {
-        return tServ.kickMember(teamId, memberId);
+    public ResponseEntity<Map<String, String>> kickMember(@PathVariable int teamId, @PathVariable int memberId) {
+        tServ.kickMember(teamId, memberId);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "A member has been removed from the team.");
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/teams/all-active")
@@ -82,4 +88,30 @@ public class TeamController {
     public TeamDTO getTeamById(@PathVariable int teamId) {
         return tServ.getTeamById(teamId);
     }
+
+    @PutMapping("/team/{teamId}/transfer-leadership")
+    public ResponseEntity<Map<String, String>> transferLeadership(
+            @PathVariable int teamId,
+            @RequestBody Map<String, Integer> requestBody) {
+        int newLeaderId = requestBody.get("newLeaderId");
+        tServ.transferLeadership(teamId, newLeaderId);
+        return ResponseEntity.ok(Map.of("message", "Leadership transferred successfully."));
+    }
+
+    @PostMapping("/team/{teamId}/add-member")
+    public ResponseEntity<Map<String, String>> addPreferredMember(
+            @PathVariable int teamId,
+            @RequestBody Map<String, Integer> requestBody) {
+        int memberId = requestBody.get("memberId");
+        tServ.addPreferredMember(teamId, memberId);
+
+        return ResponseEntity.ok(Map.of("message", "Member added successfully."));
+    }
+
+
+
+
+
+
+
 }

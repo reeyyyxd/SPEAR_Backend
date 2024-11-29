@@ -31,7 +31,7 @@ public class ProjectProposalService {
     @Autowired
     private FeatureRepository fRepo;
 
-    public ProjectProposal createProjectProposal(ProjectProposalDTO dto) {
+    public ProjectProposal createProjectProposal(ProjectProposalDTO dto, List<FeatureDTO> features) {
         User user = uRepo.findById(dto.getProposedById())
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.getProposedById()));
 
@@ -48,8 +48,19 @@ public class ProjectProposalService {
                     .filter(u -> "TEACHER".equalsIgnoreCase(u.getRole()))
                     .orElseThrow(() -> new RuntimeException("Adviser with ID " + dto.getAdviserId() + " not found or is not a teacher"));
         }
+
         ProjectProposal proposal = new ProjectProposal(user, dto.getProjectName(), clazz, dto.getDescription(), adviser);
-        return ppRepo.save(proposal);
+        ProjectProposal savedProposal = ppRepo.save(proposal);
+
+        if (features != null && !features.isEmpty()) {
+            List<Feature> featureEntities = features.stream()
+                    .map(feature -> new Feature(feature.getFeatureTitle(), feature.getFeatureDescription(), savedProposal))
+                    .toList();
+
+            fRepo.saveAll(featureEntities);
+        }
+
+        return savedProposal;
     }
 
     public List<ProjectProposal> getAllActiveProposals() {
