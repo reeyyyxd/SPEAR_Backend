@@ -112,33 +112,17 @@ public class TeamService {
                 .filter(t -> !t.isDeleted())
                 .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
 
-        Optional<User> memberToRemove = team.getMembers().stream()
+        User memberToRemove = team.getMembers().stream()
                 .filter(member -> member.getUid() == memberId)
-                .findFirst();
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Member with ID " + memberId + " not found in the team."));
 
-        if (memberToRemove.isPresent()) {
-            team.getMembers().remove(memberToRemove.get());
+        team.getMembers().remove(memberToRemove);
 
-            Optional<TeamRecuitment> recruitmentRecord = trRepo.findByTeamIdAndStudentId(teamId, memberId);
+        Optional<TeamRecuitment> recruitmentRecord = trRepo.findByTeamIdAndStudentId(teamId, memberId);
+        recruitmentRecord.ifPresent(trRepo::delete);
 
-            if (recruitmentRecord.isPresent()) {
-                TeamRecuitment recruitment = recruitmentRecord.get();
-                recruitment.setStatus(TeamRecuitment.Status.REJECTED);
-                recruitment.setReason("Kicked by team leader.");
-                trRepo.save(recruitment);
-            } else {
-                TeamRecuitment newRecruitmentRecord = new TeamRecuitment();
-                newRecruitmentRecord.setTeam(team);
-                newRecruitmentRecord.setStudent(memberToRemove.get());
-                newRecruitmentRecord.setStatus(TeamRecuitment.Status.REJECTED);
-                newRecruitmentRecord.setReason("Kicked by team leader (direct addition).");
-                trRepo.save(newRecruitmentRecord);
-            }
-
-            tRepo.save(team);
-        } else {
-            throw new NoSuchElementException("Member with ID " + memberId + " not found in the team.");
-        }
+        tRepo.save(team);
     }
 
 
@@ -213,6 +197,51 @@ public class TeamService {
 
         return tRepo.save(team);
     }
+
+    public List<TeamDTO> getTeamsByClassId(int classId) {
+        List<TeamDTO> teams = tRepo.findTeamsByClassIdWithDetails(classId);
+        for (TeamDTO teamDTO : teams) {
+            Team team = tRepo.findById(teamDTO.getTid())
+                    .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamDTO.getTid() + " not found"));
+
+            String leaderName = team.getLeader().getFirstname() + " " + team.getLeader().getLastname();
+            List<String> memberNames = team.getMembers().stream()
+                    .map(member -> member.getFirstname() + " " + member.getLastname())
+                    .toList();
+
+            teamDTO.setLeaderId(team.getLeader().getUid());
+            teamDTO.setClassId(team.getClassRef().getCid());
+            teamDTO.setMemberIds(team.getMembers().stream().map(User::getUid).toList());
+            teamDTO.setProjectId(team.getProject().getPid());
+            teamDTO.setProjectName(team.getProject().getProjectName());
+            teamDTO.setGroupName(team.getGroupName());
+            teamDTO.setRecruitmentOpen(team.isRecruitmentOpen());
+        }
+        return teams;
+    }
+
+    public TeamDTO getMyTeam(int userId, int classId) {
+        Team team = tRepo.findMyTeamByClassId(userId, classId)
+                .orElseThrow(() -> new NoSuchElementException("No team found for the user in this class."));
+
+        String leaderName = team.getLeader().getFirstname() + " " + team.getLeader().getLastname();
+        List<String> memberNames = team.getMembers().stream()
+                .map(member -> member.getFirstname() + " " + member.getLastname())
+                .toList();
+
+        return new TeamDTO(
+                team.getTid(),
+                team.getGroupName(),
+                team.getProject().getProjectName(),
+                team.getProject().getPid(),
+                team.getLeader().getUid(),
+                team.getClassRef().getCid(),
+                team.getMembers().stream().map(User::getUid).toList(),
+                team.isRecruitmentOpen()
+        );
+    }
+
+
 
 
 

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class TeamRecuitmentService {
@@ -38,13 +39,16 @@ public class TeamRecuitmentService {
             throw new IllegalStateException("You already have a pending or accepted application for this team.");
         }
 
-        TeamRecuitment recruitment = new TeamRecuitment();
-        recruitment.setTeam(team);
-        recruitment.setStudent(student);
-        recruitment.setRole(role);
-        recruitment.setReason(reason);
-        recruitment.setStatus(TeamRecuitment.Status.PENDING);
+        Optional<TeamRecuitment> rejectedApplication = trRepo.findByTeamIdAndStudentId(teamId, student.getUid());
+        if (rejectedApplication.isPresent() && rejectedApplication.get().getStatus() == TeamRecuitment.Status.REJECTED) {
+            TeamRecuitment recruitment = rejectedApplication.get();
+            recruitment.setStatus(TeamRecuitment.Status.PENDING);
+            recruitment.setReason(reason);
+            recruitment.setRole(role);
+            return trRepo.save(recruitment);
+        }
 
+        TeamRecuitment recruitment = new TeamRecuitment(team, student, role, reason, TeamRecuitment.Status.PENDING);
         return trRepo.save(recruitment);
     }
 
@@ -59,12 +63,14 @@ public class TeamRecuitmentService {
             if (team.getMembers().size() >= 4) {
                 throw new IllegalStateException("Team is already full.");
             }
+
             recruitment.setStatus(TeamRecuitment.Status.ACCEPTED);
+            //clear for a obvious reason
+            recruitment.setReason(null);
             team.getMembers().add(recruitment.getStudent());
             tRepo.save(team);
         } else {
             recruitment.setStatus(TeamRecuitment.Status.REJECTED);
-            //leader only (madala rana sa frontend)
             recruitment.setReason(leaderReason != null ? leaderReason : "No reason provided.");
         }
 
