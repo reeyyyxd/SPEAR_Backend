@@ -1,76 +1,112 @@
-//package com.group2.SPEAR_Backend.Model;
-//
-//import jakarta.persistence.*;
-//
-//@Entity
-//@Table(name = "evaluations")
-//public class Evaluation {
-//
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private int evaluationId;
-//
-//    @Column(name = "statusForGrading")
-//    private String statusForGrading;
-//
-//    @Column(name = "statusForCompletion")
-//    private String statusForCompletion;
-//
-//    @Column(name = "userToEvaluate")
-//    private String userToEvaluate;
-//
-//    @Column(name = "evaluator")
-//    private String evaluator;
-//
-//    public Evaluation() {
-//        super();
-//    }
-//
-//    public Evaluation(int evaluationId, String statusForGrading, String statusForCompletion, String userToEvaluate, String evaluator) {
-//        this.evaluationId = evaluationId;
-//        this.statusForGrading = statusForGrading;
-//        this.statusForCompletion = statusForCompletion;
-//        this.userToEvaluate = userToEvaluate;
-//        this.evaluator = evaluator;
-//    }
-//
-//    public int getEvaluationId() {
-//        return evaluationId;
-//    }
-//
-//    public void setEvaluationId(int evaluationId) {
-//        this.evaluationId = evaluationId;
-//    }
-//
-//    public String getStatusForGrading() {
-//        return statusForGrading;
-//    }
-//
-//    public void setStatusForGrading(String statusForGrading) {
-//        this.statusForGrading = statusForGrading;
-//    }
-//
-//    public String getStatusForCompletion() {
-//        return statusForCompletion;
-//    }
-//
-//    public void setStatusForCompletion(String statusForCompletion) {
-//        this.statusForCompletion = statusForCompletion;
-//    }
-//
-//    public String getUserToEvaluate() {
-//        return userToEvaluate;
-//    }
-//
-//    public void setUserToEvaluate(String userToEvaluate) {
-//        this.userToEvaluate = userToEvaluate;
-//    }
-//
-//    public String getEvaluator() {
-//        return evaluator;
-//    }
-//
-//    public void setEvaluator(String evaluator) {
-//        this.evaluator = evaluator;
-//    }
-//}
+package com.group2.SPEAR_Backend.Model;
+
+import jakarta.persistence.*;
+import java.time.LocalDate;
+
+@Entity
+@Table(name = "evaluations")
+public class Evaluation {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long eid;
+
+    @Column(name = "status", nullable = false)
+    private String status; // "Completed" or "Pending" for students
+
+    @Column(name = "availability", nullable = false)
+    private String availability; // "Open" or "Closed"
+
+    @Column(name = "date_open", nullable = false)
+    private LocalDate dateOpen;
+
+    @Column(name = "date_close", nullable = false)
+    private LocalDate dateClose;
+
+    @Column(name = "period", nullable = false)
+    private String period; // Prelim, Midterm, Prefinals, Finals
+
+    @ManyToOne
+    @JoinColumn(name = "class_id", referencedColumnName = "cid", nullable = false)
+    private Classes classes;
+
+    @ManyToOne
+    @JoinColumn(name = "evaluator_id", referencedColumnName = "uid", nullable = false)
+    private User evaluator;
+
+    public Evaluation() {}
+
+    public Evaluation(String status, String availability, LocalDate dateOpen, LocalDate dateClose, String period, Classes classes, User evaluator) {
+        this.status = status;
+        this.availability = availability;
+        this.dateOpen = dateOpen;
+        this.dateClose = dateClose;
+        this.period = period;
+        this.classes = classes;
+        this.evaluator = evaluator;
+    }
+
+    public Long getEid() {
+        return eid;
+    }
+
+    public void setEid(Long eid) {
+        this.eid = eid;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getAvailability() {
+        return availability;
+    }
+
+    public void setAvailability(String availability) {
+        this.availability = availability;
+    }
+
+    public LocalDate getDateOpen() {
+        return dateOpen;
+    }
+
+    public void setDateOpen(LocalDate dateOpen) {
+        this.dateOpen = dateOpen;
+    }
+
+    public LocalDate getDateClose() {
+        return dateClose;
+    }
+
+    public void setDateClose(LocalDate dateClose) {
+        this.dateClose = dateClose;
+    }
+
+    public String getPeriod() {
+        return period;
+    }
+
+    public void setPeriod(String period) {
+        this.period = period;
+    }
+
+    public Classes getClasses() {
+        return classes;
+    }
+
+    public void setClasses(Classes classes) {
+        this.classes = classes;
+    }
+
+    public User getEvaluator() {
+        return evaluator;
+    }
+
+    public void setEvaluator(User evaluator) {
+        this.evaluator = evaluator;
+    }
+}

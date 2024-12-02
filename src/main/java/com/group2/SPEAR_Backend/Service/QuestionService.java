@@ -1,51 +1,49 @@
-//package com.group2.SPEAR_Backend.Service;
-//
-//import com.group2.SPEAR_Backend.Model.Question;
-//import com.group2.SPEAR_Backend.Repository.QuestionRepository;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.stereotype.Service;
-//
-//import java.util.List;
-//import java.util.NoSuchElementException;
-//
-//@Service
-//public class QuestionService {
-//
-//    @Autowired
-//    QuestionRepository questionRepository;
-//
-//    // Create a new question
-//    public Question createQuestion(Question question) {
-//        return questionRepository.save(question);
-//    }
-//
-//    // Get all questions
-//    public List<Question> getAllQuestions() {
-//        return questionRepository.findAll();
-//    }
-//
-//    // Update a question
-//    public Question updateQuestion(int id, Question updatedQuestion) {
-//        try {
-//            Question existingQuestion = questionRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Question with id " + id + " not found"));
-//
-//            existingQuestion.setQuestion(updatedQuestion.getQuestion());
-//            existingQuestion.setAnswer(updatedQuestion.getAnswer());
-//            existingQuestion.setIdEvaluator(updatedQuestion.getIdEvaluator());
-//
-//            return questionRepository.save(existingQuestion);
-//        } catch (NoSuchElementException e) {
-//            throw new NoSuchElementException("Question with id " + id + " not found");
-//        }
-//    }
-//
-//    // Delete a question
-//    public String deleteQuestion(int id) {
-//        if (questionRepository.existsById(id)) {
-//            questionRepository.deleteById(id);
-//            return "Question with id " + id + " deleted";
-//        } else {
-//            return "Question with id " + id + " not found";
-//        }
-//    }
-//}
+package com.group2.SPEAR_Backend.Service;
+
+import com.group2.SPEAR_Backend.Model.Classes;
+import com.group2.SPEAR_Backend.Model.Question;
+import com.group2.SPEAR_Backend.Repository.ClassesRepository;
+import com.group2.SPEAR_Backend.Repository.QuestionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.NoSuchElementException;
+
+@Service
+public class QuestionService {
+
+    @Autowired
+    QuestionRepository qRepo;
+
+    @Autowired
+    ClassesRepository cRepo;
+
+    public Question createQuestion(Long classId, Question question) {
+        Classes clazz = cRepo.findById(classId)
+                .orElseThrow(() -> new NoSuchElementException("Class not found with ID: " + classId));
+        question.setClasses(clazz);
+        return qRepo.save(question);
+    }
+
+    public List<Question> getQuestionsByClass(Long classId) {
+        return qRepo.findByClassesCid(classId);
+    }
+
+    public Question updateQuestion(Long questionId, Question updatedQuestion) {
+        return qRepo.findById(questionId).map(question -> {
+            question.setQuestionText(updatedQuestion.getQuestionText());
+//          question.setRatingOptions(updatedQuestion.getQuestionPeriod());
+            return qRepo.save(question);
+        }).orElseThrow(() -> new NoSuchElementException("Question not found with ID: " + questionId));
+    }
+
+    public String deleteQuestion(Long questionId) {
+        if (qRepo.existsById(questionId)) {
+            qRepo.deleteById(questionId);
+            return "Question deleted successfully";
+        } else {
+            throw new NoSuchElementException("Question not found with ID: " + questionId);
+        }
+    }
+}
