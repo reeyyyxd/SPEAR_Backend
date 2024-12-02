@@ -44,4 +44,9 @@ public interface UserRepository extends JpaRepository <User, Integer> {
     @Query("SELECT CONCAT(u.firstname, ' ', u.lastname) FROM User u WHERE u.uid = :userId")
     String findFullNameById(@Param("userId") int userId);
 
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.UserDTO(200, 'User retrieved successfully', u.firstname, u.lastname, u.email, u.role) " +
+            "FROM User u WHERE (u.firstname = :firstname OR u.lastname = :lastname) AND u.isDeleted = false")
+    List<UserDTO> findActiveUsersByName(@Param("firstname") String firstname, @Param("lastname") String lastname);
+
+
 }

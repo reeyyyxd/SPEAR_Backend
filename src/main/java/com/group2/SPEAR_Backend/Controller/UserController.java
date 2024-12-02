@@ -109,6 +109,16 @@ public class UserController {
         return ResponseEntity.ok(uServ.getInterestsByTeacherId(teacherId));
     }
 
+    @GetMapping("/users/search-by-name")
+    public ResponseEntity<List<UserDTO>> getActiveUsersByName(
+            @RequestParam(required = false) String firstname,
+            @RequestParam(required = false) String lastname) {
+        List<UserDTO> users = uServ.getActiveUsersByName(firstname, lastname);
+        return ResponseEntity.ok(users);
+    }
+
+
+
 
 
 

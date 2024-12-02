@@ -108,6 +108,22 @@ public class TeamController {
         return ResponseEntity.ok(Map.of("message", "Member added successfully."));
     }
 
+    @GetMapping("/teams/class/{classId}")
+    public ResponseEntity<List<TeamDTO>> getTeamsByClass(@PathVariable int classId) {
+        List<TeamDTO> teams = tServ.getTeamsByClassId(classId);
+        return ResponseEntity.ok(teams);
+    }
+
+    @GetMapping("/team/my/{classId}")
+    public ResponseEntity<TeamDTO> getMyTeam(
+            @RequestParam int userId,
+            @PathVariable int classId) {
+        TeamDTO myTeam = tServ.getMyTeam(userId, classId);
+        return ResponseEntity.ok(myTeam);
+    }
+
+
+
 
 
 

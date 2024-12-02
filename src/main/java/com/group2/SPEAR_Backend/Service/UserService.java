@@ -311,6 +311,16 @@ public class UserService implements UserDetailsService {
         return userRepo.fetchAllSoftDeletedStudents();
     }
 
+    public List<UserDTO> getActiveUsersByName(String firstname, String lastname) {
+        try {
+            return userRepo.findActiveUsersByName(firstname, lastname);
+        } catch (Exception e) {
+            throw new RuntimeException("Error occurred while fetching users: " + e.getMessage());
+        }
+    }
+
+
+
 
 
 
