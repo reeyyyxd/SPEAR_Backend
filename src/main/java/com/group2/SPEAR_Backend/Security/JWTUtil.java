@@ -27,14 +27,15 @@ public class JWTUtil {
     }
 
     // token generation
-    public String generateToken(UserDetails userDetails){
+    public String generateToken(UserDetails userDetails) {
         return Jwts.builder()
-                .subject(userDetails.getUsername())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(Key)
                 .compact();
     }
+
 
     // Generate a refresh token
     public  String generateRefreshToken(HashMap<String, Object> claims, UserDetails userDetails){
