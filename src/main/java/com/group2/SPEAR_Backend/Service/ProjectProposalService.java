@@ -232,6 +232,11 @@ public class ProjectProposalService {
         ppRepo.save(proposal);
     }
 
+    public String getAdviserFullNameByProposalId(int proposalId) {
+        return ppRepo.findAdviserFullNameByProposalId(proposalId);
+    }
+
+
 
 
 }

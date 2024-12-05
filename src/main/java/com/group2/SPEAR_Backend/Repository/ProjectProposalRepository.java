@@ -30,5 +30,9 @@ public interface ProjectProposalRepository extends JpaRepository<ProjectProposal
     @Query("SELECT p FROM ProjectProposal p WHERE p.classProposal.cid = :classId AND p.status = :status AND p.isDeleted = false")
     List<ProjectProposal> findByClassAndStatus(@Param("classId") Long classId, @Param("status") String status);
 
+    @Query("SELECT CONCAT(u.firstname, ' ', u.lastname) FROM ProjectProposal p JOIN p.adviser u WHERE p.pid = :proposalId")
+    String findAdviserFullNameByProposalId(@Param("proposalId") int proposalId);
+
+
 
 }

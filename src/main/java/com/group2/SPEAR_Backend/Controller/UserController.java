@@ -92,7 +92,7 @@ public class UserController {
         return ResponseEntity.ok(uServ.getAllActiveTeachers());
     }
 
-    @GetMapping("/student/users/advisers")
+    @GetMapping("/users/advisers")
     public ResponseEntity<List<UserDTO>> getAllAdvisers() {
         return ResponseEntity.ok(uServ.getAllActiveTeachers());
     }

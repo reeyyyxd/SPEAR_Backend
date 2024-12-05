@@ -5,6 +5,7 @@ import com.group2.SPEAR_Backend.DTO.ProjectProposalDTO;
 import com.group2.SPEAR_Backend.Model.ProjectProposal;
 import com.group2.SPEAR_Backend.Service.ProjectProposalService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -80,7 +81,7 @@ public class ProjectProposalController {
         }
     }
 
-        @PutMapping("/student/update-adviser/{proposalId}")
+    @PutMapping("/student/update-adviser/{proposalId}")
     public ResponseEntity<Map<String, String>> updateCapstoneAdviser(
             @PathVariable int proposalId,
             @RequestParam int adviserId) {
@@ -200,6 +201,22 @@ public class ProjectProposalController {
         response.put("message", "Student assigned to the project successfully");
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/proposals/{proposalId}/adviser")
+    public ResponseEntity<Map<String, String>> getAdviserNameByProposalId(@PathVariable int proposalId) {
+        try {
+            String adviserFullName = ppServ.getAdviserFullNameByProposalId(proposalId);
+            if (adviserFullName == null) {
+                return ResponseEntity.ok(Map.of("adviserFullName", "N/A"));
+            }
+            return ResponseEntity.ok(Map.of("adviserFullName", adviserFullName));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+
+
 
 
 
