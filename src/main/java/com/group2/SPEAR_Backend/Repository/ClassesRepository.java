@@ -32,7 +32,7 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
     Classes findByCourseCodeAndSection(@Param("courseCode") String courseCode, @Param("section") String section);
 
 
-    @Query("SELECT c.courseDescription, COUNT(u) + 1 FROM Classes c LEFT JOIN c.enrolledStudents u WHERE c.cid = :classId GROUP BY c.cid")
+    @Query("SELECT c.courseDescription, COUNT(u) FROM Classes c LEFT JOIN c.enrolledStudents u WHERE c.cid = :classId GROUP BY c.cid")
     Object[] findTotalUsersInClass(@Param("classId") Long classId);
 
 

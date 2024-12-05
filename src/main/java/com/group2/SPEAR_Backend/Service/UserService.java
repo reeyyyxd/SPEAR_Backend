@@ -264,26 +264,22 @@ public class UserService implements UserDetailsService {
 
 
 
-    public UserDTO getMyInfo(String email){
+    public UserDTO getProfileById(Integer userId) {
         UserDTO userDTO = new UserDTO();
         try {
-            Optional<User> userOptional = userRepo.findByEmail(email);
-            if (userOptional.isPresent()) {
-                userDTO.setUser(userOptional.get());
-                userDTO.setStatusCode(200);
-                userDTO.setMessage("successful");
-            } else {
-                userDTO.setStatusCode(404);
-                userDTO.setMessage("User not found for update");
-            }
-
-        }catch (Exception e){
+            User user = userRepo.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+            userDTO.setFirstname(user.getFirstname());
+            userDTO.setLastname(user.getLastname());
+            userDTO.setStatusCode(200);
+            userDTO.setMessage("User found successfully");
+        } catch (Exception e) {
             userDTO.setStatusCode(500);
-            userDTO.setMessage("Error occurred while getting user info: " + e.getMessage());
+            userDTO.setMessage("Error occurred: " + e.getMessage());
         }
         return userDTO;
-
     }
+
 
     public String getInterestsByTeacherId(int teacherId) {
         return userRepo.findInterestsByTeacherId(teacherId)
@@ -318,10 +314,4 @@ public class UserService implements UserDetailsService {
             throw new RuntimeException("Error occurred while fetching users: " + e.getMessage());
         }
     }
-
-
-
-
-
-
 }

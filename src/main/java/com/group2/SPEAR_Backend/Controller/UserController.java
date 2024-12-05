@@ -61,13 +61,16 @@ public class UserController {
         return ResponseEntity.ok(uServ.updateStudent(userId, reqBody));
     }
 
-    @GetMapping("/adminuser/get-profile")
-    public ResponseEntity<UserDTO> getMyProfile(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        UserDTO response = uServ.getMyInfo(email);
-        return  ResponseEntity.status(response.getStatusCode()).body(response);
+    @GetMapping("/user/profile/{userId}")
+    public ResponseEntity<UserDTO> getUserProfileById(@PathVariable Integer userId) {
+        UserDTO userProfile = uServ.getProfileById(userId);
+        if (userProfile != null && userProfile.getStatusCode() == 200) {
+            return ResponseEntity.ok(userProfile);
+        } else {
+            return ResponseEntity.status(userProfile.getStatusCode()).body(userProfile);
+        }
     }
+
 
     @DeleteMapping("/admin/delete/{userId}")
     public ResponseEntity<UserDTO> deleteUSer(@PathVariable Integer userId){
