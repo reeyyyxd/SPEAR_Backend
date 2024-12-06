@@ -33,6 +33,10 @@ public interface ProjectProposalRepository extends JpaRepository<ProjectProposal
     @Query("SELECT CONCAT(u.firstname, ' ', u.lastname) FROM ProjectProposal p JOIN p.adviser u WHERE p.pid = :proposalId")
     String findAdviserFullNameByProposalId(@Param("proposalId") int proposalId);
 
+    @Query("SELECT CONCAT(u.firstname, ' ', u.lastname) FROM User u WHERE u.uid = :leaderId")
+    String findFullNameById(@Param("leaderId") int leaderId);
+
+
 
 
 }

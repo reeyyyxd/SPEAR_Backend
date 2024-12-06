@@ -215,6 +215,21 @@ public class ProjectProposalController {
         }
     }
 
+    @GetMapping("/teams/leader/{leaderId}")
+    public ResponseEntity<Map<String, String>> getLeaderNameById(@PathVariable int leaderId) {
+        try {
+            String leaderName = ppServ.getLeaderNameById(leaderId);
+            if (leaderName == null) {
+                return ResponseEntity.ok(Map.of("leaderName", "N/A"));
+            }
+            return ResponseEntity.ok(Map.of("leaderName", leaderName));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+
 
 
 

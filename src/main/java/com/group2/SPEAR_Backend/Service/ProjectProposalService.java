@@ -236,6 +236,11 @@ public class ProjectProposalService {
         return ppRepo.findAdviserFullNameByProposalId(proposalId);
     }
 
+    public String getLeaderNameById(int leaderId) {
+        return uRepo.findFullNameById(leaderId);
+    }
+
+
 
 
 
