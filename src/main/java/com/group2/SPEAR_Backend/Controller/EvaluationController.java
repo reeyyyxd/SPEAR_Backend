@@ -24,7 +24,8 @@ public class EvaluationController {
     public List<Evaluation> getAllEvaluations() {
         return eServ.getAllEvaluations();
     }
-//filter by open and by period
+
+    //filter by open and by period
     @GetMapping("student/availability/{availability}")
     public List<Evaluation> getEvaluationsByAvailability(@PathVariable String availability) {
         return eServ.getEvaluationsByAvailability(availability);

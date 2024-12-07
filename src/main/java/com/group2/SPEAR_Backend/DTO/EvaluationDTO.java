@@ -11,11 +11,10 @@ public class EvaluationDTO {
     private LocalDate dateClose;
     private String period;
     private Long classId;
-    private Long evaluatorId;
 
     public EvaluationDTO() {}
 
-    public EvaluationDTO(Long eid, String status, String availability, LocalDate dateOpen, LocalDate dateClose, String period, Long classId, Long evaluatorId) {
+    public EvaluationDTO(Long eid, String status, String availability, LocalDate dateOpen, LocalDate dateClose, String period, Long classId) {
         this.eid = eid;
         this.status = status;
         this.availability = availability;
@@ -23,7 +22,6 @@ public class EvaluationDTO {
         this.dateClose = dateClose;
         this.period = period;
         this.classId = classId;
-        this.evaluatorId = evaluatorId;
     }
 
     public Long getEid() {
@@ -82,11 +80,4 @@ public class EvaluationDTO {
         this.classId = classId;
     }
 
-    public Long getEvaluatorId() {
-        return evaluatorId;
-    }
-
-    public void setEvaluatorId(Long evaluatorId) {
-        this.evaluatorId = evaluatorId;
-    }
 }

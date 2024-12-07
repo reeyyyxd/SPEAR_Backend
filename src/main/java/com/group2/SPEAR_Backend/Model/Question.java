@@ -13,16 +13,13 @@ public class Question {
     @Column(name = "question_text", nullable = false)
     private String questionText;
 
-// useful in the future for more detailing
-//    @Column(name = "question_period", nullable = false)
-//    private int questionPeriod;
-
     @ManyToOne
     @JoinColumn(name = "class_id", referencedColumnName = "cid", nullable = false)
     private Classes classes;
 
 
-    public Question() {}
+    public Question() {
+    }
 
     public Question(String questionText, Classes classes) {
         this.questionText = questionText;
@@ -53,11 +50,4 @@ public class Question {
         this.classes = classes;
     }
 
-//    public int getQuestionPeriod() {
-//        return questionPeriod;
-//    }
-//
-//    public void setQuestionPeriod(int questionPeriod) {
-//        this.questionPeriod = questionPeriod;
-//    }
 }

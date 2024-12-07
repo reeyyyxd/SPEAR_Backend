@@ -122,6 +122,13 @@ public class TeamController {
         return ResponseEntity.ok(myTeam);
     }
 
+    @GetMapping("/teams/{teamId}/members")
+    public ResponseEntity<List<UserDTO>> getTeamMembers(@PathVariable int teamId) {
+        List<UserDTO> members = tServ.getTeamMembers(teamId);
+        return ResponseEntity.ok(members);
+    }
+
+
 
 
 

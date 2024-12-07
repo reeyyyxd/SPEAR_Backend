@@ -2,6 +2,7 @@ package com.group2.SPEAR_Backend.Repository;
 
 import com.group2.SPEAR_Backend.DTO.TeamDTO;
 import com.group2.SPEAR_Backend.Model.Team;
+import com.group2.SPEAR_Backend.Model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,6 +39,9 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
             "WHERE (t.leader.uid = :userId OR :userId IN (SELECT m.uid FROM t.members m)) " +
             "AND t.classRef.cid = :classId AND t.isDeleted = false")
     Optional<Team> findMyTeamByClassId(@Param("userId") int userId, @Param("classId") int classId);
+
+    @Query("SELECT m FROM Team t JOIN t.members m WHERE t.tid = :teamId")
+    List<User> findMembersByTeamId(@Param("teamId") int teamId);
 
 
 

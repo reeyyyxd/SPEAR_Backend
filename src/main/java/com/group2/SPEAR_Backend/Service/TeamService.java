@@ -241,6 +241,14 @@ public class TeamService {
         );
     }
 
+    public List<UserDTO> getTeamMembers(int teamId) {
+        List<User> members = tRepo.findMembersByTeamId(teamId);
+        return members.stream()
+                .map(member -> new UserDTO(member.getUid(), member.getFirstname(), member.getLastname(), member.getEmail(), member.getRole()))
+                .toList();
+    }
+
+
 
 
 

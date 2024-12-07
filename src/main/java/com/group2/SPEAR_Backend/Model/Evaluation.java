@@ -30,20 +30,16 @@ public class Evaluation {
     @JoinColumn(name = "class_id", referencedColumnName = "cid", nullable = false)
     private Classes classes;
 
-    @ManyToOne
-    @JoinColumn(name = "evaluator_id", referencedColumnName = "uid", nullable = false)
-    private User evaluator;
 
     public Evaluation() {}
 
-    public Evaluation(String status, String availability, LocalDate dateOpen, LocalDate dateClose, String period, Classes classes, User evaluator) {
+    public Evaluation(String status, String availability, LocalDate dateOpen, LocalDate dateClose, String period, Classes classes) {
         this.status = status;
         this.availability = availability;
         this.dateOpen = dateOpen;
         this.dateClose = dateClose;
         this.period = period;
         this.classes = classes;
-        this.evaluator = evaluator;
     }
 
     public Long getEid() {
@@ -102,11 +98,4 @@ public class Evaluation {
         this.classes = classes;
     }
 
-    public User getEvaluator() {
-        return evaluator;
-    }
-
-    public void setEvaluator(User evaluator) {
-        this.evaluator = evaluator;
-    }
 }
