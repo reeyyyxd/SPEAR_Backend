@@ -14,4 +14,6 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Long> {
     List<Evaluation> findByPeriod(String period);
 
     List<Evaluation> findByAvailabilityAndPeriod(String availability, String period);
+
+    List<Evaluation> findByClassesCid(Long classId);
 }

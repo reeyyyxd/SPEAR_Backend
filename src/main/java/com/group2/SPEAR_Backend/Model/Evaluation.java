@@ -11,8 +11,8 @@ public class Evaluation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long eid;
 
-    @Column(name = "status", nullable = false)
-    private String status; // "Completed" or "Pending" for students
+//    @Column(name = "status", nullable = false)
+//    private String status; // "Completed" or "Pending" for students
 
     @Column(name = "availability", nullable = false)
     private String availability; // "Open" or "Closed"
@@ -33,8 +33,7 @@ public class Evaluation {
 
     public Evaluation() {}
 
-    public Evaluation(String status, String availability, LocalDate dateOpen, LocalDate dateClose, String period, Classes classes) {
-        this.status = status;
+    public Evaluation(String availability, LocalDate dateOpen, LocalDate dateClose, String period, Classes classes) {
         this.availability = availability;
         this.dateOpen = dateOpen;
         this.dateClose = dateClose;
@@ -48,14 +47,6 @@ public class Evaluation {
 
     public void setEid(Long eid) {
         this.eid = eid;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public String getAvailability() {

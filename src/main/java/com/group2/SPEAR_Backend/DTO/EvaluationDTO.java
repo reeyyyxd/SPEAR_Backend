@@ -5,7 +5,7 @@ import java.time.LocalDate;
 public class EvaluationDTO {
 
     private Long eid;
-    private String status;
+//    private String status;
     private String availability;
     private LocalDate dateOpen;
     private LocalDate dateClose;
@@ -14,9 +14,8 @@ public class EvaluationDTO {
 
     public EvaluationDTO() {}
 
-    public EvaluationDTO(Long eid, String status, String availability, LocalDate dateOpen, LocalDate dateClose, String period, Long classId) {
+    public EvaluationDTO(Long eid, String availability, LocalDate dateOpen, LocalDate dateClose, String period, Long classId) {
         this.eid = eid;
-        this.status = status;
         this.availability = availability;
         this.dateOpen = dateOpen;
         this.dateClose = dateClose;
@@ -32,13 +31,13 @@ public class EvaluationDTO {
         this.eid = eid;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
+//    public String getStatus() {
+//        return status;
+//    }
+//
+//    public void setStatus(String status) {
+//        this.status = status;
+//    }
 
     public String getAvailability() {
         return availability;

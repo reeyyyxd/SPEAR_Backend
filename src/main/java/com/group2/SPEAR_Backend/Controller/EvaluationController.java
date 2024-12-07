@@ -3,9 +3,13 @@ package com.group2.SPEAR_Backend.Controller;
 import com.group2.SPEAR_Backend.Model.Evaluation;
 import com.group2.SPEAR_Backend.Service.EvaluationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -14,15 +18,29 @@ public class EvaluationController {
     @Autowired
     private EvaluationService eServ;
 
-    @PostMapping("/teacher/create")
-    public Evaluation createEvaluation(@RequestBody Evaluation evaluation, @RequestParam Long classId, @RequestParam Long evaluatorId) {
-        return eServ.createEvaluation(evaluation, classId, evaluatorId);
+    @PostMapping("/teacher/create-evaluation")
+    public ResponseEntity<Map<String, Object>> createEvaluation(
+            @RequestBody Evaluation evaluation,
+            @RequestParam Long classId) {
+        try {
+            Evaluation createdEvaluation = eServ.createEvaluation(evaluation, classId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Evaluation Created");
+            response.put("evaluation", createdEvaluation);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
+
     //for class
-    @GetMapping("/teacher/all")
-    public List<Evaluation> getAllEvaluations() {
-        return eServ.getAllEvaluations();
+    @GetMapping("/teacher/class/{classId}/evaluations")
+    public List<Evaluation> getEvaluationsByClass(@PathVariable Long classId) {
+        return eServ.getEvaluationsByClass(classId);
     }
 
     //filter by open and by period

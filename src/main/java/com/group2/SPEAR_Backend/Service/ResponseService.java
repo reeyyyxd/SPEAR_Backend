@@ -58,7 +58,7 @@ public class ResponseService {
 
         // If all evaluatees are evaluated, mark the evaluation as "Completed"
         if (totalEvaluatees >= expectedEvaluatees) {
-            evaluation.setStatus("Completed");
+//            evaluation.setStatus("Completed");
             eRepo.save(evaluation);
         }
     }

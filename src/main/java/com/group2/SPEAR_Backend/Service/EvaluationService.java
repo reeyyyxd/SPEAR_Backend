@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Service;
 
+import com.group2.SPEAR_Backend.Model.Classes;
 import com.group2.SPEAR_Backend.Model.Evaluation;
 import com.group2.SPEAR_Backend.Repository.ClassesRepository;
 import com.group2.SPEAR_Backend.Repository.EvaluationRepository;
@@ -28,19 +29,17 @@ public class EvaluationService {
     @Autowired
     private QuestionRepository qRepo;
 
-    public Evaluation createEvaluation(Evaluation evaluation, Long classId, Long evaluatorId) {
-        // Fetch the class
-        cRepo.findById(classId)
+    public Evaluation createEvaluation(Evaluation evaluation, Long classId) {
+        Classes classes = cRepo.findById(classId)
                 .orElseThrow(() -> new NoSuchElementException("Class not found with ID: " + classId));
-
-        // Remove the question count check
+        evaluation.setClasses(classes);
         evaluation.setAvailability(calculateAvailability(evaluation.getDateOpen(), evaluation.getDateClose()));
-
         return eRepo.save(evaluation);
     }
 
-    public List<Evaluation> getAllEvaluations() {
-        return eRepo.findAll();
+
+    public List<Evaluation> getEvaluationsByClass(Long classId) {
+        return eRepo.findByClassesCid(classId);
     }
 
     public List<Evaluation> getEvaluationsByPeriod(String period) {
@@ -57,7 +56,7 @@ public class EvaluationService {
 
     public Evaluation updateEvaluation(Long id, Evaluation updatedEvaluation) {
         return eRepo.findById(id).map(evaluation -> {
-            evaluation.setStatus(updatedEvaluation.getStatus());
+//            evaluation.setStatus(updatedEvaluation.getStatus());
             evaluation.setDateOpen(updatedEvaluation.getDateOpen());
             evaluation.setDateClose(updatedEvaluation.getDateClose());
             evaluation.setPeriod(updatedEvaluation.getPeriod());
@@ -87,17 +86,17 @@ public class EvaluationService {
         return "Pending";
     }
 
-    // Scheduler to update evaluations with "Late" status if date_close has passed and status is not "Completed"
-    @Scheduled(cron = "0 0 0 * * *") // Runs daily at midnight
-    public void updateLateEvaluations() {
-        List<Evaluation> allEvaluations = eRepo.findAll();
-        LocalDate today = LocalDate.now();
-
-        for (Evaluation evaluation : allEvaluations) {
-            if (evaluation.getDateClose().isBefore(today) && !"Completed".equalsIgnoreCase(evaluation.getStatus())) {
-                evaluation.setStatus("Late");
-                eRepo.save(evaluation);
-            }
-        }
-    }
+//    // Scheduler to update evaluations with "Late" status if date_close has passed and status is not "Completed"
+//    @Scheduled(cron = "0 0 0 * * *") // Runs daily at midnight
+//    public void updateLateEvaluations() {
+//        List<Evaluation> allEvaluations = eRepo.findAll();
+//        LocalDate today = LocalDate.now();
+//
+//        for (Evaluation evaluation : allEvaluations) {
+//            if (evaluation.getDateClose().isBefore(today) && !"Completed".equalsIgnoreCase(evaluation.getStatus())) {
+//                evaluation.setStatus("Late");
+//                eRepo.save(evaluation);
+//            }
+//        }
+//    }
 }
