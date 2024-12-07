@@ -14,6 +14,8 @@ public class TeamDTO {
     private Long classId;
     private List<Integer> memberIds;
     private boolean isRecruitmentOpen;
+    private List<FeatureDTO> features; // Added field for features
+    private String projectDescription; // Added field for project description
 
     public TeamDTO() {
     }
@@ -35,6 +37,21 @@ public class TeamDTO {
         this.projectName = projectName;
         this.isRecruitmentOpen = isRecruitmentOpen;
     }
+
+    public TeamDTO(int tid, String groupName, String projectName, int projectId, int leaderId, Long classId, List<Integer> memberIds, boolean isRecruitmentOpen, List<FeatureDTO> features, String projectDescription) {
+        this.tid = tid;
+        this.groupName = groupName;
+        this.projectName = projectName;
+        this.projectId = projectId;
+        this.leaderId = leaderId;
+        this.classId = classId;
+        this.memberIds = memberIds;
+        this.isRecruitmentOpen = isRecruitmentOpen;
+        this.features = features;
+        this.projectDescription = projectDescription;
+    }
+
+
 
     public int getTid() {
         return tid;
@@ -97,5 +114,21 @@ public class TeamDTO {
 
     public void setProjectName(String projectName) {
         this.projectName = projectName;
+    }
+
+    public List<FeatureDTO> getFeatures() {
+        return features;
+    }
+
+    public void setFeatures(List<FeatureDTO> features) {
+        this.features = features;
+    }
+
+    public String getProjectDescription() {
+        return projectDescription;
+    }
+
+    public void setProjectDescription(String projectDescription) {
+        this.projectDescription = projectDescription;
     }
 }

@@ -1,13 +1,11 @@
 package com.group2.SPEAR_Backend.Service;
 
+import com.group2.SPEAR_Backend.DTO.FeatureDTO;
 import com.group2.SPEAR_Backend.DTO.StatusDTO;
 import com.group2.SPEAR_Backend.DTO.TeamDTO;
 import com.group2.SPEAR_Backend.DTO.UserDTO;
 import com.group2.SPEAR_Backend.Model.*;
-import com.group2.SPEAR_Backend.Repository.ProjectProposalRepository;
-import com.group2.SPEAR_Backend.Repository.TeamRecuitmentRepository;
-import com.group2.SPEAR_Backend.Repository.TeamRepository;
-import com.group2.SPEAR_Backend.Repository.UserRepository;
+import com.group2.SPEAR_Backend.Repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +28,9 @@ public class TeamService {
 
     @Autowired
     private TeamRecuitmentRepository trRepo;
+
+    @Autowired
+    private FeatureRepository fRepo;
 
 
     @Transactional
@@ -145,15 +146,25 @@ public class TeamService {
         Team team = tRepo.findById(teamId)
                 .filter(t -> !t.isDeleted())
                 .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
+
+        ProjectProposal project = ppRepo.findById(team.getProject().getPid())
+                .orElseThrow(() -> new NoSuchElementException("Project with ID " + team.getProject().getPid() + " not found."));
+
+        List<FeatureDTO> features = fRepo.findByProjectId(project.getPid()).stream()
+                .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
+                .toList();
+
         return new TeamDTO(
                 team.getTid(),
                 team.getGroupName(),
-                team.getProject().getProjectName(),
-                team.getProject().getPid(),
+                project.getProjectName(),
+                project.getPid(),
                 team.getLeader().getUid(),
                 team.getClassRef().getCid(),
                 team.getMembers().stream().map(User::getUid).toList(),
-                team.isRecruitmentOpen()
+                team.isRecruitmentOpen(),
+                features,
+                project.getDescription()
         );
     }
 
@@ -204,18 +215,22 @@ public class TeamService {
             Team team = tRepo.findById(teamDTO.getTid())
                     .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamDTO.getTid() + " not found"));
 
-            String leaderName = team.getLeader().getFirstname() + " " + team.getLeader().getLastname();
-            List<String> memberNames = team.getMembers().stream()
-                    .map(member -> member.getFirstname() + " " + member.getLastname())
+            ProjectProposal project = ppRepo.findById(team.getProject().getPid())
+                    .orElseThrow(() -> new NoSuchElementException("Project with ID " + team.getProject().getPid() + " not found."));
+
+            List<FeatureDTO> features = fRepo.findByProjectId(project.getPid()).stream()
+                    .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
                     .toList();
 
             teamDTO.setLeaderId(team.getLeader().getUid());
             teamDTO.setClassId(team.getClassRef().getCid());
             teamDTO.setMemberIds(team.getMembers().stream().map(User::getUid).toList());
-            teamDTO.setProjectId(team.getProject().getPid());
-            teamDTO.setProjectName(team.getProject().getProjectName());
+            teamDTO.setProjectId(project.getPid());
+            teamDTO.setProjectName(project.getProjectName());
             teamDTO.setGroupName(team.getGroupName());
             teamDTO.setRecruitmentOpen(team.isRecruitmentOpen());
+            teamDTO.setFeatures(features);
+            teamDTO.setProjectDescription(project.getDescription());
         }
         return teams;
     }
@@ -244,7 +259,7 @@ public class TeamService {
     public List<UserDTO> getTeamMembers(int teamId) {
         List<User> members = tRepo.findMembersByTeamId(teamId);
         return members.stream()
-                .map(member -> new UserDTO(member.getUid(), member.getFirstname(), member.getLastname(), member.getEmail(), member.getRole()))
+                .map(member -> new UserDTO(member.getFirstname(), member.getLastname()))
                 .toList();
     }
 

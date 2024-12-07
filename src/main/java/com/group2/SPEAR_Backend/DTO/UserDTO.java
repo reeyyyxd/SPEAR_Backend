@@ -61,6 +61,11 @@ public class UserDTO {
         this.role = role;
     }
 
+    public UserDTO(String firstname, String lastname) {
+        this.firstname = firstname;
+        this.lastname = lastname;
+    }
+
     public UserDTO() {}
 
     public int getStatusCode() {
