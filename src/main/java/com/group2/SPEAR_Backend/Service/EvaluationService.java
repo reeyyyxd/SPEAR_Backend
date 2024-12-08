@@ -29,13 +29,23 @@ public class EvaluationService {
     @Autowired
     private QuestionRepository qRepo;
 
+
     public Evaluation createEvaluation(Evaluation evaluation, Long classId) {
         Classes classes = cRepo.findById(classId)
                 .orElseThrow(() -> new NoSuchElementException("Class not found with ID: " + classId));
+
         evaluation.setClasses(classes);
-        evaluation.setAvailability(calculateAvailability(evaluation.getDateOpen(), evaluation.getDateClose()));
+        LocalDate today = LocalDate.now();
+        if (today.isAfter(evaluation.getDateOpen()) && today.isBefore(evaluation.getDateClose())) {
+            evaluation.setAvailability("Open");
+        } else if (today.isAfter(evaluation.getDateClose())) {
+            evaluation.setAvailability("Closed");
+        } else {
+            evaluation.setAvailability("Pending");
+        }
         return eRepo.save(evaluation);
     }
+
 
 
     public List<Evaluation> getEvaluationsByClass(Long classId) {

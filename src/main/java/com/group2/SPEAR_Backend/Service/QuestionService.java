@@ -33,7 +33,6 @@ public class QuestionService {
     public Question updateQuestion(Long questionId, Question updatedQuestion) {
         return qRepo.findById(questionId).map(question -> {
             question.setQuestionText(updatedQuestion.getQuestionText());
-//          question.setRatingOptions(updatedQuestion.getQuestionPeriod());
             return qRepo.save(question);
         }).orElseThrow(() -> new NoSuchElementException("Question not found with ID: " + questionId));
     }
