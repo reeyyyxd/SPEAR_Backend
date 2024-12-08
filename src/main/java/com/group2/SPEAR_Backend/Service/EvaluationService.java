@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Service;
 
+import com.group2.SPEAR_Backend.DTO.EvaluationDTO;
 import com.group2.SPEAR_Backend.Model.Classes;
 import com.group2.SPEAR_Backend.Model.Evaluation;
 import com.group2.SPEAR_Backend.Repository.ClassesRepository;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class EvaluationService {
@@ -48,8 +50,17 @@ public class EvaluationService {
 
 
 
-    public List<Evaluation> getEvaluationsByClass(Long classId) {
-        return eRepo.findByClassesCid(classId);
+    public List<EvaluationDTO> getEvaluationsByClassAsDTO(Long classId) {
+        return eRepo.findByClassesCid(classId).stream()
+                .map(evaluation -> new EvaluationDTO(
+                        evaluation.getEid(),
+                        evaluation.getAvailability(),
+                        evaluation.getDateOpen(),
+                        evaluation.getDateClose(),
+                        evaluation.getPeriod(),
+                        evaluation.getClasses().getCid()
+                ))
+                .collect(Collectors.toList());
     }
 
     public List<Evaluation> getEvaluationsByPeriod(String period) {

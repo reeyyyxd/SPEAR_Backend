@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Controller;
 
+import com.group2.SPEAR_Backend.DTO.EvaluationDTO;
 import com.group2.SPEAR_Backend.Model.Evaluation;
 import com.group2.SPEAR_Backend.Service.EvaluationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +40,9 @@ public class EvaluationController {
 
     //for class
     @GetMapping("/teacher/class/{classId}/evaluations")
-    public List<Evaluation> getEvaluationsByClass(@PathVariable Long classId) {
-        return eServ.getEvaluationsByClass(classId);
+    public ResponseEntity<List<EvaluationDTO>> getEvaluationsByClass(@PathVariable Long classId) {
+        List<EvaluationDTO> evaluations = eServ.getEvaluationsByClassAsDTO(classId);
+        return ResponseEntity.ok(evaluations);
     }
 
     //filter by open and by period

@@ -5,7 +5,6 @@ import java.time.LocalDate;
 public class EvaluationDTO {
 
     private Long eid;
-//    private String status;
     private String availability;
     private LocalDate dateOpen;
     private LocalDate dateClose;
@@ -30,14 +29,6 @@ public class EvaluationDTO {
     public void setEid(Long eid) {
         this.eid = eid;
     }
-
-//    public String getStatus() {
-//        return status;
-//    }
-//
-//    public void setStatus(String status) {
-//        this.status = status;
-//    }
 
     public String getAvailability() {
         return availability;

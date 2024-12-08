@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -11,9 +12,7 @@ public class Evaluation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long eid;
 
-//    @Column(name = "status", nullable = false)
-//    private String status; // "Completed" or "Pending" for students
-
+    @JsonIgnore
     @Column(name = "availability", nullable = false)
     private String availability; // "Open" or "Closed"
 
