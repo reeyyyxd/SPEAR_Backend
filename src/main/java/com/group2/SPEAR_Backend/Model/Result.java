@@ -11,7 +11,6 @@ public class Result{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long resultId;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "evaluatee_id", referencedColumnName = "uid", nullable = false)
     private User evaluatee;

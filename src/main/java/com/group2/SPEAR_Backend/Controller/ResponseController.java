@@ -16,8 +16,10 @@ public class ResponseController {
     private ResponseService rServ;
 
     @PostMapping("/submit")
-    public String submitResponses(@RequestBody List<Response> responses) {
-        rServ.submitResponses(responses);
+    public String submitResponses(
+            @RequestBody List<Response> responses,
+            @RequestParam int teamId) {
+        rServ.submitResponses(responses, teamId);
         return "Responses submitted successfully";
     }
 

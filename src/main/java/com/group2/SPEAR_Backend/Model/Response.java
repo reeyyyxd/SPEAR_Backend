@@ -10,7 +10,6 @@ public class Response {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long rid;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "evaluator_id", referencedColumnName = "uid", nullable = false)
     private User evaluator;

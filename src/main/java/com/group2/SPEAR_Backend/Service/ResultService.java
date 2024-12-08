@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class ResultService {
@@ -36,19 +37,21 @@ public class ResultService {
         User evaluatee = userRepo.findById(evaluateeId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + evaluateeId));
 
+        Optional<Result> existingResult = resultRepo.findByEvaluationEidAndEvaluateeUid(evaluationId, evaluateeId);
+        if (existingResult.isPresent()) {
+            return existingResult.get(); // Return the existing result
+        }
         List<Response> responses = responseRepo.findByEvaluateeUid(evaluateeId);
-
-        // Calculate average score
         double totalScore = responses.stream()
                 .filter(response -> response.getEvaluation().getEid().equals(evaluationId))
                 .mapToDouble(Response::getScore)
                 .sum();
         double averageScore = responses.size() > 0 ? totalScore / responses.size() : 0.0;
 
-        // Save result
         Result result = new Result(evaluatee, evaluation, averageScore);
         return resultRepo.save(result);
     }
+
 
     public List<Result> getResultsByEvaluatee(int evaluateeId) {
         return resultRepo.findByEvaluateeUid(evaluateeId);

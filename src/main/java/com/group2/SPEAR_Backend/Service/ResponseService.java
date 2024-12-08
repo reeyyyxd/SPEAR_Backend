@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Service;
 
+import com.group2.SPEAR_Backend.DTO.TeamDTO;
 import com.group2.SPEAR_Backend.Model.Evaluation;
 import com.group2.SPEAR_Backend.Model.Response;
 import com.group2.SPEAR_Backend.Repository.EvaluationRepository;
@@ -18,56 +19,92 @@ public class ResponseService {
     @Autowired
     private EvaluationRepository eRepo;
 
-    public void submitResponses(List<Response> responses) {
-        responses.forEach(response -> {
-            if (response.getEvaluator() == null || response.getEvaluatee() == null ||
-                    response.getQuestion() == null || response.getEvaluation() == null) {
-                throw new IllegalArgumentException("Incomplete response data");
-            }
-        });
+    @Autowired
+    private SubmissionService subServ;
 
-        // Save all responses
-        rRepo.saveAll(responses);
+    @Autowired
+    private TeamService tServ;
 
-        // After saving, check if all evaluators have submitted for the given evaluation
-        if (!responses.isEmpty()) {
-            Long evaluationId = responses.get(0).getEvaluation().getEid(); // Get the evaluation ID
-            checkAndUpdateEvaluationStatus(evaluationId);
+    @Autowired
+    private ResultService resServ;
+
+    public void submitResponses(List<Response> responses, int teamId) {
+        TeamDTO teamDTO = tServ.getTeamById(teamId);
+        if (teamDTO == null || teamDTO.getMemberIds().isEmpty()) {
+            throw new IllegalArgumentException("Invalid team or no members in the team.");
         }
+
+        List<Integer> validMembers = teamDTO.getMemberIds();
+
+        // Filter valid responses
+        List<Response> validResponses = responses.stream()
+                .filter(response -> {
+                    if (response == null || response.getEvaluator() == null || response.getEvaluatee() == null ||
+                            response.getQuestion() == null || response.getEvaluation() == null) {
+                        System.out.println("Warning: Skipping invalid response: " + response);
+                        return false;
+                    }
+                    boolean isValidEvaluator = validMembers.contains(response.getEvaluator().getUid());
+                    boolean isValidEvaluatee = validMembers.contains(response.getEvaluatee().getUid());
+                    if (!isValidEvaluator || !isValidEvaluatee) {
+                        System.out.println("Warning: Invalid evaluator or evaluatee in response: " + response);
+                    }
+                    return isValidEvaluator && isValidEvaluatee;
+                })
+                .toList();
+
+        if (validResponses.isEmpty()) {
+            System.out.println("No valid responses were provided.");
+            return;
+        }
+
+        // Save valid responses
+        rRepo.saveAll(validResponses);
+
+        // Process evaluatees for results
+        Long evaluationId = validResponses.get(0).getEvaluation().getEid();
+        validResponses.stream()
+                .map(Response::getEvaluatee)
+                .distinct()
+                .forEach(evaluatee -> {
+                    int evaluateeId = evaluatee.getUid();
+                    resServ.calculateAndSaveResult(evaluationId, evaluateeId);
+                });
+
+        // Create submission for the evaluator
+        int evaluatorId = validResponses.get(0).getEvaluator().getUid();
+        subServ.createSubmission(evaluationId, evaluatorId);
+
+        // Update evaluation status
+        checkAndUpdateEvaluationStatus(evaluationId);
     }
 
+
+
+
     private void checkAndUpdateEvaluationStatus(Long evaluationId) {
-        // Fetch the evaluation
         Evaluation evaluation = eRepo.findById(evaluationId)
                 .orElseThrow(() -> new RuntimeException("Evaluation not found with ID: " + evaluationId));
 
-        // Fetch all responses for this evaluation
         List<Response> responsesForEvaluation = rRepo.findAll()
                 .stream()
                 .filter(response -> response.getEvaluation().getEid().equals(evaluationId))
                 .toList();
 
-        // Determine if all evaluatees have been evaluated
         long totalEvaluatees = responsesForEvaluation.stream()
-                .map(Response::getEvaluatee) // Get all evaluatees
-                .distinct() // Remove duplicates
+                .map(Response::getEvaluatee)
+                .distinct()
                 .count();
 
-        // Fetch the expected number of evaluatees (if available from your team logic)
         long expectedEvaluatees = getExpectedEvaluateeCountForEvaluation(evaluationId);
 
-        // If all evaluatees are evaluated, mark the evaluation as "Completed"
         if (totalEvaluatees >= expectedEvaluatees) {
-//            evaluation.setStatus("Completed");
             eRepo.save(evaluation);
         }
     }
 
     private long getExpectedEvaluateeCountForEvaluation(Long evaluationId) {
-        // This is a placeholder logic to fetch the expected number of evaluatees for the evaluation.
-        // Update this based on how you track the expected number of evaluatees per evaluation.
-        // For example, you can fetch it from the associated team or class.
-        return 5; // Example: Expecting 5 evaluatees per evaluation
+        return 2; // Placeholder: Adjust based on your team logic
     }
 
     public List<Response> getResponsesByEvaluator(int evaluatorId) {
