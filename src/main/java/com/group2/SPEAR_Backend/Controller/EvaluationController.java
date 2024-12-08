@@ -46,22 +46,22 @@ public class EvaluationController {
     }
 
     //filter by open and by period
-    @GetMapping("student/availability/{availability}")
+    @GetMapping("student/check-availability/{availability}")
     public List<Evaluation> getEvaluationsByAvailability(@PathVariable String availability) {
         return eServ.getEvaluationsByAvailability(availability);
     }
 
-    @PutMapping("teacher/update/{id}")
+    @PutMapping("teacher/update-evaluation/{id}")
     public Evaluation updateEvaluation(@PathVariable Long id, @RequestBody Evaluation updatedEvaluation) {
         return eServ.updateEvaluation(id, updatedEvaluation);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("teacher/delete-evaluation/{id}")
     public String deleteEvaluation(@PathVariable Long id) {
         return eServ.deleteEvaluation(id);
     }
 
-    @GetMapping("/student/period/{period}")
+    @GetMapping("/student/evaluation-period/{period}")
     public List<Evaluation> getEvaluationsByPeriod(@PathVariable String period) {
         return eServ.getEvaluationsByPeriod(period);
     }

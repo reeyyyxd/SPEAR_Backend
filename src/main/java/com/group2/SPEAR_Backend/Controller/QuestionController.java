@@ -14,9 +14,12 @@ public class QuestionController {
     @Autowired
     private QuestionService qServ;
 
-    @PostMapping("/teacher/create-question/{classId}")
-    public Question createQuestion(@PathVariable Long classId, @RequestBody Question question) {
-        return qServ.createQuestion(classId, question);
+    @PostMapping("/teacher/create-question/{classId}/{evaluationId}")
+    public Question createQuestion(
+            @PathVariable Long classId,
+            @PathVariable Long evaluationId,
+            @RequestBody Question question) {
+        return qServ.createQuestion(classId, evaluationId, question);
     }
 
     @GetMapping("/get-all-questions-by-class/{classId}")
@@ -24,9 +27,14 @@ public class QuestionController {
         return qServ.getQuestionsByClass(classId);
     }
 
-    @GetMapping("/get-questions-by-class-and-period/{classId}/{period}")
-    public List<Question> getQuestionsByClassAndPeriod(@PathVariable Long classId, @PathVariable String period) {
-        return qServ.getQuestionsByClassAndPeriod(classId, period);
+    @GetMapping("/get-questions-by-evaluation/{evaluationId}")
+    public List<Question> getQuestionsByEvaluation(@PathVariable Long evaluationId) {
+        return qServ.getQuestionsByEvaluation(evaluationId);
+    }
+
+    @GetMapping("/get-questions-by-class-and-evaluation/{classId}/{evaluationId}")
+    public List<Question> getQuestionsByClassAndEvaluation(@PathVariable Long classId, @PathVariable Long evaluationId) {
+        return qServ.getQuestionsByClassAndEvaluation(classId, evaluationId);
     }
 
     @PutMapping("/teacher/update-question/{questionId}")

@@ -9,5 +9,7 @@ import java.util.List;
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long> {
     List<Question> findByClassesCid(Long classId);
-    List<Question> findByClassesCidAndQuestionPeriod(Long classId, String questionPeriod); // New method
+    List<Question> findByEvaluationEid(Long evaluationId);
+    List<Question> findByClassesCidAndEvaluationEid(Long classId, Long evaluationId);
 }
+
