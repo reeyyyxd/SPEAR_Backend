@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -9,6 +10,7 @@ public class Response {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long rid;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "evaluator_id", referencedColumnName = "uid", nullable = false)
     private User evaluator;

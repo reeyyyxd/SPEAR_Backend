@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -13,16 +14,19 @@ public class Question {
     @Column(name = "question_text", nullable = false)
     private String questionText;
 
+    @Column(name = "question_period", nullable = false)
+    private String questionPeriod;
+
     @ManyToOne
     @JoinColumn(name = "class_id", referencedColumnName = "cid", nullable = false)
     private Classes classes;
 
-
     public Question() {
     }
 
-    public Question(String questionText, Classes classes) {
+    public Question(String questionText, String questionPeriod, Classes classes) {
         this.questionText = questionText;
+        this.questionPeriod = questionPeriod;
         this.classes = classes;
     }
 
@@ -42,6 +46,14 @@ public class Question {
         this.questionText = questionText;
     }
 
+    public String getQuestionPeriod() {
+        return questionPeriod;
+    }
+
+    public void setQuestionPeriod(String questionPeriod) {
+        this.questionPeriod = questionPeriod;
+    }
+
     public Classes getClasses() {
         return classes;
     }
@@ -49,5 +61,4 @@ public class Question {
     public void setClasses(Classes classes) {
         this.classes = classes;
     }
-
 }

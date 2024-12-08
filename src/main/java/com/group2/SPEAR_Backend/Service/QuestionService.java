@@ -30,9 +30,14 @@ public class QuestionService {
         return qRepo.findByClassesCid(classId);
     }
 
+    public List<Question> getQuestionsByClassAndPeriod(Long classId, String questionPeriod) {
+        return qRepo.findByClassesCidAndQuestionPeriod(classId, questionPeriod);
+    }
+
     public Question updateQuestion(Long questionId, Question updatedQuestion) {
         return qRepo.findById(questionId).map(question -> {
             question.setQuestionText(updatedQuestion.getQuestionText());
+            question.setQuestionPeriod(updatedQuestion.getQuestionPeriod());
             return qRepo.save(question);
         }).orElseThrow(() -> new NoSuchElementException("Question not found with ID: " + questionId));
     }

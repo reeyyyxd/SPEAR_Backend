@@ -24,6 +24,11 @@ public class QuestionController {
         return qServ.getQuestionsByClass(classId);
     }
 
+    @GetMapping("/get-questions-by-class-and-period/{classId}/{period}")
+    public List<Question> getQuestionsByClassAndPeriod(@PathVariable Long classId, @PathVariable String period) {
+        return qServ.getQuestionsByClassAndPeriod(classId, period);
+    }
+
     @PutMapping("/teacher/update-question/{questionId}")
     public Question updateQuestion(@PathVariable Long questionId, @RequestBody Question updatedQuestion) {
         return qServ.updateQuestion(questionId, updatedQuestion);
@@ -34,3 +39,4 @@ public class QuestionController {
         return qServ.deleteQuestion(questionId);
     }
 }
+

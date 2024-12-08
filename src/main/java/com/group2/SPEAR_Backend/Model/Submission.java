@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -11,6 +12,7 @@ public class Submission {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long sid;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "evaluation_id", referencedColumnName = "eid", nullable = false)
     private Evaluation evaluation;
