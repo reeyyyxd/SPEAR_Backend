@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Service;
 
+import com.group2.SPEAR_Backend.DTO.ResultDTO;
 import com.group2.SPEAR_Backend.Model.Evaluation;
 import com.group2.SPEAR_Backend.Model.Response;
 import com.group2.SPEAR_Backend.Model.Result;
@@ -14,34 +15,36 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ResultService {
 
     @Autowired
-    private ResultRepository resultRepo;
+    private ResultRepository rRepo;
 
     @Autowired
-    private ResponseRepository responseRepo;
+    private ResponseRepository resRepo;
 
     @Autowired
-    private EvaluationRepository evaluationRepo;
+    private EvaluationRepository eRepo;
 
     @Autowired
-    private UserRepository userRepo;
+    private UserRepository uRepo;
 
     public Result calculateAndSaveResult(Long evaluationId, int evaluateeId) {
-        Evaluation evaluation = evaluationRepo.findById(evaluationId)
+        Evaluation evaluation = eRepo.findById(evaluationId)
                 .orElseThrow(() -> new NoSuchElementException("Evaluation not found with ID: " + evaluationId));
 
-        User evaluatee = userRepo.findById(evaluateeId)
+        User evaluatee = uRepo.findById(evaluateeId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + evaluateeId));
 
-        Optional<Result> existingResult = resultRepo.findByEvaluationEidAndEvaluateeUid(evaluationId, evaluateeId);
+        Optional<Result> existingResult = rRepo.findByEvaluationEidAndEvaluateeUid(evaluationId, evaluateeId);
         if (existingResult.isPresent()) {
-            return existingResult.get(); // Return the existing result
+            return existingResult.get();
         }
-        List<Response> responses = responseRepo.findByEvaluateeUid(evaluateeId);
+
+        List<Response> responses = resRepo.findByEvaluateeUid(evaluateeId);
         double totalScore = responses.stream()
                 .filter(response -> response.getEvaluation().getEid().equals(evaluationId))
                 .mapToDouble(Response::getScore)
@@ -49,15 +52,27 @@ public class ResultService {
         double averageScore = responses.size() > 0 ? totalScore / responses.size() : 0.0;
 
         Result result = new Result(evaluatee, evaluation, averageScore);
-        return resultRepo.save(result);
+        return rRepo.save(result);
     }
 
-
-    public List<Result> getResultsByEvaluatee(int evaluateeId) {
-        return resultRepo.findByEvaluateeUid(evaluateeId);
+    public List<ResultDTO> getResultsByEvaluatee(int evaluateeId) {
+        return rRepo.findByEvaluateeUid(evaluateeId).stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<Result> getResultsByEvaluation(Long evaluationId) {
-        return resultRepo.findByEvaluationEid(evaluationId);
+    public List<ResultDTO> getResultsByEvaluation(Long evaluationId) {
+        return rRepo.findByEvaluationEid(evaluationId).stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    private ResultDTO toDTO(Result result) {
+        return new ResultDTO(
+                result.getResultId(),
+                result.getEvaluatee().getUid(),
+                result.getEvaluation().getEid(),
+                result.getAverageScore()
+        );
     }
 }

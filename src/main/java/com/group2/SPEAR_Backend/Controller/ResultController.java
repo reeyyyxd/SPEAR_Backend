@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Controller;
 
+import com.group2.SPEAR_Backend.DTO.ResultDTO;
 import com.group2.SPEAR_Backend.Model.Result;
 import com.group2.SPEAR_Backend.Service.ResultService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,19 +16,25 @@ public class ResultController {
     private ResultService resultService;
 
     @PostMapping("/teacher/calculate-result")
-    public Result calculateAndSaveResult(
+    public ResultDTO calculateAndSaveResult(
             @RequestParam Long evaluationId,
             @RequestParam int evaluateeId) {
-        return resultService.calculateAndSaveResult(evaluationId, evaluateeId);
+        Result result = resultService.calculateAndSaveResult(evaluationId, evaluateeId);
+        return new ResultDTO(
+                result.getResultId(),
+                result.getEvaluatee().getUid(),
+                result.getEvaluation().getEid(),
+                result.getAverageScore()
+        );
     }
 
     @GetMapping("teacher/by-evaluatee/{evaluateeId}")
-    public List<Result> getResultsByEvaluatee(@PathVariable int evaluateeId) {
+    public List<ResultDTO> getResultsByEvaluatee(@PathVariable int evaluateeId) {
         return resultService.getResultsByEvaluatee(evaluateeId);
     }
 
     @GetMapping("teacher/by-evaluation/{evaluationId}")
-    public List<Result> getResultsByEvaluation(@PathVariable Long evaluationId) {
+    public List<ResultDTO> getResultsByEvaluation(@PathVariable Long evaluationId) {
         return resultService.getResultsByEvaluation(evaluationId);
     }
 }

@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Service;
 
+import com.group2.SPEAR_Backend.DTO.ResponseDTO;
 import com.group2.SPEAR_Backend.DTO.TeamDTO;
 import com.group2.SPEAR_Backend.Model.Evaluation;
 import com.group2.SPEAR_Backend.Model.Response;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ResponseService {
@@ -107,16 +109,32 @@ public class ResponseService {
         return 2; // Placeholder: Adjust based on your team logic
     }
 
-    public List<Response> getResponsesByEvaluator(int evaluatorId) {
-        return rRepo.findByEvaluatorUid(evaluatorId);
+    public List<ResponseDTO> getResponsesByEvaluator(int evaluatorId) {
+        return rRepo.findByEvaluatorUid(evaluatorId).stream()
+                .map(response -> new ResponseDTO(
+                        response.getRid(),
+                        response.getEvaluator().getUid(),
+                        response.getEvaluatee().getUid(),
+                        response.getQuestion().getQid(),
+                        response.getScore()
+                ))
+                .collect(Collectors.toList());
     }
 
-    public List<Response> getResponsesByEvaluatee(int evaluateeId) {
-        return rRepo.findByEvaluateeUid(evaluateeId);
+    public List<ResponseDTO> getResponsesByEvaluatee(int evaluateeId) {
+        return rRepo.findByEvaluateeUid(evaluateeId).stream()
+                .map(response -> new ResponseDTO(
+                        response.getRid(),
+                        response.getEvaluator().getUid(),
+                        response.getEvaluatee().getUid(),
+                        response.getQuestion().getQid(),
+                        response.getScore()
+                ))
+                .collect(Collectors.toList());
     }
 
     public double calculateAverageResponse(int evaluateeId) {
-        List<Response> responses = getResponsesByEvaluatee(evaluateeId);
+        List<Response> responses = rRepo.findByEvaluateeUid(evaluateeId);
         if (responses.isEmpty()) {
             throw new RuntimeException("No responses found for evaluatee ID: " + evaluateeId);
         }

@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Controller;
 
+import com.group2.SPEAR_Backend.DTO.ResponseDTO;
 import com.group2.SPEAR_Backend.Model.Response;
 import com.group2.SPEAR_Backend.Service.ResponseService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +25,12 @@ public class ResponseController {
     }
 
     @GetMapping("/evaluator/{evaluatorId}")
-    public List<Response> getResponsesByEvaluator(@PathVariable int evaluatorId) {
+    public List<ResponseDTO> getResponsesByEvaluator(@PathVariable int evaluatorId) {
         return rServ.getResponsesByEvaluator(evaluatorId);
     }
 
     @GetMapping("/evaluatee/{evaluateeId}")
-    public List<Response> getResponsesByEvaluatee(@PathVariable int evaluateeId) {
+    public List<ResponseDTO> getResponsesByEvaluatee(@PathVariable int evaluateeId) {
         return rServ.getResponsesByEvaluatee(evaluateeId);
     }
 

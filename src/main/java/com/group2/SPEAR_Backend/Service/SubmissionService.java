@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Service;
 
+import com.group2.SPEAR_Backend.DTO.SubmissionDTO;
 import com.group2.SPEAR_Backend.Model.Evaluation;
 import com.group2.SPEAR_Backend.Model.Submission;
 import com.group2.SPEAR_Backend.Model.User;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class SubmissionService {
@@ -32,29 +34,39 @@ public class SubmissionService {
                 .orElseThrow(() -> new NoSuchElementException("Evaluator not found with ID: " + evaluatorId));
 
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime evaluationCloseDateTime = evaluation.getDateClose().atTime(23, 59, 59); // Assume end of day for closing
+        LocalDateTime evaluationCloseDateTime = evaluation.getDateClose().atTime(23, 59, 59);
 
-        String status;
-        if (now.isAfter(evaluationCloseDateTime)) {
-            status = "Late";
-        } else {
-            status = "Submitted";
-        }
+        String status = now.isAfter(evaluationCloseDateTime) ? "Late" : "Submitted";
 
         Submission submission = new Submission(evaluation, evaluator, now, status);
         return submissionRepo.save(submission);
     }
 
-
-    public List<Submission> getSubmissionsByEvaluation(Long evaluationId) {
-        return submissionRepo.findByEvaluationEid(evaluationId);
+    public List<SubmissionDTO> getSubmissionsByEvaluation(Long evaluationId) {
+        return submissionRepo.findByEvaluationEid(evaluationId).stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<Submission> getSubmissionsByEvaluator(int evaluatorId) {
-        return submissionRepo.findByEvaluatorUid(evaluatorId);
+    public List<SubmissionDTO> getSubmissionsByEvaluator(int evaluatorId) {
+        return submissionRepo.findByEvaluatorUid(evaluatorId).stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<Submission> getSubmissionsByStatus(String status) {
-        return submissionRepo.findByStatus(status);
+    public List<SubmissionDTO> getSubmissionsByStatus(String status) {
+        return submissionRepo.findByStatus(status).stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    private SubmissionDTO toDTO(Submission submission) {
+        return new SubmissionDTO(
+                submission.getSid(),
+                submission.getEvaluator().getUid(),
+                submission.getEvaluation().getEid(),
+                submission.getSubmittedAt(),
+                submission.getStatus()
+        );
     }
 }
