@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Controller;
 
+import com.group2.SPEAR_Backend.DTO.QuestionDTO;
 import com.group2.SPEAR_Backend.Model.Question;
 import com.group2.SPEAR_Backend.Service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,36 +16,39 @@ public class QuestionController {
     private QuestionService qServ;
 
     @PostMapping("/teacher/create-question/{classId}/{evaluationId}")
-    public Question createQuestion(
+    public QuestionDTO createQuestion(
             @PathVariable Long classId,
             @PathVariable Long evaluationId,
-            @RequestBody Question question) {
-        return qServ.createQuestion(classId, evaluationId, question);
+            @RequestBody QuestionDTO questionDTO) {
+        return qServ.createQuestion(classId, evaluationId, questionDTO);
     }
 
+
     @GetMapping("/get-all-questions-by-class/{classId}")
-    public List<Question> getQuestionsByClass(@PathVariable Long classId) {
+    public List<QuestionDTO> getQuestionsByClass(@PathVariable Long classId) {
         return qServ.getQuestionsByClass(classId);
     }
 
     @GetMapping("/get-questions-by-evaluation/{evaluationId}")
-    public List<Question> getQuestionsByEvaluation(@PathVariable Long evaluationId) {
+    public List<QuestionDTO> getQuestionsByEvaluation(@PathVariable Long evaluationId) {
         return qServ.getQuestionsByEvaluation(evaluationId);
     }
 
     @GetMapping("/get-questions-by-class-and-evaluation/{classId}/{evaluationId}")
-    public List<Question> getQuestionsByClassAndEvaluation(@PathVariable Long classId, @PathVariable Long evaluationId) {
+    public List<QuestionDTO> getQuestionsByClassAndEvaluation(
+            @PathVariable Long classId, @PathVariable Long evaluationId) {
         return qServ.getQuestionsByClassAndEvaluation(classId, evaluationId);
     }
 
     @PutMapping("/teacher/update-question/{questionId}")
-    public Question updateQuestion(@PathVariable Long questionId, @RequestBody Question updatedQuestion) {
-        return qServ.updateQuestion(questionId, updatedQuestion);
+    public QuestionDTO updateQuestion(@PathVariable Long questionId, @RequestBody QuestionDTO updatedQuestionDTO) {
+        return qServ.updateQuestion(questionId, updatedQuestionDTO);
     }
 
     @DeleteMapping("/teacher/delete-question/{questionId}")
-    public String deleteQuestion(@PathVariable Long questionId) {
+    public QuestionDTO deleteQuestion(@PathVariable Long questionId) {
         return qServ.deleteQuestion(questionId);
     }
+
 }
 
