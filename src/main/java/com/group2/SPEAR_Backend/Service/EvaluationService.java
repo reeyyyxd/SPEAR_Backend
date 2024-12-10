@@ -38,13 +38,14 @@ public class EvaluationService {
 
         evaluation.setClasses(classes);
         LocalDate today = LocalDate.now();
-        if (today.isAfter(evaluation.getDateOpen()) && today.isBefore(evaluation.getDateClose())) {
+        if ((today.isEqual(evaluation.getDateOpen()) || today.isAfter(evaluation.getDateOpen())) && today.isBefore(evaluation.getDateClose())) {
             evaluation.setAvailability("Open");
         } else if (today.isAfter(evaluation.getDateClose())) {
             evaluation.setAvailability("Closed");
         } else {
             evaluation.setAvailability("Pending");
         }
+
         return eRepo.save(evaluation);
     }
 

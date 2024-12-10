@@ -68,9 +68,12 @@ public class ResultService {
     }
 
     private ResultDTO toDTO(Result result) {
+        String evaluateeName = uRepo.findFullNameById(result.getEvaluatee().getUid());
+
         return new ResultDTO(
                 result.getResultId(),
                 result.getEvaluatee().getUid(),
+                evaluateeName,
                 result.getEvaluation().getEid(),
                 result.getAverageScore()
         );

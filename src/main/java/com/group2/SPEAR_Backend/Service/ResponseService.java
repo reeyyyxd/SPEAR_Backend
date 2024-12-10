@@ -6,6 +6,7 @@ import com.group2.SPEAR_Backend.Model.Evaluation;
 import com.group2.SPEAR_Backend.Model.Response;
 import com.group2.SPEAR_Backend.Repository.EvaluationRepository;
 import com.group2.SPEAR_Backend.Repository.ResponseRepository;
+import com.group2.SPEAR_Backend.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,7 @@ public class ResponseService {
 
     @Autowired
     private ResultService resServ;
+
 
     public void submitResponses(List<Response> responses, int teamId) {
         TeamDTO teamDTO = tServ.getTeamById(teamId);
@@ -110,28 +112,13 @@ public class ResponseService {
     }
 
     public List<ResponseDTO> getResponsesByEvaluator(int evaluatorId) {
-        return rRepo.findByEvaluatorUid(evaluatorId).stream()
-                .map(response -> new ResponseDTO(
-                        response.getRid(),
-                        response.getEvaluator().getUid(),
-                        response.getEvaluatee().getUid(),
-                        response.getQuestion().getQid(),
-                        response.getScore()
-                ))
-                .collect(Collectors.toList());
+        return rRepo.findResponsesByEvaluatorId(evaluatorId);
     }
 
     public List<ResponseDTO> getResponsesByEvaluatee(int evaluateeId) {
-        return rRepo.findByEvaluateeUid(evaluateeId).stream()
-                .map(response -> new ResponseDTO(
-                        response.getRid(),
-                        response.getEvaluator().getUid(),
-                        response.getEvaluatee().getUid(),
-                        response.getQuestion().getQid(),
-                        response.getScore()
-                ))
-                .collect(Collectors.toList());
+        return rRepo.findResponsesByEvaluateeId(evaluateeId);
     }
+
 
     public double calculateAverageResponse(int evaluateeId) {
         List<Response> responses = rRepo.findByEvaluateeUid(evaluateeId);

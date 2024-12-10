@@ -6,12 +6,14 @@ public class ResultDTO {
     private int evaluateeId;
     private Long evaluationId;
     private double averageScore;
+    private String evaluateeName;
 
     public ResultDTO() {}
 
-    public ResultDTO(Long resultId, int evaluateeId, Long evaluationId, double averageScore) {
+    public ResultDTO(Long resultId, int evaluateeId, String evaluateeName, Long evaluationId, double averageScore) {
         this.resultId = resultId;
         this.evaluateeId = evaluateeId;
+        this.evaluateeName = evaluateeName;
         this.evaluationId = evaluationId;
         this.averageScore = averageScore;
     }
@@ -46,5 +48,13 @@ public class ResultDTO {
 
     public void setAverageScore(double averageScore) {
         this.averageScore = averageScore;
+    }
+
+    public String getEvaluateeName() {
+        return evaluateeName;
+    }
+
+    public void setEvaluateeName(String evaluateeName) {
+        this.evaluateeName = evaluateeName;
     }
 }
