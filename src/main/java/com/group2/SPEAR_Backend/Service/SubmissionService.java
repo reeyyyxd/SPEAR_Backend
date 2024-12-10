@@ -43,10 +43,9 @@ public class SubmissionService {
     }
 
     public List<SubmissionDTO> getSubmissionsByEvaluation(Long evaluationId) {
-        return submissionRepo.findByEvaluationEid(evaluationId).stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+        return submissionRepo.findSubmissionsByEvaluationWithDetails(evaluationId);
     }
+
 
     public List<SubmissionDTO> getSubmissionsByEvaluator(int evaluatorId) {
         return submissionRepo.findByEvaluatorUid(evaluatorId).stream()
@@ -69,4 +68,6 @@ public class SubmissionService {
                 submission.getStatus()
         );
     }
+
+
 }

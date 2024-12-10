@@ -42,5 +42,25 @@ public interface ResponseRepository extends JpaRepository<Response, Long> {
             "WHERE evaluatee.uid = :evaluateeId")
     List<ResponseDTO> findResponsesByEvaluateeId(@Param("evaluateeId") int evaluateeId);
 
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ResponseDTO( " +
+            "r.rid, " +
+            "evaluator.uid, " +
+            "CONCAT(evaluator.firstname, ' ', evaluator.lastname), " +
+            "evaluatee.uid, " +
+            "CONCAT(evaluatee.firstname, ' ', evaluatee.lastname), " +
+            "r.question.qid, " +
+            "r.question.questionText, " +
+            "r.evaluation.period, " +
+            "r.score) " +
+            "FROM Response r " +
+            "JOIN r.evaluator evaluator " +
+            "JOIN r.evaluatee evaluatee " +
+            "JOIN r.question question " +
+            "JOIN r.evaluation evaluation " +
+            "WHERE r.evaluation.eid = :evaluationId")
+    List<ResponseDTO> findResponsesByEvaluationId(@Param("evaluationId") Long evaluationId);
+
+
+
 
 }

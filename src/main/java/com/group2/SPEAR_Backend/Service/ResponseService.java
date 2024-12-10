@@ -138,4 +138,8 @@ public class ResponseService {
             throw new RuntimeException("Response not found with ID: " + rid);
         }
     }
+
+    public List<ResponseDTO> getResponsesByEvaluationId(Long evaluationId) {
+        return rRepo.findResponsesByEvaluationId(evaluationId);
+    }
 }

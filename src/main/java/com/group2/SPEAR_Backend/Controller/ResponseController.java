@@ -43,4 +43,9 @@ public class ResponseController {
     public String deleteResponse(@PathVariable Long rid) {
         return rServ.deleteResponse(rid);
     }
+    @GetMapping("/get-evaluation/{evaluationId}")
+    public List<ResponseDTO> getResponsesByEvaluationId(@PathVariable Long evaluationId) {
+        return rServ.getResponsesByEvaluationId(evaluationId);
+    }
+
 }

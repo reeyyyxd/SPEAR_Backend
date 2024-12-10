@@ -9,16 +9,21 @@ public class ResponseDTO {
     private String evaluateeName;
     private Long questionId;
     private double score;
+    private String questionName;
+    private String evaluationPeriod;
 
     public ResponseDTO() {}
 
-    public ResponseDTO(Long rid, int evaluatorId, String evaluatorName, int evaluateeId, String evaluateeName, Long questionId, double score) {
+    public ResponseDTO(Long rid, int evaluatorId, String evaluatorName, int evaluateeId, String evaluateeName,
+                       Long questionId, String questionName, String evaluationPeriod, double score) {
         this.rid = rid;
         this.evaluatorId = evaluatorId;
         this.evaluatorName = evaluatorName;
         this.evaluateeId = evaluateeId;
         this.evaluateeName = evaluateeName;
         this.questionId = questionId;
+        this.questionName = questionName;
+        this.evaluationPeriod = evaluationPeriod;
         this.score = score;
     }
 
@@ -77,5 +82,21 @@ public class ResponseDTO {
 
     public void setEvaluateeName(String evaluateeName) {
         this.evaluateeName = evaluateeName;
+    }
+
+    public String getQuestionName() {
+        return questionName;
+    }
+
+    public void setQuestionName(String questionName) {
+        this.questionName = questionName;
+    }
+
+    public String getEvaluationPeriod() {
+        return evaluationPeriod;
+    }
+
+    public void setEvaluationPeriod(String evaluationPeriod) {
+        this.evaluationPeriod = evaluationPeriod;
     }
 }
