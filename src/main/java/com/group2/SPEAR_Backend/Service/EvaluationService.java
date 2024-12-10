@@ -31,25 +31,15 @@ public class EvaluationService {
     @Autowired
     private QuestionRepository qRepo;
 
-
     public Evaluation createEvaluation(Evaluation evaluation, Long classId) {
         Classes classes = cRepo.findById(classId)
                 .orElseThrow(() -> new NoSuchElementException("Class not found with ID: " + classId));
 
         evaluation.setClasses(classes);
-        LocalDate today = LocalDate.now();
-        if ((today.isEqual(evaluation.getDateOpen()) || today.isAfter(evaluation.getDateOpen())) && today.isBefore(evaluation.getDateClose())) {
-            evaluation.setAvailability("Open");
-        } else if (today.isAfter(evaluation.getDateClose())) {
-            evaluation.setAvailability("Closed");
-        } else {
-            evaluation.setAvailability("Pending");
-        }
+        evaluation.setAvailability(calculateAvailability(evaluation.getDateOpen(), evaluation.getDateClose()));
 
         return eRepo.save(evaluation);
     }
-
-
 
     public List<EvaluationDTO> getEvaluationsByClassAsDTO(Long classId) {
         return eRepo.findByClassesCid(classId).stream()
@@ -78,7 +68,6 @@ public class EvaluationService {
 
     public Evaluation updateEvaluation(Long id, Evaluation updatedEvaluation) {
         return eRepo.findById(id).map(evaluation -> {
-//            evaluation.setStatus(updatedEvaluation.getStatus());
             evaluation.setDateOpen(updatedEvaluation.getDateOpen());
             evaluation.setDateClose(updatedEvaluation.getDateClose());
             evaluation.setPeriod(updatedEvaluation.getPeriod());
@@ -100,7 +89,7 @@ public class EvaluationService {
     // Helper method to calculate availability based on open and close dates
     private String calculateAvailability(LocalDate dateOpen, LocalDate dateClose) {
         LocalDate today = LocalDate.now();
-        if (today.isAfter(dateOpen) && today.isBefore(dateClose)) {
+        if (!today.isBefore(dateOpen) && today.isBefore(dateClose)) {
             return "Open";
         } else if (today.isAfter(dateClose)) {
             return "Closed";
@@ -108,17 +97,21 @@ public class EvaluationService {
         return "Pending";
     }
 
-//    // Scheduler to update evaluations with "Late" status if date_close has passed and status is not "Completed"
-//    @Scheduled(cron = "0 0 0 * * *") // Runs daily at midnight
-//    public void updateLateEvaluations() {
-//        List<Evaluation> allEvaluations = eRepo.findAll();
-//        LocalDate today = LocalDate.now();
-//
-//        for (Evaluation evaluation : allEvaluations) {
-//            if (evaluation.getDateClose().isBefore(today) && !"Completed".equalsIgnoreCase(evaluation.getStatus())) {
-//                evaluation.setStatus("Late");
-//                eRepo.save(evaluation);
-//            }
-//        }
-//    }
+    // Scheduler to update evaluations every 15 seconds
+    @Scheduled(fixedRate = 15000) // Executes every 15 seconds
+    public void refreshEvaluationsAvailability() {
+        List<Evaluation> allEvaluations = eRepo.findAll();
+        LocalDate today = LocalDate.now();
+
+        for (Evaluation evaluation : allEvaluations) {
+            String currentAvailability = evaluation.getAvailability();
+            String calculatedAvailability = calculateAvailability(evaluation.getDateOpen(), evaluation.getDateClose());
+
+            // Only update if availability has changed
+            if (!currentAvailability.equals(calculatedAvailability)) {
+                evaluation.setAvailability(calculatedAvailability);
+                eRepo.save(evaluation);
+            }
+        }
+    }
 }

@@ -19,10 +19,10 @@ public class EvaluationController {
     @Autowired
     private EvaluationService eServ;
 
-    @PostMapping("/teacher/create-evaluation")
+    @PostMapping("/teacher/create-evaluation/{classId}")
     public ResponseEntity<Map<String, Object>> createEvaluation(
             @RequestBody Evaluation evaluation,
-            @RequestParam Long classId) {
+            @PathVariable Long classId) {
         try {
             Evaluation createdEvaluation = eServ.createEvaluation(evaluation, classId);
 
@@ -35,6 +35,7 @@ public class EvaluationController {
                     .body(Map.of("error", e.getMessage()));
         }
     }
+
 
 
 
