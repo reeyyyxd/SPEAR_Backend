@@ -49,10 +49,14 @@ public class EvaluationService {
                         evaluation.getDateOpen(),
                         evaluation.getDateClose(),
                         evaluation.getPeriod(),
-                        evaluation.getClasses().getCid()
+                        evaluation.getClasses().getCid(),
+                        evaluation.getClasses().getCourseCode(),
+                        evaluation.getClasses().getSection(),
+                        evaluation.getClasses().getCourseDescription()
                 ))
                 .collect(Collectors.toList());
     }
+
 
     public List<Evaluation> getEvaluationsByPeriod(String period) {
         return eRepo.findByPeriod(period);
@@ -113,5 +117,9 @@ public class EvaluationService {
                 eRepo.save(evaluation);
             }
         }
+    }
+
+    public EvaluationDTO getEvaluationDetailsById(Long evaluationId) {
+        return eRepo.findEvaluationDetailsById(evaluationId);
     }
 }

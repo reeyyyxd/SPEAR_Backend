@@ -72,4 +72,10 @@ public class EvaluationController {
             @PathVariable String availability, @PathVariable String period) {
         return eServ.getEvaluationsByAvailabilityAndPeriod(availability, period);
     }
+
+    @GetMapping("/evaluation/{evaluationId}/details")
+    public ResponseEntity<EvaluationDTO> getEvaluationDetails(@PathVariable Long evaluationId) {
+        EvaluationDTO evaluationDetails = eServ.getEvaluationDetailsById(evaluationId);
+        return ResponseEntity.ok(evaluationDetails);
+    }
 }
