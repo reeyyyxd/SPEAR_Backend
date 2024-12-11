@@ -31,15 +31,27 @@ public class EvaluationService {
     @Autowired
     private QuestionRepository qRepo;
 
-    public Evaluation createEvaluation(Evaluation evaluation, Long classId) {
+    public EvaluationDTO createEvaluation(Evaluation evaluation, Long classId) {
         Classes classes = cRepo.findById(classId)
                 .orElseThrow(() -> new NoSuchElementException("Class not found with ID: " + classId));
+
+        validateDates(evaluation.getDateOpen(), evaluation.getDateClose());
 
         evaluation.setClasses(classes);
         evaluation.setAvailability(calculateAvailability(evaluation.getDateOpen(), evaluation.getDateClose()));
 
-        return eRepo.save(evaluation);
+        Evaluation savedEvaluation = eRepo.save(evaluation);
+
+        return new EvaluationDTO(
+                savedEvaluation.getDateOpen(),
+                savedEvaluation.getDateClose(),
+                savedEvaluation.getPeriod()
+        );
     }
+
+
+
+
 
     public List<EvaluationDTO> getEvaluationsByClassAsDTO(Long classId) {
         return eRepo.findByClassesCid(classId).stream()
@@ -70,16 +82,28 @@ public class EvaluationService {
         return eRepo.findByAvailability(availability);
     }
 
-    public Evaluation updateEvaluation(Long id, Evaluation updatedEvaluation) {
+    public EvaluationDTO updateEvaluation(Long id, Evaluation updatedEvaluation) {
+        validateDates(updatedEvaluation.getDateOpen(), updatedEvaluation.getDateClose());
+
         return eRepo.findById(id).map(evaluation -> {
             evaluation.setDateOpen(updatedEvaluation.getDateOpen());
             evaluation.setDateClose(updatedEvaluation.getDateClose());
             evaluation.setPeriod(updatedEvaluation.getPeriod());
             evaluation.setAvailability(calculateAvailability(updatedEvaluation.getDateOpen(), updatedEvaluation.getDateClose()));
 
-            return eRepo.save(evaluation);
+            Evaluation savedEvaluation = eRepo.save(evaluation);
+
+            return new EvaluationDTO(
+                    savedEvaluation.getDateOpen(),
+                    savedEvaluation.getDateClose(),
+                    savedEvaluation.getPeriod(),
+                    savedEvaluation.getAvailability()
+            );
         }).orElseThrow(() -> new NoSuchElementException("Evaluation not found with ID: " + id));
     }
+
+
+
 
     public String deleteEvaluation(Long id) {
         if (eRepo.existsById(id)) {
@@ -93,33 +117,43 @@ public class EvaluationService {
     // Helper method to calculate availability based on open and close dates
     private String calculateAvailability(LocalDate dateOpen, LocalDate dateClose) {
         LocalDate today = LocalDate.now();
-        if (!today.isBefore(dateOpen) && today.isBefore(dateClose)) {
-            return "Open";
-        } else if (today.isAfter(dateClose)) {
-            return "Closed";
+        if (today.isBefore(dateOpen)) {
+            return "Closed"; // Before dateOpen
+        } else if ((today.isEqual(dateOpen) || today.isAfter(dateOpen)) && today.isBefore(dateClose)) {
+            return "Open"; // On or after dateOpen but before dateClose
+        } else {
+            return "Closed"; // On or after dateClose
         }
-        return "Pending";
     }
+
 
     // Scheduler to update evaluations every 15 seconds
     @Scheduled(fixedRate = 15000) // Executes every 15 seconds
     public void refreshEvaluationsAvailability() {
         List<Evaluation> allEvaluations = eRepo.findAll();
-        LocalDate today = LocalDate.now();
-
         for (Evaluation evaluation : allEvaluations) {
-            String currentAvailability = evaluation.getAvailability();
             String calculatedAvailability = calculateAvailability(evaluation.getDateOpen(), evaluation.getDateClose());
-
-            // Only update if availability has changed
-            if (!currentAvailability.equals(calculatedAvailability)) {
+            if (!calculatedAvailability.equals(evaluation.getAvailability())) {
                 evaluation.setAvailability(calculatedAvailability);
                 eRepo.save(evaluation);
             }
         }
     }
 
+
     public EvaluationDTO getEvaluationDetailsById(Long evaluationId) {
         return eRepo.findEvaluationDetailsById(evaluationId);
     }
+
+    private void validateDates(LocalDate dateOpen, LocalDate dateClose) {
+        if (dateOpen == null || dateClose == null) {
+            throw new IllegalArgumentException("Date open and date close cannot be null.");
+        }
+
+        // Ensure dateOpen is strictly earlier than dateClose
+        if (!dateOpen.isBefore(dateClose)) {
+            throw new IllegalArgumentException("Date open must be earlier than date close.");
+        }
+    }
+
 }

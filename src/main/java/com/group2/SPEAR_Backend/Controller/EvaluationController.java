@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -19,24 +20,19 @@ public class EvaluationController {
     @Autowired
     private EvaluationService eServ;
 
-    @PostMapping("/teacher/create-evaluation/{classId}")
-    public ResponseEntity<Map<String, Object>> createEvaluation(
-            @RequestBody Evaluation evaluation,
-            @PathVariable Long classId) {
+    @PostMapping("teacher/create-evaluation/{classId}")
+    public ResponseEntity<?> createEvaluation(@RequestBody Evaluation evaluation, @PathVariable Long classId) {
         try {
-            Evaluation createdEvaluation = eServ.createEvaluation(evaluation, classId);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Evaluation Created");
-            response.put("evaluation", createdEvaluation);
-            return ResponseEntity.ok(response);
+            EvaluationDTO savedEvaluation = eServ.createEvaluation(evaluation, classId);
+            return ResponseEntity.ok(savedEvaluation);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
         }
     }
-
-
 
 
     //for class
@@ -53,9 +49,19 @@ public class EvaluationController {
     }
 
     @PutMapping("teacher/update-evaluation/{id}")
-    public Evaluation updateEvaluation(@PathVariable Long id, @RequestBody Evaluation updatedEvaluation) {
-        return eServ.updateEvaluation(id, updatedEvaluation);
+    public ResponseEntity<?> updateEvaluation(@PathVariable Long id, @RequestBody Evaluation updatedEvaluation) {
+        try {
+            EvaluationDTO response = eServ.updateEvaluation(id, updatedEvaluation);
+            return ResponseEntity.ok(response); // Return filtered DTO
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
+        }
     }
+
 
     @DeleteMapping("teacher/delete-evaluation/{id}")
     public String deleteEvaluation(@PathVariable Long id) {

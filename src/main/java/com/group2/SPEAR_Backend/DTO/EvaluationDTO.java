@@ -1,9 +1,12 @@
 package com.group2.SPEAR_Backend.DTO;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.time.LocalDate;
 
 public class EvaluationDTO {
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long eid;
     private String availability;
     private LocalDate dateOpen;
@@ -27,6 +30,19 @@ public class EvaluationDTO {
         this.courseCode = courseCode;
         this.section = section;
         this.courseDescription = courseDescription;
+    }
+
+    public EvaluationDTO(LocalDate dateOpen, LocalDate dateClose, String period, String availability) {
+        this.dateOpen = dateOpen;
+        this.dateClose = dateClose;
+        this.period = period;
+        this.availability = availability;
+    }
+
+    public EvaluationDTO(LocalDate dateOpen, LocalDate dateClose, String period) {
+        this.dateOpen = dateOpen;
+        this.dateClose = dateClose;
+        this.period = period;
     }
 
     public Long getEid() {
