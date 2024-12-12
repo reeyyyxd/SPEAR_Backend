@@ -54,14 +54,17 @@ public class ClassesController {
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
-    @GetMapping("/teacher/class/{courseCode}")
-    public ResponseEntity<ClassesDTO> getClassByCourseCode(@PathVariable String courseCode) {
-        ClassesDTO response = cServ.getClassByCourseCode(courseCode);
+    @GetMapping("/teacher/class/{courseCode}/{section}")
+    public ResponseEntity<ClassesDTO> getClassByCourseCodeAndSection(
+            @PathVariable String courseCode,
+            @PathVariable String section) {
+        ClassesDTO response = cServ.getClassByCourseCode(courseCode, section);
         if (response == null) {
             return ResponseEntity.status(404).body(null);
         }
         return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/teacher/getclassKey/{courseCode}/{section}")
     public ResponseEntity<ClassesDTO> getClassKeyByCourseCodeAndSection(

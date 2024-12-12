@@ -53,6 +53,9 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
             "WHERE u.uid = :studentId AND c.isDeleted = false")
     List<ClassesDTO> findClassesEnrolledByStudent(@Param("studentId") int studentId);
 
+    @Query("SELECT c FROM Classes c WHERE c.courseCode = :courseCode AND c.section = :section AND c.isDeleted = false")
+    Optional<Classes> findByCourseCodeAndSectionPage(@Param("courseCode") String courseCode, @Param("section") String section);
+
 
 }
 

@@ -117,24 +117,25 @@ public class ClassesService {
     }
 
     // Get a class by course code
-    public ClassesDTO getClassByCourseCode(String courseCode) {
+    public ClassesDTO getClassByCourseCode(String courseCode, String section) {
         ClassesDTO response = new ClassesDTO();
         try {
-            Classes classByCourseCode = cRepo.findByCourseCode(courseCode);
-            if (classByCourseCode != null) {
-                response.setClasses(classByCourseCode);
+            Optional<Classes> classByCourseCodeAndSection = cRepo.findByCourseCodeAndSectionPage(courseCode, section);
+            if (classByCourseCodeAndSection.isPresent()) {
+                response.setClasses(classByCourseCodeAndSection.get());
                 response.setStatusCode(200);
-                response.setMessage("Class with course code '" + courseCode + "' found successfully");
+                response.setMessage("Class with course code and section found successfully");
             } else {
                 response.setStatusCode(404);
-                response.setMessage("No class found with course code: " + courseCode);
+                response.setMessage("No class found with course code and section");
             }
         } catch (Exception e) {
             response.setStatusCode(500);
-            response.setMessage("Error occurred while fetching class by course code: " + e.getMessage());
+            response.setMessage("Error occurred while fetching class by course code and section: " + e.getMessage());
         }
         return response;
     }
+
 
     public ClassesDTO updateClass(Long classId, ClassesDTO classRequest) {
         ClassesDTO response = new ClassesDTO();
