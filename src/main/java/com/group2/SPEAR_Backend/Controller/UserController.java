@@ -72,9 +72,9 @@ public class UserController {
     }
 
 
-    @DeleteMapping("/admin/delete/{userId}")
-    public ResponseEntity<UserDTO> deleteUSer(@PathVariable Integer userId){
-        return ResponseEntity.ok(uServ.deleteUser(userId));
+    @DeleteMapping("/admin/delete/{email}")
+    public ResponseEntity<UserDTO> deleteUser(@PathVariable String email) {
+        return ResponseEntity.ok(uServ.deleteUserByEmail(email));
     }
 
     @GetMapping("/admin/users/active")
@@ -119,6 +119,39 @@ public class UserController {
         List<UserDTO> users = uServ.getActiveUsersByName(firstname, lastname);
         return ResponseEntity.ok(users);
     }
+
+    @GetMapping("/get-teacher/{userId}")
+    public ResponseEntity<UserDTO> getTeacherById(@PathVariable Integer userId) {
+        UserDTO response = uServ.getTeacherById(userId);
+        if (response.getStatusCode() == 200) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(response.getStatusCode()).body(response);
+        }
+
+}
+
+    @GetMapping("/get-admin/{userId}")
+    public ResponseEntity<UserDTO> getAdminById(@PathVariable Integer userId) {
+        UserDTO response = uServ.getAdminById(userId);
+        if (response.getStatusCode() == 200) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(response.getStatusCode()).body(response);
+        }
+    }
+
+    @GetMapping("/get-student/{userId}")
+    public ResponseEntity<UserDTO> getStudentById(@PathVariable Integer userId) {
+        UserDTO response = uServ.getStudentById(userId);
+        if (response.getStatusCode() == 200) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(response.getStatusCode()).body(response);
+        }
+    }
+
+
 
 
 

@@ -49,4 +49,6 @@ public interface UserRepository extends JpaRepository <User, Integer> {
     List<UserDTO> findActiveUsersByName(@Param("firstname") String firstname, @Param("lastname") String lastname);
 
 
+
+
 }

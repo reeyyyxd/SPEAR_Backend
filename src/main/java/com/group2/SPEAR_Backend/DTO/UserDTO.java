@@ -23,6 +23,8 @@ public class UserDTO {
     private User user;
     private List<User> userList;
     private String interests;
+    private String currentPassword;
+    private String newPassword;
 
     // New field for UID
     private Integer uid;
