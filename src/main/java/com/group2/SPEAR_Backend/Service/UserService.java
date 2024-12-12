@@ -203,9 +203,6 @@ public class UserService implements UserDetailsService {
             if (updatedUser.getFirstname() != null) existingUser.setFirstname(updatedUser.getFirstname());
             if (updatedUser.getLastname() != null) existingUser.setLastname(updatedUser.getLastname());
             if (updatedUser.getRole() != null) existingUser.setRole(updatedUser.getRole());
-            if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
-                existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
-            }
             if (updatedUser.getInterests() != null) existingUser.setInterests(updatedUser.getInterests());
             existingUser.setIsDeleted(updatedUser.isDeleted());
 
@@ -226,6 +223,7 @@ public class UserService implements UserDetailsService {
             User existingUser = userRepo.findById(userId)
                     .filter(user -> "TEACHER".equalsIgnoreCase(user.getRole()))
                     .orElseThrow(() -> new RuntimeException("Teacher not found"));
+
             if (updatedUser.getEmail() != null && !updatedUser.getEmail().isEmpty()) {
                 existingUser.setEmail(updatedUser.getEmail());
             }
@@ -235,12 +233,6 @@ public class UserService implements UserDetailsService {
             if (updatedUser.getLastname() != null && !updatedUser.getLastname().isEmpty()) {
                 existingUser.setLastname(updatedUser.getLastname());
             }
-
-            if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
-                String decryptedPassword = decryptPassword(updatedUser.getPassword());
-                existingUser.setPassword(passwordEncoder.encode(decryptedPassword));
-            }
-
             if (updatedUser.getInterests() != null && !updatedUser.getInterests().isEmpty()) {
                 existingUser.setInterests(updatedUser.getInterests());
             } else {
@@ -258,7 +250,6 @@ public class UserService implements UserDetailsService {
         return userDTO;
     }
 
-
     public UserDTO updateStudent(Integer userId, User updatedUser) {
         UserDTO userDTO = new UserDTO();
         try {
@@ -272,13 +263,11 @@ public class UserService implements UserDetailsService {
             if (updatedUser.getFirstname() != null && !updatedUser.getFirstname().isEmpty()) {
                 existingUser.setFirstname(updatedUser.getFirstname());
             }
-
             if (updatedUser.getLastname() != null && !updatedUser.getLastname().isEmpty()) {
                 existingUser.setLastname(updatedUser.getLastname());
             }
-            if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
-                String decryptedPassword = decryptPassword(updatedUser.getPassword());
-                existingUser.setPassword(passwordEncoder.encode(decryptedPassword));
+            if (updatedUser.getInterests() != null && !updatedUser.getInterests().isEmpty()) {
+                existingUser.setInterests(updatedUser.getInterests());
             }
 
             User savedUser = userRepo.save(existingUser);
@@ -291,6 +280,7 @@ public class UserService implements UserDetailsService {
         }
         return userDTO;
     }
+
 
 
 
@@ -378,7 +368,8 @@ public class UserService implements UserDetailsService {
             response.setEmail(admin.getEmail());
             response.setFirstname(admin.getFirstname());
             response.setLastname(admin.getLastname());
-            response.setPassword(admin.getPassword()); // Hashed password
+            response.setPassword(admin.getPassword());
+            response.setInterests(admin.getInterests());
             response.setStatusCode(200);
             response.setMessage("Admin found successfully");
 
@@ -409,14 +400,28 @@ public class UserService implements UserDetailsService {
         }
         return response;
     }
-
-    private String decryptPassword(String encryptedPassword) {
+    public UserDTO updatePassword(Integer userId, String currentPassword, String newPassword) {
+        UserDTO userDTO = new UserDTO();
         try {
-            return new String(Base64.getDecoder().decode(encryptedPassword), StandardCharsets.UTF_8);
+            User existingUser = userRepo.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            if (!passwordEncoder.matches(currentPassword, existingUser.getPassword())) {
+                throw new RuntimeException("Current password is incorrect.");
+            }
+
+            existingUser.setPassword(passwordEncoder.encode(newPassword));
+            userRepo.save(existingUser);
+
+            userDTO.setStatusCode(200);
+            userDTO.setMessage("Password updated successfully.");
         } catch (Exception e) {
-            throw new RuntimeException("Error decrypting password: " + e.getMessage());
+            userDTO.setStatusCode(500);
+            userDTO.setMessage("Error updating password: " + e.getMessage());
         }
+        return userDTO;
     }
+
 
 
 

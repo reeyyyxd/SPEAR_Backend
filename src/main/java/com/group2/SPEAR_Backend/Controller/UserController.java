@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Controller;
 
+import com.group2.SPEAR_Backend.DTO.PasswordUpdateDTO;
 import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.DTO.UserDTO;
 import com.group2.SPEAR_Backend.Service.UserService;
@@ -150,6 +151,18 @@ public class UserController {
             return ResponseEntity.status(response.getStatusCode()).body(response);
         }
     }
+    @PutMapping("/user/update-password/{userId}")
+    public ResponseEntity<UserDTO> updatePassword(
+            @PathVariable Integer userId,
+            @RequestBody PasswordUpdateDTO passwordUpdateDTO) {
+        return ResponseEntity.ok(
+                uServ.updatePassword(userId, passwordUpdateDTO.getCurrentPassword(), passwordUpdateDTO.getNewPassword())
+        );
+    }
+
+
+
+
 
 
 
