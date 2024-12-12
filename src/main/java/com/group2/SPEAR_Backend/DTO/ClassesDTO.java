@@ -94,6 +94,16 @@ public class ClassesDTO {
         this.role = createdBy.getRole();
     }
 
+    // Simplified class details constructor
+    public ClassesDTO(String courseType, String courseDescription, String courseCode,
+                      String section, String schoolYear, String semester) {
+        this.courseType = courseType;
+        this.courseDescription = courseDescription;
+        this.courseCode = courseCode;
+        this.section = section;
+        this.schoolYear = schoolYear;
+        this.semester = semester;
+    }
 
 
 

@@ -3,6 +3,7 @@ package com.group2.SPEAR_Backend.Controller;
 import
         com.group2.SPEAR_Backend.DTO.ClassesDTO;
 import com.group2.SPEAR_Backend.DTO.UserDTO;
+import com.group2.SPEAR_Backend.Model.Classes;
 import com.group2.SPEAR_Backend.Repository.UserRepository;
 import com.group2.SPEAR_Backend.Service.ClassesService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -116,6 +118,18 @@ public class ClassesController {
         ClassesDTO response = cServ.removeStudentFromClass(classKey, email);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
+
+    @GetMapping("/class/{classId}")
+    public ResponseEntity<ClassesDTO> getClassById(@PathVariable Long classId) {
+        try {
+            ClassesDTO response = cServ.getClassById(classId);
+            return ResponseEntity.ok(response);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(404).body(new ClassesDTO(404, e.getMessage(), (List<Classes>) null));
+        }
+    }
+
+
 
 
 

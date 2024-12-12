@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -97,7 +98,23 @@ public class ClassesService {
 //        return response;
 //    }
 
+    public ClassesDTO getClassById(Long classId) {
+        Optional<Classes> classOptional = cRepo.findActiveClassById(classId);
 
+        if (classOptional.isEmpty()) {
+            throw new NoSuchElementException("Class with ID " + classId + " not found or is deleted.");
+        }
+
+        Classes classData = classOptional.get();
+        return new ClassesDTO(
+                classData.getCourseType(),
+                classData.getCourseDescription(),
+                classData.getCourseCode(),
+                classData.getSection(),
+                classData.getSchoolYear(),
+                classData.getSemester()
+        );
+    }
 
     // Get a class by course code
     public ClassesDTO getClassByCourseCode(String courseCode) {
