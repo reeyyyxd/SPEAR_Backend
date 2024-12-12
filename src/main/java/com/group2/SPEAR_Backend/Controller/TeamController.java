@@ -7,12 +7,14 @@ import com.group2.SPEAR_Backend.Model.Team;
 import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.Service.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -109,10 +111,19 @@ public class TeamController {
     }
 
     @GetMapping("/teams/class/{classId}")
-    public ResponseEntity<List<TeamDTO>> getTeamsByClass(@PathVariable int classId) {
-        List<TeamDTO> teams = tServ.getTeamsByClassId(classId);
-        return ResponseEntity.ok(teams);
+    public ResponseEntity<?> getTeamsByClass(@PathVariable int classId) {
+        try {
+            List<TeamDTO> teams = tServ.getTeamsByClassId(classId);
+            return ResponseEntity.ok(teams);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
+        }
     }
+
 
     @GetMapping("/team/my/{classId}")
     public ResponseEntity<TeamDTO> getMyTeam(

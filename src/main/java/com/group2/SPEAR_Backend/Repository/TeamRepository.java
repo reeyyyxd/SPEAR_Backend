@@ -51,6 +51,14 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
     @Query("UPDATE Team t SET t.isDeleted = true WHERE t.leader.uid = :leaderId AND t.isDeleted = false")
     void softDeleteTeamsByLeaderId(@Param("leaderId") int leaderId);
 
+    @Query("SELECT t FROM Team t WHERE t.tid = :teamId AND t.isDeleted = false")
+    Optional<Team> findActiveTeamById(@Param("teamId") int teamId);
+
+    @Query("SELECT t FROM Team t WHERE t.classRef.cid = :classId AND t.isDeleted = false")
+    List<Team> findActiveTeamsByClassId(@Param("classId") int classId);
+
+    @Query("SELECT t FROM Team t WHERE t.leader.uid = :leaderId AND t.isDeleted = false")
+    List<Team> findActiveTeamsByLeaderId(@Param("leaderId") int leaderId);
 
 
 }

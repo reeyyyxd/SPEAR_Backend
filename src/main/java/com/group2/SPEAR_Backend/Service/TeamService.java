@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -143,17 +144,20 @@ public class TeamService {
     }
 
     public TeamDTO getTeamById(int teamId) {
-        Team team = tRepo.findById(teamId)
-                .filter(t -> !t.isDeleted())
+        // Fetch active team by ID
+        Team team = tRepo.findActiveTeamById(teamId)
                 .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
 
+        // Fetch the associated project
         ProjectProposal project = ppRepo.findById(team.getProject().getPid())
                 .orElseThrow(() -> new NoSuchElementException("Project with ID " + team.getProject().getPid() + " not found."));
 
+        // Fetch features related to the project
         List<FeatureDTO> features = fRepo.findByProjectId(project.getPid()).stream()
                 .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
                 .toList();
 
+        // Return TeamDTO with detailed information
         return new TeamDTO(
                 team.getTid(),
                 team.getGroupName(),
@@ -167,6 +171,7 @@ public class TeamService {
                 project.getDescription()
         );
     }
+
 
     @Transactional
     public Team transferLeadership(int teamId, int newLeaderId) {
@@ -210,30 +215,50 @@ public class TeamService {
     }
 
     public List<TeamDTO> getTeamsByClassId(int classId) {
-        List<TeamDTO> teams = tRepo.findTeamsByClassIdWithDetails(classId);
-        for (TeamDTO teamDTO : teams) {
-            Team team = tRepo.findById(teamDTO.getTid())
-                    .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamDTO.getTid() + " not found"));
+        // Fetch active teams for the class
+        List<Team> activeTeams = tRepo.findActiveTeamsByClassId(classId);
+        if (activeTeams.isEmpty()) {
+            throw new NoSuchElementException("No active teams found for class ID " + classId);
+        }
+
+        List<TeamDTO> teamDTOs = new ArrayList<>();
+
+        for (Team team : activeTeams) {
+            // Ensure team has a project and the project is active
+            if (team.getProject() == null || team.getProject().getPid() == 0) {
+                throw new IllegalStateException("Team with ID " + team.getTid() + " has no associated project.");
+            }
 
             ProjectProposal project = ppRepo.findById(team.getProject().getPid())
-                    .orElseThrow(() -> new NoSuchElementException("Project with ID " + team.getProject().getPid() + " not found."));
+                    .filter(p -> !p.getIsDeleted()) // Ensure the project is not soft-deleted
+                    .orElseThrow(() -> new NoSuchElementException("Project with ID " + team.getProject().getPid() + " not found or has been deleted."));
 
+            // Fetch features associated with the project
             List<FeatureDTO> features = fRepo.findByProjectId(project.getPid()).stream()
                     .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
                     .toList();
 
-            teamDTO.setLeaderId(team.getLeader().getUid());
-            teamDTO.setClassId(team.getClassRef().getCid());
-            teamDTO.setMemberIds(team.getMembers().stream().map(User::getUid).toList());
-            teamDTO.setProjectId(project.getPid());
-            teamDTO.setProjectName(project.getProjectName());
-            teamDTO.setGroupName(team.getGroupName());
-            teamDTO.setRecruitmentOpen(team.isRecruitmentOpen());
-            teamDTO.setFeatures(features);
-            teamDTO.setProjectDescription(project.getDescription());
+            // Map the team details to a TeamDTO
+            TeamDTO teamDTO = new TeamDTO(
+                    team.getTid(),
+                    team.getGroupName(),
+                    project.getProjectName(),
+                    project.getPid(),
+                    team.getLeader().getUid(),
+                    team.getClassRef().getCid(),
+                    team.getMembers().stream().map(User::getUid).toList(),
+                    team.isRecruitmentOpen(),
+                    features,
+                    project.getDescription()
+            );
+
+            teamDTOs.add(teamDTO);
         }
-        return teams;
+
+        return teamDTOs;
     }
+
+
 
     public TeamDTO getMyTeam(int userId, int classId) {
         Team team = tRepo.findMyTeamByClassId(userId, classId)

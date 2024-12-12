@@ -3,10 +3,12 @@ package com.group2.SPEAR_Backend.Service;
 import com.group2.SPEAR_Backend.ClassCodeGenerator;
 import com.group2.SPEAR_Backend.DTO.UserDTO;
 import com.group2.SPEAR_Backend.Model.Classes;
+import com.group2.SPEAR_Backend.Model.ProjectProposal;
 import com.group2.SPEAR_Backend.Model.Team;
 import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.Repository.ClassesRepository;
 import com.group2.SPEAR_Backend.DTO.ClassesDTO;
+import com.group2.SPEAR_Backend.Repository.ProjectProposalRepository;
 import com.group2.SPEAR_Backend.Repository.TeamRepository;
 import com.group2.SPEAR_Backend.Repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -33,6 +35,9 @@ public class ClassesService {
 
     @Autowired
     TeamRepository tRepo;
+
+    @Autowired
+    ProjectProposalRepository ppRepo;
 
 
     public ClassesDTO createClass(ClassesDTO classRequest) {
@@ -283,6 +288,7 @@ public class ClassesService {
         ClassesDTO response = new ClassesDTO();
 
         try {
+            // Find the class by its class key
             Optional<Classes> optionalClass = cRepo.findByClassKey(classKey);
             if (optionalClass.isEmpty()) {
                 response.setStatusCode(404);
@@ -292,6 +298,7 @@ public class ClassesService {
 
             Classes clazz = optionalClass.get();
 
+            // Find the user by their email
             Optional<User> optionalUser = uRepo.findByEmail(email);
             if (optionalUser.isEmpty()) {
                 response.setStatusCode(404);
@@ -306,22 +313,49 @@ public class ClassesService {
                 response.setMessage("Student is not enrolled in this class");
                 return response;
             }
-
+            // Remove the student from the class
             clazz.getEnrolledStudents().remove(student);
             cRepo.save(clazz);
 
             List<Team> teamsWithStudent = tRepo.findActiveTeamsByMemberId(student.getUid());
             for (Team team : teamsWithStudent) {
                 if (team.getLeader().getUid() == student.getUid()) {
-                    tRepo.softDeleteTeamsByLeaderId(student.getUid());
+                    team.setDeleted(true);
+                    tRepo.save(team);
+
+                    if (team.getProject() != null) {
+                        ppRepo.findById(team.getProject().getPid()).ifPresent(project -> {
+                            project.setDeleted(true);
+                            ppRepo.save(project);
+                        });
+                    }
                 } else {
                     team.getMembers().remove(student);
                     tRepo.save(team);
                 }
             }
 
+            List<Team> teamsCreatedByLeader = tRepo.findActiveTeamsByLeaderId(student.getUid());
+            for (Team team : teamsCreatedByLeader) {
+                team.setDeleted(true);
+                tRepo.save(team);
+
+                if (team.getProject() != null) {
+                    ppRepo.findById(team.getProject().getPid()).ifPresent(project -> {
+                        project.setDeleted(true);
+                        ppRepo.save(project);
+                    });
+                }
+            }
+            List<ProjectProposal> proposalsByStudent = ppRepo.findAllByProposedBy(student.getUid());
+            for (ProjectProposal proposal : proposalsByStudent) {
+                if (!proposal.getIsDeleted()) {
+                    proposal.setDeleted(true);
+                    ppRepo.save(proposal);
+                }
+            }
             response.setStatusCode(200);
-            response.setMessage("Student removed successfully from the class and associated teams updated.");
+            response.setMessage("Student removed successfully from the class, associated teams and project proposals updated.");
         } catch (Exception e) {
             response.setStatusCode(500);
             response.setMessage("Error occurred while removing student: " + e.getMessage());
@@ -330,4 +364,6 @@ public class ClassesService {
         return response;
     }
 
+
 }
+

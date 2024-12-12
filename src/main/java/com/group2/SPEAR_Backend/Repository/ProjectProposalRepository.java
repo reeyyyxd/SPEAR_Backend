@@ -1,6 +1,7 @@
 package com.group2.SPEAR_Backend.Repository;
 
 import com.group2.SPEAR_Backend.Model.ProjectProposal;
+import com.group2.SPEAR_Backend.Model.Team;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -35,6 +36,10 @@ public interface ProjectProposalRepository extends JpaRepository<ProjectProposal
 
     @Query("SELECT CONCAT(u.firstname, ' ', u.lastname) FROM User u WHERE u.uid = :leaderId")
     String findFullNameById(@Param("leaderId") int leaderId);
+
+    @Query("SELECT p FROM ProjectProposal p WHERE p.proposedBy.uid = :userId AND p.isDeleted = false")
+    List<ProjectProposal> findAllByProposedBy(@Param("userId") int userId);
+
 
 
 
