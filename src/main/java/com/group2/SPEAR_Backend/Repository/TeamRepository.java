@@ -45,6 +45,12 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
 
     List<Team> findAllByMembersContains(User user);
 
+    @Query("SELECT t FROM Team t JOIN t.members m WHERE m.uid = :userId AND t.isDeleted = false")
+    List<Team> findActiveTeamsByMemberId(@Param("userId") int userId);
+
+    @Query("UPDATE Team t SET t.isDeleted = true WHERE t.leader.uid = :leaderId AND t.isDeleted = false")
+    void softDeleteTeamsByLeaderId(@Param("leaderId") int leaderId);
+
 
 
 }

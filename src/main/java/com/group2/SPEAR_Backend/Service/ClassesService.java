@@ -265,7 +265,6 @@ public class ClassesService {
         ClassesDTO response = new ClassesDTO();
 
         try {
-            // Find the class by classKey
             Optional<Classes> optionalClass = cRepo.findByClassKey(classKey);
             if (optionalClass.isEmpty()) {
                 response.setStatusCode(404);
@@ -275,7 +274,6 @@ public class ClassesService {
 
             Classes clazz = optionalClass.get();
 
-            // Find the user by email
             Optional<User> optionalUser = uRepo.findByEmail(email);
             if (optionalUser.isEmpty()) {
                 response.setStatusCode(404);
@@ -285,7 +283,6 @@ public class ClassesService {
 
             User student = optionalUser.get();
 
-            // Remove the student from the class
             if (!clazz.getEnrolledStudents().contains(student)) {
                 response.setStatusCode(400);
                 response.setMessage("Student is not enrolled in this class");
@@ -295,15 +292,18 @@ public class ClassesService {
             clazz.getEnrolledStudents().remove(student);
             cRepo.save(clazz);
 
-            // Find and delete any teams where this student is a member
-            List<Team> teamsWithStudent = tRepo.findAllByMembersContains(student);
+            List<Team> teamsWithStudent = tRepo.findActiveTeamsByMemberId(student.getUid());
             for (Team team : teamsWithStudent) {
-                team.setDeleted(true);
-                tRepo.save(team);
+                if (team.getLeader().getUid() == student.getUid()) {
+                    tRepo.softDeleteTeamsByLeaderId(student.getUid());
+                } else {
+                    team.getMembers().remove(student);
+                    tRepo.save(team);
+                }
             }
 
             response.setStatusCode(200);
-            response.setMessage("Student removed successfully from the class and associated teams deleted.");
+            response.setMessage("Student removed successfully from the class and associated teams updated.");
         } catch (Exception e) {
             response.setStatusCode(500);
             response.setMessage("Error occurred while removing student: " + e.getMessage());
