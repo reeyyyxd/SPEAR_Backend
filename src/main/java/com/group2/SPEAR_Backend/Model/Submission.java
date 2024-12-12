@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ public class Submission {
     @JoinColumn(name = "evaluator_id", referencedColumnName = "uid", nullable = false)
     private User evaluator;
 
+    @JsonFormat(pattern = "MM-dd-yyyy HH:mm:ss")
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
 

@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -14,6 +15,7 @@ public class Classes {
     @Column(name = "cid")
     private Long cid;
 
+    @JsonIgnore
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "created_by", referencedColumnName = "uid")
     private User createdBy;
@@ -45,6 +47,7 @@ public class Classes {
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
+    @JsonIgnore
     @ManyToMany
     @JoinTable(
             name = "class_enrollments",
