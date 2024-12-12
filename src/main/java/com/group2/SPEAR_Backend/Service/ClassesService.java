@@ -3,10 +3,13 @@ package com.group2.SPEAR_Backend.Service;
 import com.group2.SPEAR_Backend.ClassCodeGenerator;
 import com.group2.SPEAR_Backend.DTO.UserDTO;
 import com.group2.SPEAR_Backend.Model.Classes;
+import com.group2.SPEAR_Backend.Model.Team;
 import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.Repository.ClassesRepository;
 import com.group2.SPEAR_Backend.DTO.ClassesDTO;
+import com.group2.SPEAR_Backend.Repository.TeamRepository;
 import com.group2.SPEAR_Backend.Repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +29,9 @@ public class ClassesService {
 
     @Autowired
     UserRepository uRepo;
+
+    @Autowired
+    TeamRepository tRepo;
 
 
     public ClassesDTO createClass(ClassesDTO classRequest) {
@@ -254,6 +260,7 @@ public class ClassesService {
             throw new RuntimeException("Error fetching classes for student: " + e.getMessage());
         }
     }
+    @Transactional
     public ClassesDTO removeStudentFromClass(String classKey, String email) {
         ClassesDTO response = new ClassesDTO();
 
@@ -287,8 +294,16 @@ public class ClassesService {
 
             clazz.getEnrolledStudents().remove(student);
             cRepo.save(clazz);
+
+            // Find and delete any teams where this student is a member
+            List<Team> teamsWithStudent = tRepo.findAllByMembersContains(student);
+            for (Team team : teamsWithStudent) {
+                team.setDeleted(true);
+                tRepo.save(team);
+            }
+
             response.setStatusCode(200);
-            response.setMessage("Student removed successfully from the class");
+            response.setMessage("Student removed successfully from the class and associated teams deleted.");
         } catch (Exception e) {
             response.setStatusCode(500);
             response.setMessage("Error occurred while removing student: " + e.getMessage());

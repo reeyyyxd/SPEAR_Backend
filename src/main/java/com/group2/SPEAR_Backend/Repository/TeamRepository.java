@@ -43,6 +43,8 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
     @Query("SELECT m FROM Team t JOIN t.members m WHERE t.tid = :teamId")
     List<User> findMembersByTeamId(@Param("teamId") int teamId);
 
+    List<Team> findAllByMembersContains(User user);
+
 
 
 }
