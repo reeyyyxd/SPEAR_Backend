@@ -17,11 +17,9 @@ public class Evaluation {
     @Column(name = "availability", nullable = false)
     private String availability; // "Open" or "Closed"
 
-    @JsonFormat(pattern = "MM-dd-yyyy")
     @Column(name = "date_open", nullable = false)
     private LocalDate dateOpen;
 
-    @JsonFormat(pattern = "MM-dd-yyyy")
     @Column(name = "date_close", nullable = false)
     private LocalDate dateClose;
 

@@ -22,7 +22,6 @@ public class Submission {
     @JoinColumn(name = "evaluator_id", referencedColumnName = "uid", nullable = false)
     private User evaluator;
 
-    @JsonFormat(pattern = "MM-dd-yyyy HH:mm:ss")
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
 
