@@ -43,6 +43,15 @@ public class UserService implements UserDetailsService {
         UserDTO resp = new UserDTO();
 
         try {
+            //if email registered
+            Optional<User> existingUser = userRepo.findByEmail(registrationRequest.getEmail());
+            if (existingUser.isPresent()) {
+                resp.setStatusCode(400); // Bad Request
+                resp.setMessage("This email is already registered.");
+                return resp;
+            }
+
+            // Create a new user
             User ourUser = new User();
             ourUser.setEmail(registrationRequest.getEmail());
             ourUser.setRole(registrationRequest.getRole());
@@ -50,14 +59,16 @@ public class UserService implements UserDetailsService {
             ourUser.setLastname(registrationRequest.getLastname());
             ourUser.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
 
+            // Additional setup for teachers
             if ("TEACHER".equalsIgnoreCase(ourUser.getRole())) {
                 ourUser.setInterests(registrationRequest.getInterests());
             }
 
+            // Save the user to the database
             User ourUsersResult = userRepo.save(ourUser);
             if (ourUsersResult.getUid() > 0) {
                 resp.setUser((ourUsersResult));
-                resp.setMessage("User Saved Successfully");
+                resp.setMessage("User saved successfully.");
                 resp.setStatusCode(200);
             }
 
@@ -65,8 +76,10 @@ public class UserService implements UserDetailsService {
             resp.setStatusCode(500);
             resp.setError(e.getMessage());
         }
+
         return resp;
     }
+
 
 
 
