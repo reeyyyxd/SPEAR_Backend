@@ -65,6 +65,16 @@ public class ClassesController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/class/{courseCode}/{section}")
+    public ResponseEntity<ClassesDTO> getClassByCourseCodeAndSectionStudent(
+            @PathVariable String courseCode,
+            @PathVariable String section) {
+        ClassesDTO response = cServ.getClassByCourseCodeStudent(courseCode, section);
+        if (response == null) {
+            return ResponseEntity.status(404).body(null);
+        }
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping("/teacher/getclassKey/{courseCode}/{section}")
     public ResponseEntity<ClassesDTO> getClassKeyByCourseCodeAndSection(
