@@ -240,8 +240,12 @@ public class ProjectProposalService {
         return uRepo.findFullNameById(leaderId);
     }
 
-
-
+    public List<ProjectProposalDTO> getProposalsByUser(int userId) {
+        List<ProjectProposal> proposals = ppRepo.findAllByProposedBy(userId);
+        return proposals.stream()
+                .map(this::mapProposalToDTOWithFeatures)
+                .toList();
+    }
 
 
 }
