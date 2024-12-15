@@ -245,6 +245,7 @@ public class ProjectProposalService {
         return proposals.stream()
                 .map(this::mapProposalToDTOWithFeatures)
                 .toList();
+
     }
 
 
