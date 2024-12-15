@@ -40,28 +40,28 @@ public class ProjectProposalService {
 
         User adviser = null;
 
+        // bypass adviser or proposal first before adviser
         if ("CAPSTONE".equalsIgnoreCase(clazz.getCourseType())) {
-            if (dto.getAdviserId() == null) {
-                throw new RuntimeException("Adviser is required for capstone classes");
+            if (dto.getAdviserId() != null) {
+                adviser = uRepo.findById(dto.getAdviserId())
+                        .filter(u -> "TEACHER".equalsIgnoreCase(u.getRole()))
+                        .orElse(null);
+                if (adviser == null) {
+                    System.out.println("No adviser in capstone");
+                }
             }
-            adviser = uRepo.findById(dto.getAdviserId())
-                    .filter(u -> "TEACHER".equalsIgnoreCase(u.getRole()))
-                    .orElseThrow(() -> new RuntimeException("Adviser with ID " + dto.getAdviserId() + " not found or is not a teacher"));
         }
-
         ProjectProposal proposal = new ProjectProposal(user, dto.getProjectName(), clazz, dto.getDescription(), adviser);
         ProjectProposal savedProposal = ppRepo.save(proposal);
-
         if (features != null && !features.isEmpty()) {
             List<Feature> featureEntities = features.stream()
                     .map(feature -> new Feature(feature.getFeatureTitle(), feature.getFeatureDescription(), savedProposal))
                     .toList();
-
             fRepo.saveAll(featureEntities);
         }
-
         return savedProposal;
     }
+
 
     public List<ProjectProposal> getAllActiveProposals() {
         return ppRepo.findAllActive();
@@ -169,6 +169,8 @@ public class ProjectProposalService {
                 .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
                 .toList();
 
+        String courseCode = proposal.getClassProposal().getCourseCode();
+
         return new ProjectProposalDTO(
                 proposal.getPid(),
                 proposal.getProjectName(),
@@ -177,11 +179,13 @@ public class ProjectProposalService {
                 proposal.getReason(),
                 proposal.getProposedBy().getUid(),
                 proposal.getClassProposal().getCid(),
+                courseCode,
                 proposal.getAdviser() != null ? proposal.getAdviser().getUid() : null,
                 proposal.getIsDeleted(),
                 features
         );
     }
+
     public List<ProjectProposalDTO> getProposalsByClassAndStatus(Long classId, String status) {
         List<ProjectProposal> proposals = ppRepo.findByClassAndStatus(classId, status);
         return proposals.stream().map(this::mapProposalToDTOWithFeatures).toList();
@@ -247,6 +251,5 @@ public class ProjectProposalService {
                 .toList();
 
     }
-
 
 }

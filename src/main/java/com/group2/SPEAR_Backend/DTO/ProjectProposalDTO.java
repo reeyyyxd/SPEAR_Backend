@@ -14,23 +14,24 @@ public class ProjectProposalDTO {
     private Integer adviserId;
     private Boolean isDeleted;
     private List<FeatureDTO> features;
+    public String courseCode;
 
     public ProjectProposalDTO() {}
 
-    //non-capstone
-    public ProjectProposalDTO(int pid, String projectName, String description, String status, String reason,
-                              int proposedById, Long classId, Boolean isDeleted) {
-        this.pid = pid;
-        this.projectName = projectName;
-        this.description = description;
-        this.status = status;
-        this.reason = reason;
-        this.proposedById = proposedById;
-        this.classId = classId;
-        this.isDeleted = isDeleted;
-    }
+//    //non-capstone
+//    public ProjectProposalDTO(int pid, String projectName, String description, String status, String reason,
+//                              int proposedById, Long classId, Boolean isDeleted) {
+//        this.pid = pid;
+//        this.projectName = projectName;
+//        this.description = description;
+//        this.status = status;
+//        this.reason = reason;
+//        this.proposedById = proposedById;
+//        this.classId = classId;
+//        this.isDeleted = isDeleted;
+//    }
 
-    //capstone
+    //for all
     public ProjectProposalDTO(int pid, String projectName, String description, String status, String reason,
                               int proposedById, Long classId, Integer adviserId, Boolean isDeleted) {
         this.pid = pid;
@@ -45,7 +46,7 @@ public class ProjectProposalDTO {
     }
     //with features
     public ProjectProposalDTO(int pid, String projectName, String description, String status, String reason,
-                              int proposedById, Long classId, Integer adviserId, Boolean isDeleted, List<FeatureDTO> features) {
+                              int proposedById, Long classId, String courseCode, Integer adviserId, Boolean isDeleted, List<FeatureDTO> features) {
         this.pid = pid;
         this.projectName = projectName;
         this.description = description;
@@ -53,6 +54,7 @@ public class ProjectProposalDTO {
         this.reason = reason;
         this.proposedById = proposedById;
         this.classId = classId;
+        this.courseCode = courseCode;
         this.adviserId = adviserId;
         this.isDeleted = isDeleted;
         this.features = features;
