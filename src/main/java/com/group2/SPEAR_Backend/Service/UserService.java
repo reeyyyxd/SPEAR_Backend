@@ -59,10 +59,10 @@ public class UserService implements UserDetailsService {
             ourUser.setLastname(registrationRequest.getLastname());
             ourUser.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
 
-            // Additional setup for teachers
-            if ("TEACHER".equalsIgnoreCase(ourUser.getRole())) {
-                ourUser.setInterests(registrationRequest.getInterests());
-            }
+            // change from separate entity
+//            if ("TEACHER".equalsIgnoreCase(ourUser.getRole())) {
+//                ourUser.setInterests(registrationRequest.getInterests());
+//            }
 
             // Save the user to the database
             User ourUsersResult = userRepo.save(ourUser);
@@ -216,7 +216,7 @@ public class UserService implements UserDetailsService {
             if (updatedUser.getFirstname() != null) existingUser.setFirstname(updatedUser.getFirstname());
             if (updatedUser.getLastname() != null) existingUser.setLastname(updatedUser.getLastname());
             if (updatedUser.getRole() != null) existingUser.setRole(updatedUser.getRole());
-            if (updatedUser.getInterests() != null) existingUser.setInterests(updatedUser.getInterests());
+            //if (updatedUser.getInterests() != null) existingUser.setInterests(updatedUser.getInterests());
             existingUser.setIsDeleted(updatedUser.isDeleted());
 
             User savedUser = userRepo.save(existingUser);
@@ -246,11 +246,11 @@ public class UserService implements UserDetailsService {
             if (updatedUser.getLastname() != null && !updatedUser.getLastname().isEmpty()) {
                 existingUser.setLastname(updatedUser.getLastname());
             }
-            if (updatedUser.getInterests() != null && !updatedUser.getInterests().isEmpty()) {
-                existingUser.setInterests(updatedUser.getInterests());
-            } else {
-                existingUser.setInterests("Teachers only");
-            }
+//            if (updatedUser.getInterests() != null && !updatedUser.getInterests().isEmpty()) {
+//                existingUser.setInterests(updatedUser.getInterests());
+//            } else {
+//                existingUser.setInterests("Teachers only");
+//            }
 
             User savedUser = userRepo.save(existingUser);
             userDTO.setUser(savedUser);
@@ -279,9 +279,9 @@ public class UserService implements UserDetailsService {
             if (updatedUser.getLastname() != null && !updatedUser.getLastname().isEmpty()) {
                 existingUser.setLastname(updatedUser.getLastname());
             }
-            if (updatedUser.getInterests() != null && !updatedUser.getInterests().isEmpty()) {
-                existingUser.setInterests(updatedUser.getInterests());
-            }
+//            if (updatedUser.getInterests() != null && !updatedUser.getInterests().isEmpty()) {
+//                existingUser.setInterests(updatedUser.getInterests());
+//            }
 
             User savedUser = userRepo.save(existingUser);
             userDTO.setUser(savedUser);
@@ -315,10 +315,10 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public String getInterestsByTeacherId(int teacherId) {
-        return userRepo.findInterestsByTeacherId(teacherId)
-                .orElseThrow(() -> new RuntimeException("Teacher not found or no interests set"));
-    }
+//    public String getInterestsByTeacherId(int teacherId) {
+//        return userRepo.findInterestsByTeacherId(teacherId)
+//                .orElseThrow(() -> new RuntimeException("Teacher not found or no interests set"));
+//    }
 
 
     public List<UserDTO> getAllActiveUsers() {
@@ -360,7 +360,7 @@ public class UserService implements UserDetailsService {
             response.setFirstname(teacher.getFirstname());
             response.setLastname(teacher.getLastname());
             response.setPassword(teacher.getPassword());
-            response.setInterests(teacher.getInterests());
+//            response.setInterests(teacher.getInterests());
             response.setStatusCode(200);
             response.setMessage("Teacher found successfully");
 
@@ -382,7 +382,7 @@ public class UserService implements UserDetailsService {
             response.setFirstname(admin.getFirstname());
             response.setLastname(admin.getLastname());
             response.setPassword(admin.getPassword());
-            response.setInterests(admin.getInterests());
+//            response.setInterests(admin.getInterests());
             response.setStatusCode(200);
             response.setMessage("Admin found successfully");
 

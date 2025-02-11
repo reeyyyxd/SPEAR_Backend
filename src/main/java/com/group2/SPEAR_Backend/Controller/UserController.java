@@ -108,10 +108,10 @@ public class UserController {
         return ResponseEntity.ok(uServ.getAllSoftDeletedStudents());
     }
 
-    @GetMapping("/{teacherId}/interests")
-    public ResponseEntity<String> getInterestsByTeacherId(@PathVariable int teacherId) {
-        return ResponseEntity.ok(uServ.getInterestsByTeacherId(teacherId));
-    }
+//    @GetMapping("/{teacherId}/interests")
+//    public ResponseEntity<String> getInterestsByTeacherId(@PathVariable int teacherId) {
+//        return ResponseEntity.ok(uServ.getInterestsByTeacherId(teacherId));
+//    }
 
     @GetMapping("/users/search-by-name")
     public ResponseEntity<List<UserDTO>> getActiveUsersByName(

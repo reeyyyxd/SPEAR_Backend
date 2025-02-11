@@ -36,10 +36,6 @@ public class User implements UserDetails {
 
     private Boolean isDeleted = false;
 
-    @Column(name = "interests")
-    private String interests;
-
-
 
     @ManyToMany(mappedBy = "enrolledStudents")
     private Set<Classes> enrolledClasses = new HashSet<>();
@@ -173,13 +169,6 @@ public class User implements UserDetails {
         this.isDeleted = isDeleted;
     }
 
-    public String getInterests() {
-        return interests != null ? interests : "Teachers only";
-    }
-
-    public void setInterests(String interests) {
-        this.interests = interests;
-    }
 
 
 }

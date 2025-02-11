@@ -26,7 +26,6 @@ public class PredeterminedDataStart {
             admin.setFirstname("Application");
             admin.setLastname("Admin");
             admin.setEmail("admin123@cit.edu");
-            admin.setInterests("just an admin");
 
             BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
             String encryptedPwd = bcrypt.encode("admin123");

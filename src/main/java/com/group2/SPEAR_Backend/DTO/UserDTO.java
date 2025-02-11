@@ -22,20 +22,18 @@ public class UserDTO {
     private boolean isDeleted;
     private User user;
     private List<User> userList;
-    private String interests;
 
     // New field for UID
     private Integer uid;
 
     // Constructor to include uid
-    public UserDTO(int statusCode, String message, String firstname, String lastname, String email, String role, String interests, Integer uid) {
+    public UserDTO(int statusCode, String message, String firstname, String lastname, String email, String role, Integer uid) {
         this.statusCode = statusCode;
         this.message = message;
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
         this.role = role;
-        this.interests = interests;
         this.uid = uid;  // Set the UID
     }
 
@@ -178,14 +176,6 @@ public class UserDTO {
 
     public String getLastname() {
         return lastname;
-    }
-
-    public String getInterests() {
-        return interests;
-    }
-
-    public void setInterests(String interests) {
-        this.interests = interests;
     }
 
     // Getter and Setter for UID
