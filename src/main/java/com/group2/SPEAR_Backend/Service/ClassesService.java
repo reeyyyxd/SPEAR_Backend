@@ -55,7 +55,6 @@ public class ClassesService {
             String generatedClassKey = ClassCodeGenerator.generateClassCode();
 
             Classes newClass = new Classes();
-            newClass.setCourseType(classRequest.getCourseType());
             newClass.setCourseCode(classRequest.getCourseCode());
             newClass.setSection(classRequest.getSection());
             newClass.setSchoolYear(classRequest.getSchoolYear());
@@ -69,7 +68,6 @@ public class ClassesService {
 
 
             response = new ClassesDTO(
-                    savedClass.getCourseType(),
                     savedClass.getCourseCode(),
                     savedClass.getSection(),
                     savedClass.getSchoolYear(),
@@ -87,21 +85,21 @@ public class ClassesService {
     }
 
 
-//    super mortal sin (figure this one later)
-//    public ClassesDTO getAllClasses() {
-//        ClassesDTO response;
-//        try {
-//            List<Classes> classesList = cRepo.findAllByIsDeletedFalse();
-//            if (!classesList.isEmpty()) {
-//                response = new ClassesDTO(200, "Classes retrieved successfully", classesList);
-//            } else {
-//                response = new ClassesDTO(404, "No classes found", (List<Classes>) null);
-//            }
-//        } catch (Exception e) {
-//            response = new ClassesDTO(500, "Error occurred while fetching classes", e.getMessage());
-//        }
-//        return response;
-//    }
+    //super mortal sin (figure this one later)
+    //UPDATE: one semester later pa na solve (yucks rey)
+    public List<ClassesDTO> getAllClasses() {
+        try {
+            List<ClassesDTO> classesList = cRepo.findAllClassesWithCreator();
+            if (!classesList.isEmpty()) {
+                return classesList;
+            } else {
+                throw new NoSuchElementException("No classes found");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error occurred while fetching classes: " + e.getMessage());
+        }
+    }
+
 
     public ClassesDTO getClassById(Long classId) {
         Optional<Classes> classOptional = cRepo.findActiveClassById(classId);
@@ -112,7 +110,6 @@ public class ClassesService {
 
         Classes classData = classOptional.get();
         return new ClassesDTO(
-                classData.getCourseType(),
                 classData.getCourseDescription(),
                 classData.getCourseCode(),
                 classData.getSection(),
@@ -167,7 +164,6 @@ public class ClassesService {
             Optional<Classes> classOptional = cRepo.findById(classId);
             if (classOptional.isPresent()) {
                 Classes existingClass = classOptional.get();
-                existingClass.setCourseType(classRequest.getCourseType());
                 existingClass.setCourseCode(classRequest.getCourseCode());
                 existingClass.setSection(classRequest.getSection());
                 existingClass.setSchoolYear(classRequest.getSchoolYear());

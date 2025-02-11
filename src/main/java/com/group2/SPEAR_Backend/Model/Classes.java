@@ -20,9 +20,6 @@ public class Classes {
     @JoinColumn(name = "created_by", referencedColumnName = "uid")
     private User createdBy;
 
-    @Column(name = "course_type")
-    private String courseType;
-
     @Column(name = "course_code")
     private String courseCode;
 
@@ -60,10 +57,9 @@ public class Classes {
         super();
     }
 
-    public Classes(User createdBy, String courseType, String courseCode, String section, String schoolYear,
+    public Classes(User createdBy, String courseCode, String section, String schoolYear,
                    String semester, String classKey, String courseDescription, boolean isDeleted) {
         this.createdBy = createdBy;
-        this.courseType = courseType;
         this.courseCode = courseCode;
         this.section = section;
         this.schoolYear = schoolYear;
@@ -89,14 +85,6 @@ public class Classes {
 
     public void setCreatedBy(User createdBy) {
         this.createdBy = createdBy;
-    }
-
-    public String getCourseType() {
-        return courseType;
-    }
-
-    public void setCourseType(String courseType) {
-        this.courseType = courseType;
     }
 
     public String getCourseCode() {

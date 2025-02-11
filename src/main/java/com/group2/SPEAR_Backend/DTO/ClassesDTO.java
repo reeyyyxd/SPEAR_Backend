@@ -17,7 +17,6 @@ public class ClassesDTO {
 
     private Long cid;
     private Long uid;
-    private String courseType;
     private String courseCode;
     private String section;
     private String schoolYear;
@@ -39,8 +38,7 @@ public class ClassesDTO {
         super();
     }
 
-    public ClassesDTO(String courseType, String courseCode, String section, String schoolYear, String semester, String courseDescription, String classKey, User createdBy) {
-        this.courseType = courseType;
+    public ClassesDTO(String courseCode, String section, String schoolYear, String semester, String courseDescription, String classKey, User createdBy) {
         this.courseCode = courseCode;
         this.section = section;
         this.schoolYear = schoolYear;
@@ -63,13 +61,11 @@ public class ClassesDTO {
     }
 
     // class data with user details
-    public ClassesDTO(String classKey, String courseCode, String courseDescription,
-                      String courseType, String schoolYear, String section, String semester,
+    public ClassesDTO(String classKey, String courseCode, String courseDescription, String schoolYear, String section, String semester,
                       String firstname, String lastname, String role) {
         this.classKey = classKey;
         this.courseCode = courseCode;
         this.courseDescription = courseDescription;
-        this.courseType = courseType;
         this.schoolYear = schoolYear;
         this.section = section;
         this.semester = semester;
@@ -82,10 +78,9 @@ public class ClassesDTO {
 
     //classes that students are enrolled in
     public ClassesDTO(String courseCode, String courseDescription,
-                      String courseType, String schoolYear, String section, String semester, User createdBy) {
+                      String schoolYear, String section, String semester, User createdBy) {
         this.courseCode = courseCode;
         this.courseDescription = courseDescription;
-        this.courseType = courseType;
         this.schoolYear = schoolYear;
         this.section = section;
         this.semester = semester;
@@ -95,9 +90,8 @@ public class ClassesDTO {
     }
 
     // Simplified class details constructor
-    public ClassesDTO(String courseType, String courseDescription, String courseCode,
+    public ClassesDTO(String courseDescription, String courseCode,
                       String section, String schoolYear, String semester) {
-        this.courseType = courseType;
         this.courseDescription = courseDescription;
         this.courseCode = courseCode;
         this.section = section;
@@ -137,14 +131,6 @@ public class ClassesDTO {
 
     public void setUid(Long uid) {
         this.uid = uid;
-    }
-
-    public String getCourseType() {
-        return courseType;
-    }
-
-    public void setCourseType(String courseType) {
-        this.courseType = courseType;
     }
 
     public String getCourseCode() {

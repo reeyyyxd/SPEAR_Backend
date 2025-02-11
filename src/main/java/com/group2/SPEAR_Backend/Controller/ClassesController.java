@@ -33,12 +33,18 @@ public class ClassesController {
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
-// super nono mka guba og server
-//    @GetMapping("/teacher/getallclasses")
-//    public ResponseEntity<ClassesDTO> getAllClasses() {
-//        ClassesDTO response = cServ.getAllClasses();
-//        return ResponseEntity.status(response.getStatusCode()).body(response);
-//    }
+    @GetMapping("/getallclasses")
+    public ResponseEntity<List<ClassesDTO>> getAllClasses() {
+        List<ClassesDTO> response = cServ.getAllClasses();
+        return ResponseEntity.ok(response);
+    }
+
+
+    @GetMapping("/teacher/classes-created/{userId}")
+    public ResponseEntity<List<ClassesDTO>> getClassesCreatedByUser(@PathVariable int userId) {
+        List<ClassesDTO> response = cServ.getClassesCreatedByUser(userId);
+        return ResponseEntity.ok(response);
+    }
 
 
 
@@ -106,11 +112,7 @@ public class ClassesController {
     }
 
 
-    @GetMapping("/teacher/classes-created/{userId}")
-    public ResponseEntity<List<ClassesDTO>> getClassesCreatedByUser(@PathVariable int userId) {
-        List<ClassesDTO> response = cServ.getClassesCreatedByUser(userId);
-        return ResponseEntity.ok(response);
-    }
+
 
     @GetMapping("/class/{classKey}/students")
     public ResponseEntity<List<UserDTO>> getStudentsInClass(@PathVariable String classKey) {
