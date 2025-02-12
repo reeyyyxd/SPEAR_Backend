@@ -38,6 +38,21 @@ public class ClassesDTO {
         super();
     }
 
+    public ClassesDTO(Long cid, String classKey, String courseCode, String courseDescription,
+                      String schoolYear, String section, String semester,
+                      String firstname, String lastname, String role) {
+        this.cid = cid;
+        this.classKey = classKey;
+        this.courseCode = courseCode;
+        this.courseDescription = courseDescription;
+        this.schoolYear = schoolYear;
+        this.section = section;
+        this.semester = semester;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.role = role;
+    }
+
     public ClassesDTO(String courseCode, String section, String schoolYear, String semester, String courseDescription, String classKey, User createdBy) {
         this.courseCode = courseCode;
         this.section = section;

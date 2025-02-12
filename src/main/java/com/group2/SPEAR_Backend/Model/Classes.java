@@ -16,7 +16,7 @@ public class Classes {
     private Long cid;
 
     @JsonIgnore
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "created_by", referencedColumnName = "uid")
     private User createdBy;
 
