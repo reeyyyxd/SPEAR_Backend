@@ -37,7 +37,7 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
     Object[] findTotalUsersInClass(@Param("classId") Long classId);
 
 
-    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO(c.classKey, c.courseCode, c.courseDescription, c.schoolYear, c.section, c.semester, u.firstname, u.lastname, u.role) " +
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO(c.cid, c.classKey, c.courseCode, c.courseDescription, c.schoolYear, c.section, c.semester, u.firstname, u.lastname, u.role) " +
             "FROM Classes c JOIN c.createdBy u " +
             "WHERE c.isDeleted = false AND u.uid = :userId")
     List<ClassesDTO> findClassesByCreator(@Param("userId") int userId);
@@ -56,10 +56,11 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
     List<UserDTO> findStudentsInClass(@Param("classKey") String classKey);
 
 
-    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO(c.courseCode,c.courseDescription, c.schoolYear, c.section, c.semester, c.createdBy) " +
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO(c.cid, c.courseCode, c.courseDescription, c.schoolYear, c.section, c.semester, c.createdBy.uid, c.createdBy.firstname, c.createdBy.lastname) " +
             "FROM Classes c JOIN c.enrolledStudents u " +
             "WHERE u.uid = :studentId AND c.isDeleted = false")
     List<ClassesDTO> findClassesEnrolledByStudent(@Param("studentId") int studentId);
+
 
     @Query("SELECT c FROM Classes c WHERE c.courseCode = :courseCode AND c.section = :section AND c.isDeleted = false")
     Optional<Classes> findByCourseCodeAndSectionPage(@Param("courseCode") String courseCode, @Param("section") String section);

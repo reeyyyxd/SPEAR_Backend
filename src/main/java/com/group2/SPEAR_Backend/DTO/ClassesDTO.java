@@ -16,7 +16,7 @@ public class ClassesDTO {
     private String message;
 
     private Long cid;
-    private Long uid;
+    private int uid;
     private String courseCode;
     private String section;
     private String schoolYear;
@@ -64,6 +64,18 @@ public class ClassesDTO {
         this.classKey = classKey;
         this.createdBy = createdBy;
         this.maxTeamSize = maxTeamSize;
+    }
+
+    public ClassesDTO(Long cid, String courseCode, String courseDescription, String schoolYear, String section, String semester, int uid, String firstname, String lastname) {
+        this.cid = cid;
+        this.courseCode = courseCode;
+        this.courseDescription = courseDescription;
+        this.schoolYear = schoolYear;
+        this.section = section;
+        this.semester = semester;
+        this.uid = uid;
+        this.firstname = firstname;
+        this.lastname = lastname;
     }
 
     public ClassesDTO(int statusCode, String message, List<Classes> classesList) {
@@ -146,11 +158,11 @@ public class ClassesDTO {
         this.message = message;
     }
 
-    public Long getUid() {
+    public int getUid() {
         return uid;
     }
 
-    public void setUid(Long uid) {
+    public void setUid(int uid) {
         this.uid = uid;
     }
 
