@@ -6,15 +6,17 @@ public class InterestDTO {
     private int iid;
     private User userInterest;
     private String interest;
+    private String department;
 
     public InterestDTO() {
         super();
     }
 
-    public InterestDTO(int iid, User userInterest, String interest) {
+    public InterestDTO(int iid, User userInterest, String interest, String department) {
         this.iid = iid;
         this.userInterest = userInterest;
         this.interest = interest;
+        this.department = department;
     }
 
     public int getIid() {
@@ -39,5 +41,13 @@ public class InterestDTO {
 
     public void setInterest(String interest) {
         this.interest = interest;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
     }
 }

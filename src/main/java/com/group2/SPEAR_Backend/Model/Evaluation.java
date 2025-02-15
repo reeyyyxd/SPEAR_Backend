@@ -26,7 +26,7 @@ public class Evaluation {
     @Column(name = "period", nullable = false)
     private String period; // Prelim, Midterm, Prefinals, Finals
 
-    @ManyToOne
+    @ManyToOne (cascade = CascadeType.MERGE)
     @JoinColumn(name = "class_id", referencedColumnName = "cid", nullable = false)
     private Classes classes;
 

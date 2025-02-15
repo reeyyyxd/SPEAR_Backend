@@ -10,7 +10,7 @@ public class ProjectProposal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int pid;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "proposed_by", referencedColumnName = "uid")
     private User proposedBy;
 

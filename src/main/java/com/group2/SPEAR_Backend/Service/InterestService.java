@@ -17,17 +17,17 @@ public class InterestService {
     @Autowired
     private UserRepository uRepo;
 
-    public InterestDTO createInterest(int userId, String interest) {
+    public InterestDTO createInterest(int userId, String interest, String department) {
         User user = uRepo.findById(Math.toIntExact(userId)).orElseThrow(() -> new RuntimeException("User not found"));
-        Interest newInterest = new Interest(user, interest);
+        Interest newInterest = new Interest(user, interest, department);
         iRepo.save(newInterest);
-        return new InterestDTO(newInterest.getIid(), newInterest.getUserInterest(), newInterest.getInterest());
+        return new InterestDTO(newInterest.getIid(), newInterest.getUserInterest(), newInterest.getInterest(), newInterest.getDepartment());
     }
 
     public InterestDTO getInterestByUser(int userId) {
         Interest interest = iRepo.findByUserInterest_Uid(userId)
                 .orElseThrow(() -> new RuntimeException("No interest found for user"));
-        return new InterestDTO(interest.getIid(), interest.getUserInterest(), interest.getInterest());
+        return new InterestDTO(interest.getIid(), interest.getUserInterest(), interest.getInterest(), interest.getDepartment());
     }
 
     public InterestDTO updateInterest(int iid, String newInterest) {
@@ -37,7 +37,7 @@ public class InterestService {
         interest.setInterest(newInterest);
         iRepo.save(interest);
 
-        return new InterestDTO(interest.getIid(), interest.getUserInterest(), interest.getInterest());
+        return new InterestDTO(interest.getIid(), interest.getUserInterest(), interest.getInterest(), interest.getDepartment());
     }
 
     public void deleteInterest(int iid) {

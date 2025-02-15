@@ -31,6 +31,7 @@ public class ProjectProposalService {
     @Autowired
     private FeatureRepository fRepo;
 
+    //create rta
     public ProjectProposal createProjectProposal(ProjectProposalDTO dto, List<FeatureDTO> features) {
         User user = uRepo.findById(dto.getProposedById())
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.getProposedById()));
@@ -39,18 +40,6 @@ public class ProjectProposalService {
                 .orElseThrow(() -> new RuntimeException("Class not found with ID: " + dto.getClassId()));
 
         User adviser = null;
-
-        // bypass adviser or proposal first before adviser
-        if ("CAPSTONE".equalsIgnoreCase(clazz.getCourseType())) {
-            if (dto.getAdviserId() != null) {
-                adviser = uRepo.findById(dto.getAdviserId())
-                        .filter(u -> "TEACHER".equalsIgnoreCase(u.getRole()))
-                        .orElse(null);
-                if (adviser == null) {
-                    System.out.println("No adviser in capstone");
-                }
-            }
-        }
         ProjectProposal proposal = new ProjectProposal(user, dto.getProjectName(), clazz, dto.getDescription(), adviser);
         ProjectProposal savedProposal = ppRepo.save(proposal);
         if (features != null && !features.isEmpty()) {
@@ -98,10 +87,6 @@ public class ProjectProposalService {
     public void updateCapstoneAdviser(int proposalId, int adviserId) {
         ProjectProposal proposal = ppRepo.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Project proposal with ID " + proposalId + " not found"));
-
-        if (!"CAPSTONE".equalsIgnoreCase(proposal.getClassProposal().getCourseType())) {
-            throw new IllegalArgumentException("Adviser can only be updated for Capstone projects.");
-        }
         User adviser = uRepo.findById(adviserId)
                 .filter(user -> "TEACHER".equalsIgnoreCase(user.getRole()))
                 .orElseThrow(() -> new RuntimeException("Adviser with ID " + adviserId + " not found or is not a teacher"));

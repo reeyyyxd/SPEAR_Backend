@@ -29,18 +29,36 @@ public class TeamController {
 //    }
 
 
-    @PostMapping("/student/create-team/{projectId}")
-    public ResponseEntity<Map<String, String>> createTeam(
-            @PathVariable int projectId,
-            @RequestBody Map<String, String> requestBody
-    ) {
-        String groupName = requestBody.get("groupName");
-        tServ.createTeam(projectId, groupName);
-
+    @PostMapping("/student/create-team")
+    public ResponseEntity<Map<String, String>> createTeam(@RequestBody Map<String, String> requestBody) {
         Map<String, String> response = new HashMap<>();
-        response.put("message", "Team has been created");
-        return ResponseEntity.ok(response);
+        try {
+            int leaderId = Integer.parseInt(requestBody.getOrDefault("leaderId", "0"));
+            Long classId = Long.parseLong(requestBody.getOrDefault("classId", "0"));
+            String groupName = requestBody.get("groupName");
+            int adviserId = Integer.parseInt(requestBody.getOrDefault("adviserId", "0"));
+            int scheduleId = Integer.parseInt(requestBody.getOrDefault("scheduleId", "0"));
+
+            if (leaderId == 0 || classId == 0 || groupName == null || groupName.trim().isEmpty() || adviserId == 0 || scheduleId == 0) {
+                response.put("error", "Missing or invalid input data.");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Create team
+            tServ.createTeam(leaderId, classId, groupName, adviserId, scheduleId);
+            response.put("message", "Team has been created successfully.");
+            return ResponseEntity.ok(response);
+
+        } catch (NumberFormatException e) {
+            response.put("error", "Invalid number format for leaderId, classId, adviserId, or scheduleId.");
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            response.put("error", "An error occurred while creating the team: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
     }
+
+
 
 
     @PutMapping("/student/{teamId}/update-group-name")
@@ -138,6 +156,19 @@ public class TeamController {
         List<UserDTO> members = tServ.getTeamMembers(teamId);
         return ResponseEntity.ok(members);
     }
+
+    @DeleteMapping("/team/{teamId}/leave")
+    public ResponseEntity<Map<String, String>> leaveTeam(
+            @PathVariable int teamId,
+            @RequestParam int userId) {
+
+        tServ.leaveTeam(teamId, userId);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "You have successfully left the team.");
+        return ResponseEntity.ok(response);
+    }
+
 
 
 

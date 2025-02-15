@@ -61,7 +61,7 @@ public class UserService implements UserDetailsService {
 
             // change from separate entity
 //            if ("TEACHER".equalsIgnoreCase(ourUser.getRole())) {
-//                ourUser.setInterests(registrationRequest.getInterests());
+//                ourUser.setw(registrationRequest.getInterests());
 //            }
 
             // Save the user to the database

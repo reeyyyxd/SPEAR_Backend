@@ -44,6 +44,9 @@ public class Classes {
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
+    @Column(name = "max_members", nullable = false)
+    private int maxTeamSize = 5;
+
     @JsonIgnore
     @ManyToMany
     @JoinTable(
@@ -53,12 +56,14 @@ public class Classes {
     )
     private Set<User> enrolledStudents = new HashSet<>();
 
-    public Classes() {
-        super();
-    }
+    @ManyToOne
+    @JoinColumn(name = "schedule_id", referencedColumnName = "schedid", nullable = false)
+    private Schedule schedule;
+
+    public Classes() {}
 
     public Classes(User createdBy, String courseCode, String section, String schoolYear,
-                   String semester, String classKey, String courseDescription, boolean isDeleted) {
+                   String semester, String classKey, String courseDescription, boolean isDeleted, int maxTeamSize) {
         this.createdBy = createdBy;
         this.courseCode = courseCode;
         this.section = section;
@@ -68,9 +73,10 @@ public class Classes {
         this.isDeleted = isDeleted;
         this.classKey = classKey;
         this.createdDate = LocalDate.now();
+        this.maxTeamSize = maxTeamSize;
     }
 
-    // Getters and Setters
+
     public Long getCid() {
         return cid;
     }
@@ -128,7 +134,7 @@ public class Classes {
     }
 
     public boolean isDeleted() {
-        return isDeleted != null ? isDeleted : false; // Default to false if null
+        return isDeleted != null ? isDeleted : false;
     }
 
     public void setDeleted(boolean isDeleted) {
@@ -159,11 +165,19 @@ public class Classes {
         this.createdDate = createdDate;
     }
 
+    public int getMaxTeamSize() {
+        return maxTeamSize;
+    }
+
+    public void setMaxTeamSize(int maxTeamSize) {
+        this.maxTeamSize = maxTeamSize;
+    }
+
     public Boolean getIsDeleted() {
         return isDeleted;
     }
 
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
+    public void setIsDeleted(Boolean deleted) {
+        isDeleted = deleted;
     }
 }

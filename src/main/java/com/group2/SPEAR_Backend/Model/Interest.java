@@ -18,12 +18,15 @@ public class Interest {
 
     private String interest;
 
+    private String department;
+
     public Interest() {
         super();
     }
-    public Interest( User userInterest, String interest) {
+    public Interest( User userInterest, String interest, String department) {
         this.userInterest = userInterest;
         this.interest = interest;
+        this.department = department;
     }
 
     public int getIid() {
@@ -48,5 +51,13 @@ public class Interest {
 
     public void setInterest(String interest) {
         this.interest = interest;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
     }
 }

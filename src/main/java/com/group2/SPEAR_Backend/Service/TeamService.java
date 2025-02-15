@@ -33,31 +33,45 @@ public class TeamService {
     @Autowired
     private FeatureRepository fRepo;
 
+    @Autowired
+    private ClassesRepository cRepo;
 
+    @Autowired
+    private ScheduleRepository sRepo;
+
+
+    //reverse function from create project proposal
+    //instead of created by member, do it by group
+    //fix also the leader functionality
     @Transactional
-    public Team createTeam(int projectId, String groupName) {
-        ProjectProposal project = ppRepo.findById(projectId)
-                .filter(p -> "APPROVED".equalsIgnoreCase(p.getStatus()))
-                .orElseThrow(() -> new NoSuchElementException("Project with ID " + projectId + " is not approved or does not exist."));
+    public Team createTeam(int studentId, Long classId, String groupName, int adviserId, int scheduleId) {
+        User student = uRepo.findById(studentId)
+                .orElseThrow(() -> new NoSuchElementException("Student with ID " + studentId + " not found."));
 
-        User leader = project.getProposedBy();
-        Classes classRef = project.getClassProposal();
+        Classes classRef = cRepo.findById(classId)
+                .orElseThrow(() -> new NoSuchElementException("Class with ID " + classId + " not found."));
 
-        if (leader == null) {
-            throw new IllegalStateException("Leader cannot be null. Ensure the proposal has an owner.");
+        if (!classRef.getEnrolledStudents().contains(student)) {
+            throw new IllegalStateException("Student must be enrolled in the class to create a team.");
         }
 
-        Team newTeam = new Team(project, leader, classRef, groupName);
-
-        newTeam.getMembers().add(leader);
-        Team savedTeam = tRepo.save(newTeam);
-
-        if (savedTeam.getMembers().size() > 4) {
-            throw new IllegalStateException("Team cannot have more than 5 members.");
+        boolean isAlreadyLeader = tRepo.existsByLeaderAndClassRef(student, classRef);
+        if (isAlreadyLeader) {
+            throw new IllegalStateException("Student is already leading a team in this class.");
         }
 
-        return savedTeam;
+        User adviser = uRepo.findById(adviserId)
+                .orElseThrow(() -> new NoSuchElementException("Adviser with ID " + adviserId + " not found."));
+
+        Schedule schedule = sRepo.findById(scheduleId)
+                .orElseThrow(() -> new NoSuchElementException("Schedule with ID " + scheduleId + " not found."));
+
+        Team newTeam = new Team(null, student, classRef, groupName, adviser, schedule);
+        newTeam.getMembers().add(student);
+
+        return tRepo.save(newTeam);
     }
+
 
     public Team updateGroupName(int teamId, String groupName) {
         Team team = tRepo.findById(teamId)
@@ -138,37 +152,36 @@ public class TeamService {
                         team.getLeader().getUid(),
                         team.getClassRef().getCid(),
                         team.getMembers().stream().map(User::getUid).toList(),
-                        team.isRecruitmentOpen()
+                        team.isRecruitmentOpen(),
+                        null,
+                        team.getProject().getDescription(),
+                        team.getAdviser().getUid(),
+                        team.getSchedule().getSchedid()
                 ))
                 .toList();
     }
 
     public TeamDTO getTeamById(int teamId) {
-        // Fetch active team by ID
         Team team = tRepo.findActiveTeamById(teamId)
                 .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
 
-        // Fetch the associated project
-        ProjectProposal project = ppRepo.findById(team.getProject().getPid())
-                .orElseThrow(() -> new NoSuchElementException("Project with ID " + team.getProject().getPid() + " not found."));
-
-        // Fetch features related to the project
-        List<FeatureDTO> features = fRepo.findByProjectId(project.getPid()).stream()
+        List<FeatureDTO> features = fRepo.findByProjectId(team.getProject().getPid()).stream()
                 .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
                 .toList();
 
-        // Return TeamDTO with detailed information
         return new TeamDTO(
                 team.getTid(),
                 team.getGroupName(),
-                project.getProjectName(),
-                project.getPid(),
+                team.getProject().getProjectName(),
+                team.getProject().getPid(),
                 team.getLeader().getUid(),
                 team.getClassRef().getCid(),
                 team.getMembers().stream().map(User::getUid).toList(),
                 team.isRecruitmentOpen(),
                 features,
-                project.getDescription()
+                team.getProject().getDescription(),
+                team.getAdviser().getUid(),
+                team.getSchedule().getSchedid()
         );
     }
 
@@ -215,59 +228,38 @@ public class TeamService {
     }
 
     public List<TeamDTO> getTeamsByClassId(int classId) {
-        // Fetch active teams for the class
         List<Team> activeTeams = tRepo.findActiveTeamsByClassId(classId);
         if (activeTeams.isEmpty()) {
             throw new NoSuchElementException("No active teams found for class ID " + classId);
         }
 
         List<TeamDTO> teamDTOs = new ArrayList<>();
-
         for (Team team : activeTeams) {
-            // Ensure team has a project and the project is active
-            if (team.getProject() == null || team.getProject().getPid() == 0) {
-                throw new IllegalStateException("Team with ID " + team.getTid() + " has no associated project.");
-            }
-
-            ProjectProposal project = ppRepo.findById(team.getProject().getPid())
-                    .filter(p -> !p.getIsDeleted()) // Ensure the project is not soft-deleted
-                    .orElseThrow(() -> new NoSuchElementException("Project with ID " + team.getProject().getPid() + " not found or has been deleted."));
-
-            // Fetch features associated with the project
-            List<FeatureDTO> features = fRepo.findByProjectId(project.getPid()).stream()
+            List<FeatureDTO> features = fRepo.findByProjectId(team.getProject().getPid()).stream()
                     .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
                     .toList();
 
-            // Map the team details to a TeamDTO
-            TeamDTO teamDTO = new TeamDTO(
+            teamDTOs.add(new TeamDTO(
                     team.getTid(),
                     team.getGroupName(),
-                    project.getProjectName(),
-                    project.getPid(),
+                    team.getProject().getProjectName(),
+                    team.getProject().getPid(),
                     team.getLeader().getUid(),
                     team.getClassRef().getCid(),
                     team.getMembers().stream().map(User::getUid).toList(),
                     team.isRecruitmentOpen(),
                     features,
-                    project.getDescription()
-            );
-
-            teamDTOs.add(teamDTO);
+                    team.getProject().getDescription(),
+                    team.getAdviser().getUid(),
+                    team.getSchedule().getSchedid()
+            ));
         }
-
         return teamDTOs;
     }
-
-
 
     public TeamDTO getMyTeam(int userId, int classId) {
         Team team = tRepo.findMyTeamByClassId(userId, classId)
                 .orElseThrow(() -> new NoSuchElementException("No team found for the user in this class."));
-
-        String leaderName = team.getLeader().getFirstname() + " " + team.getLeader().getLastname();
-        List<String> memberNames = team.getMembers().stream()
-                .map(member -> member.getFirstname() + " " + member.getLastname())
-                .toList();
 
         return new TeamDTO(
                 team.getTid(),
@@ -277,7 +269,11 @@ public class TeamService {
                 team.getLeader().getUid(),
                 team.getClassRef().getCid(),
                 team.getMembers().stream().map(User::getUid).toList(),
-                team.isRecruitmentOpen()
+                team.isRecruitmentOpen(),
+                null,
+                team.getProject().getDescription(),
+                team.getAdviser().getUid(),
+                team.getSchedule().getSchedid()
         );
     }
 
@@ -289,7 +285,24 @@ public class TeamService {
     }
 
 
+    @Transactional
+    public void leaveTeam(int teamId, int userId) {
+        Team team = tRepo.findById(teamId)
+                .filter(t -> !t.isDeleted())
+                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
 
+        User user = uRepo.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User with ID " + userId + " not found."));
+
+        if (!team.getMembers().contains(user)) {
+            throw new IllegalStateException("User is not a member of this team.");
+        }
+        if (team.getLeader().getUid() == userId) {
+            throw new IllegalStateException("Leader cannot leave the team. Transfer leadership or disband the team.");
+        }
+        team.getMembers().remove(user);
+        tRepo.save(team);
+    }
 
 
 

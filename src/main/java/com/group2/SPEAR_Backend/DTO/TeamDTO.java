@@ -1,7 +1,5 @@
 package com.group2.SPEAR_Backend.DTO;
 
-import com.group2.SPEAR_Backend.Model.User;
-
 import java.util.List;
 
 public class TeamDTO {
@@ -14,31 +12,16 @@ public class TeamDTO {
     private Long classId;
     private List<Integer> memberIds;
     private boolean isRecruitmentOpen;
-    private List<FeatureDTO> features; // Added field for features
-    private String projectDescription; // Added field for project description
+    private List<FeatureDTO> features;
+    private String projectDescription;
+    private int adviserId;
+    private int scheduleId;
 
-    public TeamDTO() {
-    }
+    public TeamDTO() {}
 
-    public TeamDTO(int tid, String groupName, String projectName, int projectId, int leaderId, Long classId, List<Integer> memberIds, boolean isRecruitmentOpen) {
-        this.tid = tid;
-        this.groupName = groupName;
-        this.projectName = projectName;
-        this.projectId = projectId;
-        this.leaderId = leaderId;
-        this.classId = classId;
-        this.memberIds = memberIds;
-        this.isRecruitmentOpen = isRecruitmentOpen;
-    }
-
-    public TeamDTO(int tid, String groupName, String projectName, boolean isRecruitmentOpen) {
-        this.tid = tid;
-        this.groupName = groupName;
-        this.projectName = projectName;
-        this.isRecruitmentOpen = isRecruitmentOpen;
-    }
-
-    public TeamDTO(int tid, String groupName, String projectName, int projectId, int leaderId, Long classId, List<Integer> memberIds, boolean isRecruitmentOpen, List<FeatureDTO> features, String projectDescription) {
+    public TeamDTO(int tid, String groupName, String projectName, int projectId, int leaderId, Long classId,
+                   List<Integer> memberIds, boolean isRecruitmentOpen, List<FeatureDTO> features,
+                   String projectDescription, int adviserId, int scheduleId) {
         this.tid = tid;
         this.groupName = groupName;
         this.projectName = projectName;
@@ -49,10 +32,11 @@ public class TeamDTO {
         this.isRecruitmentOpen = isRecruitmentOpen;
         this.features = features;
         this.projectDescription = projectDescription;
+        this.adviserId = adviserId;
+        this.scheduleId = scheduleId;
     }
 
-
-
+    // Getters and Setters
     public int getTid() {
         return tid;
     }
@@ -108,13 +92,6 @@ public class TeamDTO {
     public void setRecruitmentOpen(boolean recruitmentOpen) {
         isRecruitmentOpen = recruitmentOpen;
     }
-    public String getProjectName() {
-        return projectName;
-    }
-
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-    }
 
     public List<FeatureDTO> getFeatures() {
         return features;
@@ -130,5 +107,21 @@ public class TeamDTO {
 
     public void setProjectDescription(String projectDescription) {
         this.projectDescription = projectDescription;
+    }
+
+    public int getAdviserId() {
+        return adviserId;
+    }
+
+    public void setAdviserId(int adviserId) {
+        this.adviserId = adviserId;
+    }
+
+    public int getScheduleId() {
+        return scheduleId;
+    }
+
+    public void setScheduleId(int scheduleId) {
+        this.scheduleId = scheduleId;
     }
 }

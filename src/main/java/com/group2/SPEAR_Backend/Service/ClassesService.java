@@ -52,30 +52,39 @@ public class ClassesService {
             if (!"TEACHER".equalsIgnoreCase(createdBy.getRole())) {
                 return new ClassesDTO(403, "Only users with the TEACHER role can create a class", (List<Classes>) null);
             }
-            String generatedClassKey = ClassCodeGenerator.generateClassCode();
 
-            Classes newClass = new Classes();
-            newClass.setCourseCode(classRequest.getCourseCode());
-            newClass.setSection(classRequest.getSection());
-            newClass.setSchoolYear(classRequest.getSchoolYear());
-            newClass.setSemester(classRequest.getSemester());
-            newClass.setCourseDescription(classRequest.getCourseDescription());
-            newClass.setClassKey(generatedClassKey);
-            newClass.setCreatedBy(createdBy);
-            newClass.setIsDeleted(false);
-            newClass.setCreatedDate(LocalDate.now());
+            String generatedClassKey = ClassCodeGenerator.generateClassCode();
+            int maxTeamSize = classRequest.getMaxTeamSize() > 0 ? classRequest.getMaxTeamSize() : 5;
+
+            Classes newClass = new Classes(
+                    createdBy,
+                    classRequest.getCourseCode(),
+                    classRequest.getSection(),
+                    classRequest.getSchoolYear(),
+                    classRequest.getSemester(),
+                    generatedClassKey,
+                    classRequest.getCourseDescription(),
+                    false,
+                    maxTeamSize
+            );
+
             Classes savedClass = cRepo.save(newClass);
 
-
+            // Build the response DTO correctly
             response = new ClassesDTO(
-                    savedClass.getCourseCode(),
-                    savedClass.getSection(),
-                    savedClass.getSchoolYear(),
-                    savedClass.getSemester(),
-                    savedClass.getCourseDescription(),
+                    savedClass.getCid(),
                     savedClass.getClassKey(),
-                    savedClass.getCreatedBy()
+                    savedClass.getCourseCode(),
+                    savedClass.getCourseDescription(),
+                    savedClass.getSchoolYear(),
+                    savedClass.getSection(),
+                    savedClass.getSemester(),
+                    savedClass.getCreatedBy().getFirstname(),
+                    savedClass.getCreatedBy().getLastname(),
+                    savedClass.getCreatedBy().getRole(),
+                    savedClass.getMaxTeamSize()
             );
+
             response.setStatusCode(200);
             response.setMessage("Class created successfully");
         } catch (Exception e) {
@@ -83,6 +92,7 @@ public class ClassesService {
         }
         return response;
     }
+
 
 
     //super mortal sin (figure this one later)
@@ -109,14 +119,22 @@ public class ClassesService {
         }
 
         Classes classData = classOptional.get();
+
         return new ClassesDTO(
-                classData.getCourseDescription(),
+                classData.getCid(),
+                classData.getClassKey(),
                 classData.getCourseCode(),
-                classData.getSection(),
+                classData.getCourseDescription(),
                 classData.getSchoolYear(),
-                classData.getSemester()
+                classData.getSection(),
+                classData.getSemester(),
+                classData.getCreatedBy().getFirstname(),
+                classData.getCreatedBy().getLastname(),
+                classData.getCreatedBy().getRole(),
+                classData.getMaxTeamSize()
         );
     }
+
 
     // Get a class by course code
     public ClassesDTO getClassByCourseCode(String courseCode, String section) {
@@ -159,31 +177,46 @@ public class ClassesService {
 
 
     public ClassesDTO updateClass(Long classId, ClassesDTO classRequest) {
-        ClassesDTO response = new ClassesDTO();
+        ClassesDTO response;
         try {
             Optional<Classes> classOptional = cRepo.findById(classId);
-            if (classOptional.isPresent()) {
-                Classes existingClass = classOptional.get();
-                existingClass.setCourseCode(classRequest.getCourseCode());
-                existingClass.setSection(classRequest.getSection());
-                existingClass.setSchoolYear(classRequest.getSchoolYear());
-                existingClass.setSemester(classRequest.getSemester());
-                existingClass.setCourseDescription(classRequest.getCourseDescription());
-
-                Classes updatedClass = cRepo.save(existingClass);
-                response.setClasses(updatedClass);
-                response.setStatusCode(200);
-                response.setMessage("Class updated successfully");
-            } else {
-                response.setStatusCode(404);
-                response.setMessage("Class with ID '" + classId + "' not found");
+            if (classOptional.isEmpty()) {
+                return new ClassesDTO(404, "Class with ID '" + classId + "' not found", (List<Classes>) null);
             }
+
+            Classes existingClass = classOptional.get();
+            existingClass.setCourseCode(classRequest.getCourseCode());
+            existingClass.setSection(classRequest.getSection());
+            existingClass.setSchoolYear(classRequest.getSchoolYear());
+            existingClass.setSemester(classRequest.getSemester());
+            existingClass.setCourseDescription(classRequest.getCourseDescription());
+            existingClass.setMaxTeamSize(classRequest.getMaxTeamSize());
+
+            Classes updatedClass = cRepo.save(existingClass);
+
+            response = new ClassesDTO(
+                    updatedClass.getCid(),
+                    updatedClass.getClassKey(),
+                    updatedClass.getCourseCode(),
+                    updatedClass.getCourseDescription(),
+                    updatedClass.getSchoolYear(),
+                    updatedClass.getSection(),
+                    updatedClass.getSemester(),
+                    updatedClass.getCreatedBy().getFirstname(),
+                    updatedClass.getCreatedBy().getLastname(),
+                    updatedClass.getCreatedBy().getRole(),
+                    updatedClass.getMaxTeamSize()
+            );
+
+            response.setStatusCode(200);
+            response.setMessage("Class updated successfully");
+
         } catch (Exception e) {
-            response.setStatusCode(500);
-            response.setMessage("Error occurred while updating class: " + e.getMessage());
+            response = new ClassesDTO(500, "Error occurred while updating class", e.getMessage());
         }
         return response;
     }
+
 
     public ClassesDTO deleteClass(Long classId) {
         ClassesDTO response = new ClassesDTO();
@@ -303,7 +336,6 @@ public class ClassesService {
         ClassesDTO response = new ClassesDTO();
 
         try {
-            // Find the class by its class key
             Optional<Classes> optionalClass = cRepo.findByClassKey(classKey);
             if (optionalClass.isEmpty()) {
                 response.setStatusCode(404);

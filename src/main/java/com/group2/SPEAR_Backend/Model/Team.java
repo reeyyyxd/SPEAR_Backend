@@ -12,20 +12,30 @@ public class Team {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int tid;
 
-    @Column(name = "group_name")
+    @Column(name = "group_name", nullable = false)
     private String groupName;
 
-    @ManyToOne
-    @JoinColumn(name = "project_id", referencedColumnName = "pid")
-    private ProjectProposal project;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "leader_id", referencedColumnName = "uid")
     private User leader;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "class_id", referencedColumnName = "cid")
     private Classes classRef;
+
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "officialProject", referencedColumnName = "pid")
+    private ProjectProposal project;
+
+    @ManyToOne
+    @JoinColumn(name = "adviser_id", referencedColumnName = "uid", nullable = false)
+    private User adviser;
+
+    @ManyToOne
+    @JoinColumn(name = "schedule_id", referencedColumnName = "schedid", nullable = false)
+    private Schedule schedule;
+
 
     @ManyToMany
     @JoinTable(
@@ -41,16 +51,20 @@ public class Team {
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
 
+
     public Team() {}
 
-    public Team(ProjectProposal project, User leader, Classes classRef, String groupName) {
+    public Team(ProjectProposal project, User leader, Classes classRef, String groupName, User adviser, Schedule schedule) {
         this.project = project;
         this.leader = leader;
         this.classRef = classRef;
         this.groupName = groupName;
         this.isRecruitmentOpen = true;
+        this.adviser = adviser;
+        this.schedule = schedule;
     }
 
+    // Getters and Setters
     public int getTid() {
         return tid;
     }
@@ -83,7 +97,6 @@ public class Team {
         this.classRef = classRef;
     }
 
-
     public String getGroupName() {
         return groupName;
     }
@@ -114,5 +127,21 @@ public class Team {
 
     public void setDeleted(boolean deleted) {
         isDeleted = deleted;
+    }
+
+    public User getAdviser() {
+        return adviser;
+    }
+
+    public void setAdviser(User adviser) {
+        this.adviser = adviser;
+    }
+
+    public Schedule getSchedule() {
+        return schedule;
+    }
+
+    public void setSchedule(Schedule schedule) {
+        this.schedule = schedule;
     }
 }

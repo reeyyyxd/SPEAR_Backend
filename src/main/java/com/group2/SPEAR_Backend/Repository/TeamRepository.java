@@ -1,6 +1,7 @@
 package com.group2.SPEAR_Backend.Repository;
 
 import com.group2.SPEAR_Backend.DTO.TeamDTO;
+import com.group2.SPEAR_Backend.Model.Classes;
 import com.group2.SPEAR_Backend.Model.Team;
 import com.group2.SPEAR_Backend.Model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -59,6 +60,10 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
 
     @Query("SELECT t FROM Team t WHERE t.leader.uid = :leaderId AND t.isDeleted = false")
     List<Team> findActiveTeamsByLeaderId(@Param("leaderId") int leaderId);
+
+    @Query("SELECT COUNT(t) > 0 FROM Team t WHERE t.leader = :leader AND t.classRef = :classRef AND t.isDeleted = false")
+    boolean existsByLeaderAndClassRef(@Param("leader") User leader, @Param("classRef") Classes classRef);
+
 
 
 }

@@ -10,11 +10,11 @@ public class TeamRecuitment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int trid;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "team_id", referencedColumnName = "tid")
     private Team team;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "student_id", referencedColumnName = "uid")
     private User student;
 

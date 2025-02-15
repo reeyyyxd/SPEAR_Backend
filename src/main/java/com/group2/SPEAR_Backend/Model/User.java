@@ -37,7 +37,7 @@ public class User implements UserDetails {
     private Boolean isDeleted = false;
 
 
-    @ManyToMany(mappedBy = "enrolledStudents")
+    @ManyToMany(mappedBy = "enrolledStudents", cascade = CascadeType.MERGE)
     private Set<Classes> enrolledClasses = new HashSet<>();
 
     @Override

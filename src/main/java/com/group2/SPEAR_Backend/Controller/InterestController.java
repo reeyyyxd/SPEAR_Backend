@@ -14,7 +14,7 @@ public class InterestController {
 
     @PostMapping("/create-interest")
     public ResponseEntity<InterestDTO> createInterest(@RequestBody InterestDTO interestDTO) {
-        InterestDTO createdInterest = iServ.createInterest(interestDTO.getUserInterest().getUid(), interestDTO.getInterest());
+        InterestDTO createdInterest = iServ.createInterest(interestDTO.getUserInterest().getUid(), interestDTO.getInterest(), interestDTO.getDepartment());
         return ResponseEntity.ok(createdInterest);
     }
 

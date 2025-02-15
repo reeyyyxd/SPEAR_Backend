@@ -22,6 +22,7 @@ public class ClassesDTO {
     private String schoolYear;
     private String semester;
     private String courseDescription;
+    private int maxTeamSize;
 
     private Classes classes;
     private List<Classes> classesList;
@@ -40,7 +41,7 @@ public class ClassesDTO {
 
     public ClassesDTO(Long cid, String classKey, String courseCode, String courseDescription,
                       String schoolYear, String section, String semester,
-                      String firstname, String lastname, String role) {
+                      String firstname, String lastname, String role, int maxTeamSize) {
         this.cid = cid;
         this.classKey = classKey;
         this.courseCode = courseCode;
@@ -51,9 +52,10 @@ public class ClassesDTO {
         this.firstname = firstname;
         this.lastname = lastname;
         this.role = role;
+        this.maxTeamSize = maxTeamSize;
     }
 
-    public ClassesDTO(String courseCode, String section, String schoolYear, String semester, String courseDescription, String classKey, User createdBy) {
+    public ClassesDTO(String courseCode, String section, String schoolYear, String semester, String courseDescription, String classKey, User createdBy, int maxTeamSize) {
         this.courseCode = courseCode;
         this.section = section;
         this.schoolYear = schoolYear;
@@ -61,6 +63,7 @@ public class ClassesDTO {
         this.courseDescription = courseDescription;
         this.classKey = classKey;
         this.createdBy = createdBy;
+        this.maxTeamSize = maxTeamSize;
     }
 
     public ClassesDTO(int statusCode, String message, List<Classes> classesList) {
@@ -77,7 +80,7 @@ public class ClassesDTO {
 
     // class data with user details
     public ClassesDTO(String classKey, String courseCode, String courseDescription, String schoolYear, String section, String semester,
-                      String firstname, String lastname, String role) {
+                      String firstname, String lastname, String role, int maxTeamSize) {
         this.classKey = classKey;
         this.courseCode = courseCode;
         this.courseDescription = courseDescription;
@@ -87,13 +90,14 @@ public class ClassesDTO {
         this.firstname = firstname;
         this.lastname = lastname;
         this.role = role;
+        this.maxTeamSize = maxTeamSize;
     }
 
 
 
     //classes that students are enrolled in
     public ClassesDTO(String courseCode, String courseDescription,
-                      String schoolYear, String section, String semester, User createdBy) {
+                      String schoolYear, String section, String semester, User createdBy, int maxTeamSize) {
         this.courseCode = courseCode;
         this.courseDescription = courseDescription;
         this.schoolYear = schoolYear;
@@ -102,16 +106,18 @@ public class ClassesDTO {
         this.firstname = createdBy.getFirstname();
         this.lastname = createdBy.getLastname();
         this.role = createdBy.getRole();
+        this.maxTeamSize = maxTeamSize;
     }
 
     // Simplified class details constructor
     public ClassesDTO(String courseDescription, String courseCode,
-                      String section, String schoolYear, String semester) {
+                      String section, String schoolYear, String semester, int maxTeamSize) {
         this.courseDescription = courseDescription;
         this.courseCode = courseCode;
         this.section = section;
         this.schoolYear = schoolYear;
         this.semester = semester;
+        this.maxTeamSize = maxTeamSize;
     }
 
 
@@ -268,5 +274,11 @@ public class ClassesDTO {
         this.role = role;
     }
 
+    public int getMaxTeamSize() {
+        return maxTeamSize;
+    }
 
+    public void setMaxTeamSize(int maxTeamSize) {
+        this.maxTeamSize = maxTeamSize;
+    }
 }
