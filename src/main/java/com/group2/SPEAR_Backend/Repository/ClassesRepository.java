@@ -36,8 +36,14 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
     @Query("SELECT c.courseDescription, COUNT(u) FROM Classes c LEFT JOIN c.enrolledStudents u WHERE c.cid = :classId GROUP BY c.cid")
     Object[] findTotalUsersInClass(@Param("classId") Long classId);
 
-
-    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO(c.cid, c.classKey, c.courseCode, c.courseDescription, c.schoolYear, c.section, c.semester, u.firstname, u.lastname, u.role) " +
+    //changed for queueit from u.role from the end, to u.uid 3rd from last.
+    //took the liberty to change this because I did not see any changes from this endpoint
+    //namely 'incremented refactor (to be continued) dated feb 16, 2025.
+    //meaning, this endpoint might be unused for SPEAR.
+    //should this change be reverted, please inform queueit team, so that we can also change our fetch endpoint accordingly
+    //please include u.uid should spear team restore u.role
+    //thank you
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO(c.cid, c.classKey, c.courseCode, c.courseDescription, c.schoolYear, c.section, c.semester,u.uid, u.firstname, u.lastname) " +
             "FROM Classes c JOIN c.createdBy u " +
             "WHERE c.isDeleted = false AND u.uid = :userId")
     List<ClassesDTO> findClassesByCreator(@Param("userId") int userId);
