@@ -56,9 +56,6 @@ public class Classes {
     )
     private Set<User> enrolledStudents = new HashSet<>();
 
-    @ManyToOne
-    @JoinColumn(name = "schedule_id", referencedColumnName = "schedid", nullable = false)
-    private Schedule schedule;
 
     public Classes() {}
 

@@ -41,9 +41,13 @@ public class ClassesController {
 
 
     @GetMapping("/teacher/classes-created/{userId}")
-    public ResponseEntity<List<ClassesDTO>> getClassesCreatedByUser(@PathVariable int userId) {
-        List<ClassesDTO> response = cServ.getClassesCreatedByUser(userId);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> getClassesCreatedByUser(@PathVariable int userId) {
+        try {
+            List<ClassesDTO> classes = cServ.getClassesCreatedByUser(userId);
+            return ResponseEntity.ok(classes);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
     }
 
 
@@ -110,9 +114,6 @@ public class ClassesController {
         }
         return ResponseEntity.ok(totalUsers);
     }
-
-
-
 
     @GetMapping("/class/{classKey}/students")
     public ResponseEntity<List<UserDTO>> getStudentsInClass(@PathVariable String classKey) {

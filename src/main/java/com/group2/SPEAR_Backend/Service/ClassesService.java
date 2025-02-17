@@ -135,7 +135,6 @@ public class ClassesService {
         );
     }
 
-
     // Get a class by course code
     public ClassesDTO getClassByCourseCode(String courseCode, String section) {
         ClassesDTO response = new ClassesDTO();
@@ -310,7 +309,13 @@ public class ClassesService {
 
     public List<ClassesDTO> getClassesCreatedByUser(int userId) {
         try {
-            return cRepo.findClassesByCreator(userId);
+            List<ClassesDTO> classes = cRepo.findClassesByCreator2(userId);
+            if (classes == null || classes.isEmpty()) {
+                throw new NoSuchElementException("No classes found for the given user.");
+            }
+            return classes;
+        } catch (NoSuchElementException e) {
+            throw new RuntimeException("No classes found: " + e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException("Error fetching classes created by user: " + e.getMessage());
         }

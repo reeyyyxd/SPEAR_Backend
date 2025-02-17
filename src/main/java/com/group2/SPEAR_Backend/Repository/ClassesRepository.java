@@ -22,6 +22,11 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
 
     List<Classes> findAllByIsDeletedFalse();
 
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO(c.cid, c.classKey, c.courseCode, c.courseDescription, c.schoolYear, c.section, c.semester, u.firstname, u.lastname, u.role) " +
+            "FROM Classes c JOIN c.createdBy u " +
+            "WHERE c.isDeleted = false AND u.uid = :userId")
+    List<ClassesDTO> findClassesByCreator2(@Param("userId") int userId);
+
     @Query("SELECT c FROM Classes c WHERE c.cid = :classId AND c.isDeleted = false")
     Optional<Classes> findActiveClassById(@Param("classId") Long classId);
 

@@ -90,6 +90,22 @@ public class ClassesDTO {
         this.error = error;
     }
 
+    public ClassesDTO(Long cid, String classKey, String courseCode, String courseDescription,
+                      String schoolYear, String section, String semester,
+                      String firstname, String lastname, String role) {
+        this.cid = cid;
+        this.classKey = classKey;
+        this.courseCode = courseCode;
+        this.courseDescription = courseDescription;
+        this.schoolYear = schoolYear;
+        this.section = section;
+        this.semester = semester;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.role = role;
+    }
+
+
     // class data with user details
     public ClassesDTO(String classKey, String courseCode, String courseDescription, String schoolYear, String section, String semester,
                       String firstname, String lastname, String role, int maxTeamSize) {
@@ -104,8 +120,6 @@ public class ClassesDTO {
         this.role = role;
         this.maxTeamSize = maxTeamSize;
     }
-
-
 
     //classes that students are enrolled in
     public ClassesDTO(String courseCode, String courseDescription,
