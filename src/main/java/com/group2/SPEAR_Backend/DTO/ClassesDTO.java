@@ -78,6 +78,23 @@ public class ClassesDTO {
         this.lastname = lastname;
     }
 
+
+    //added for queueit, because somehow, getClassesByCreator changed from u.uid to u.role
+    public ClassesDTO(Long cid, String classKey, String courseCode, String courseDescription,
+                      String schoolYear, String section, String semester,
+                      int uid, String firstname, String lastname) {
+        this.cid = cid;
+        this.classKey = classKey;
+        this.courseCode = courseCode;
+        this.courseDescription = courseDescription;
+        this.schoolYear = schoolYear;
+        this.section = section;
+        this.semester = semester;
+        this.uid = uid;
+        this.firstname = firstname;
+        this.lastname = lastname;
+    }
+
     public ClassesDTO(int statusCode, String message, List<Classes> classesList) {
         this.statusCode = statusCode;
         this.message = message;
