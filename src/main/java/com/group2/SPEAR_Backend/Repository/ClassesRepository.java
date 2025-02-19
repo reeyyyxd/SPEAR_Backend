@@ -77,6 +77,7 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
     Optional<Classes> findByCourseCodeAndSectionPage(@Param("courseCode") String courseCode, @Param("section") String section);
 
 
+
 }
 
 

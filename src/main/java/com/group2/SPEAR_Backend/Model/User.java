@@ -1,4 +1,5 @@
 package com.group2.SPEAR_Backend.Model;
+
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -9,10 +10,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 @Entity
 @Table(name="users")
-
 public class User implements UserDetails {
 
     @Id
@@ -31,14 +30,43 @@ public class User implements UserDetails {
     @Column(name="password")
     private String password;
 
-    @Column(name = "role")
-    private String role;
+    @Column(name = "role", nullable = false)
+    private String role = "TEACHER";
+
+
+    private String interests;
+
+    private String department;
 
     private Boolean isDeleted = false;
 
-
     @ManyToMany(mappedBy = "enrolledStudents", cascade = CascadeType.MERGE)
     private Set<Classes> enrolledClasses = new HashSet<>();
+
+    public User(int uid, String firstname, String lastname, String email, String password, String role, Boolean isDeleted, String interests, String department) {
+        this.uid = uid;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.email = email;
+        this.password = password;
+        this.role = role.toUpperCase();
+        this.isDeleted = isDeleted;
+        this.interests = this.role.equals("TEACHER") ? interests : "N/A";
+        this.department = this.role.equals("TEACHER") ? department : "N/A";
+    }
+
+    public User(String firstname, String lastname, String email, String password, String role, Boolean isDeleted, String interests, String department) {
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.email = email;
+        this.password = password;
+        this.role = role.toUpperCase();
+        this.isDeleted = isDeleted;
+        this.interests = this.role.equals("TEACHER") ? interests : "N/A";
+        this.department = this.role.equals("TEACHER") ? department : "N/A";
+    }
+
+    public User() {}
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -68,34 +96,6 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-
-
-
-    public User() {
-        super();
-    }
-
-    public User(String firstname, String lastname, String email,
-                String password, String role, boolean isDeleted) {
-        super();
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.email = email;
-        this.password = password;
-        this.role = role;
-        this.isDeleted = isDeleted;
-
-    }
-
-    public User(int uid, String firstname, String lastname, String email, String password, String role, Boolean isDeleted) {
-        this.uid = uid;
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.email = email;
-        this.password = password;
-        this.role = role;
-        this.isDeleted = isDeleted;
     }
 
     public int getUid() {
@@ -143,8 +143,14 @@ public class User implements UserDetails {
     }
 
     public void setRole(String role) {
-        this.role = role;
+        if (role == null || role.trim().isEmpty()) {
+            this.role = "TEACHER";
+        } else {
+            this.role = role.toUpperCase();
+        }
     }
+
+
     public boolean isDeleted() {
         return isDeleted;
     }
@@ -162,13 +168,34 @@ public class User implements UserDetails {
     }
 
     public Boolean getIsDeleted() {
-        return isDeleted != null ? isDeleted : false; // Default to false if null
+        return isDeleted != null ? isDeleted : false;
     }
 
     public void setIsDeleted(Boolean isDeleted) {
         this.isDeleted = isDeleted;
     }
 
+    public String getInterests() {
+        return interests;
+    }
 
+    public void setInterests(String interests) {
+        if ("TEACHER".equalsIgnoreCase(this.role)) {
+            this.interests = (interests != null && !interests.trim().isEmpty()) ? interests : "N/A";
+        } else {
+            this.interests = "N/A";
+        }
+    }
 
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        if ("TEACHER".equalsIgnoreCase(this.role)) {
+            this.department = (department != null && !department.trim().isEmpty()) ? department : "N/A";
+        } else {
+            this.department = "N/A";
+        }
+    }
 }

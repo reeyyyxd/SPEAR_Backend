@@ -22,19 +22,21 @@ public class UserDTO {
     private boolean isDeleted;
     private User user;
     private List<User> userList;
-
-    // New field for UID
     private Integer uid;
+    private String interests;
+    private String department;
 
-    // Constructor to include uid
-    public UserDTO(int statusCode, String message, String firstname, String lastname, String email, String role, Integer uid) {
+    // Constructor with role normalization
+    public UserDTO(int statusCode, String message, String firstname, String lastname, String email, String role, Integer uid, String interests, String department) {
         this.statusCode = statusCode;
         this.message = message;
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
-        this.role = role;
-        this.uid = uid;  // Set the UID
+        this.role = (role != null) ? role.toUpperCase() : "N/A"; // Normalize role to uppercase
+        this.uid = uid;
+        this.interests = ("TEACHER".equalsIgnoreCase(this.role)) ? interests : "N/A";
+        this.department = ("TEACHER".equalsIgnoreCase(this.role)) ? department : "N/A";
     }
 
     public UserDTO(int statusCode, String message, List<User> userList) {
@@ -47,16 +49,20 @@ public class UserDTO {
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
-        this.role = role;
+        this.role = (role != null) ? role.toUpperCase() : "N/A"; // Normalize role to uppercase
+        this.interests = ("TEACHER".equalsIgnoreCase(this.role)) ? interests : "N/A";
+        this.department = ("TEACHER".equalsIgnoreCase(this.role)) ? department : "N/A";
     }
 
-    //for getting users in a class
+    // Constructor for getting users in a class
     public UserDTO(int statusCode, String message, String firstname, String lastname, String role) {
         this.statusCode = statusCode;
         this.message = message;
         this.firstname = firstname;
         this.lastname = lastname;
-        this.role = role;
+        this.role = (role != null) ? role.toUpperCase() : "N/A"; // Normalize role to uppercase
+        this.interests = ("TEACHER".equalsIgnoreCase(this.role)) ? interests : "N/A";
+        this.department = ("TEACHER".equalsIgnoreCase(this.role)) ? department : "N/A";
     }
 
     public UserDTO(String firstname, String lastname) {
@@ -119,7 +125,11 @@ public class UserDTO {
     }
 
     public void setRole(String role) {
-        this.role = role;
+        this.role = (role != null) ? role.toUpperCase() : "N/A";
+        if (!"TEACHER".equalsIgnoreCase(this.role)) {
+            this.interests = "N/A";
+            this.department = "N/A";
+        }
     }
 
     public String getEmail() {
@@ -178,12 +188,31 @@ public class UserDTO {
         return lastname;
     }
 
-    // Getter and Setter for UID
     public Integer getUid() {
         return uid;
     }
 
     public void setUid(Integer uid) {
         this.uid = uid;
+    }
+
+    public String getInterests() {
+        return interests;
+    }
+
+    public void setInterests(String interests) {
+        if ("TEACHER".equalsIgnoreCase(this.role)) {
+            this.interests = interests;
+        }
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        if ("TEACHER".equalsIgnoreCase(this.role)) {
+            this.department = department;
+        }
     }
 }

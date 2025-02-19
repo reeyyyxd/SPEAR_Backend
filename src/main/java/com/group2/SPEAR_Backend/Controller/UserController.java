@@ -5,6 +5,7 @@ import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.DTO.UserDTO;
 import com.group2.SPEAR_Backend.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -108,11 +109,6 @@ public class UserController {
         return ResponseEntity.ok(uServ.getAllSoftDeletedStudents());
     }
 
-//    @GetMapping("/{teacherId}/interests")
-//    public ResponseEntity<String> getInterestsByTeacherId(@PathVariable int teacherId) {
-//        return ResponseEntity.ok(uServ.getInterestsByTeacherId(teacherId));
-//    }
-
     @GetMapping("/users/search-by-name")
     public ResponseEntity<List<UserDTO>> getActiveUsersByName(
             @RequestParam(required = false) String firstname,
@@ -155,10 +151,17 @@ public class UserController {
     public ResponseEntity<UserDTO> updatePassword(
             @PathVariable Integer userId,
             @RequestBody PasswordUpdateDTO passwordUpdateDTO) {
-        return ResponseEntity.ok(
-                uServ.updatePassword(userId, passwordUpdateDTO.getCurrentPassword(), passwordUpdateDTO.getNewPassword())
-        );
+        UserDTO response = uServ.updatePassword(userId, passwordUpdateDTO.getCurrentPassword(), passwordUpdateDTO.getNewPassword());
+
+        if (response.getStatusCode() == 400) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } else if (response.getStatusCode() == 500) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+
+        return ResponseEntity.ok(response);
     }
+
 
 
 

@@ -56,6 +56,16 @@ public class Classes {
     )
     private Set<User> enrolledStudents = new HashSet<>();
 
+    //add list of advisers, many2many user and class
+    //query join interest and user (teacher)
+
+    @ManyToMany
+    @JoinTable(
+            name = "qualified_advisers",
+            joinColumns = @JoinColumn(name = "class_id"),
+            inverseJoinColumns = @JoinColumn(name = "teacher_id")
+    )
+    private Set<User> candidateAdvisers = new HashSet<>();
 
     public Classes() {}
 

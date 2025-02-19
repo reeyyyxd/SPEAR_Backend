@@ -33,6 +33,8 @@ public class PredeterminedDataStart {
 
             admin.setRole("ADMIN");
             admin.setDeleted(false);
+            admin.setInterests("N/A");
+            admin.setDepartment("N/A");
 
             urepo.save(admin);
             logger.info("Admin Created!");
