@@ -53,6 +53,17 @@ public class ClassesService {
                 return new ClassesDTO(403, "Only users with the TEACHER role can create a class", (List<Classes>) null);
             }
 
+            // Check for duplicate class
+            Optional<Classes> existingClass = cRepo.findByCourseCodeAndSectionAndSchoolYear(
+                    classRequest.getCourseCode(),
+                    classRequest.getSection(),
+                    classRequest.getSchoolYear()
+            );
+
+            if (existingClass.isPresent()) {
+                return new ClassesDTO(400, "Class already exists with the same Course Code, Section, and School Year.", (List<Classes>) null);
+            }
+
             String generatedClassKey = ClassCodeGenerator.generateClassCode();
             int maxTeamSize = classRequest.getMaxTeamSize() > 0 ? classRequest.getMaxTeamSize() : 5;
 
@@ -92,6 +103,7 @@ public class ClassesService {
         }
         return response;
     }
+
 
 
 
@@ -176,11 +188,13 @@ public class ClassesService {
 
 
     public ClassesDTO updateClass(Long classId, ClassesDTO classRequest) {
-        ClassesDTO response;
+        ClassesDTO response = new ClassesDTO();
         try {
             Optional<Classes> classOptional = cRepo.findById(classId);
             if (classOptional.isEmpty()) {
-                return new ClassesDTO(404, "Class with ID '" + classId + "' not found", (List<Classes>) null);
+                response.setStatusCode(404);
+                response.setMessage("Class with ID '" + classId + "' not found");
+                return response;
             }
 
             Classes existingClass = classOptional.get();
@@ -211,7 +225,8 @@ public class ClassesService {
             response.setMessage("Class updated successfully");
 
         } catch (Exception e) {
-            response = new ClassesDTO(500, "Error occurred while updating class", e.getMessage());
+            response.setStatusCode(500);
+            response.setMessage("Error occurred while updating class: " + e.getMessage());
         }
         return response;
     }
@@ -416,9 +431,36 @@ public class ClassesService {
         return response;
     }
 
+
     //add candidate advisers
-    //
+    public List<User> getTeachersByDepartment(String department) {
+        return cRepo.findTeachersByDepartment(department);
+    }
 
+    public List<User> getCandidateAdvisers(Long classId) {
+        Classes clazz = cRepo.findById(classId).orElseThrow();
+        return cRepo.findCandidateAdvisers(clazz.getCreatedBy().getDepartment(), clazz.getCreatedBy().getInterests());
+    }
 
+    public List<User> getQualifiedAdvisers(Long classId) {
+        Classes clazz = cRepo.findById(classId).orElseThrow();
+        return List.copyOf(clazz.getQualifiedAdvisers());
+    }
+
+    public String addQualifiedAdviser(Long classId, Long teacherId) {
+        Classes clazz = cRepo.findById(classId).orElseThrow(() -> new RuntimeException("Class not found"));
+        User teacher = uRepo.findById(Math.toIntExact(teacherId)).orElseThrow(() -> new RuntimeException("Teacher not found"));
+        clazz.getQualifiedAdvisers().add(teacher);
+        cRepo.save(clazz);
+        return "Teacher added as Qualified Adviser";
+    }
+
+    public String removeQualifiedAdviser(Long classId, Long teacherId) {
+        Classes clazz = cRepo.findById(classId).orElseThrow();
+        User teacher = uRepo.findById(Math.toIntExact(teacherId)).orElseThrow();
+        clazz.getQualifiedAdvisers().remove(teacher);
+        cRepo.save(clazz);
+        return "Teacher removed from Qualified Advisers";
+    }
 }
 

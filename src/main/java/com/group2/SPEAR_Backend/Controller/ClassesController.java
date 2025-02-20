@@ -4,6 +4,8 @@ import
         com.group2.SPEAR_Backend.DTO.ClassesDTO;
 import com.group2.SPEAR_Backend.DTO.UserDTO;
 import com.group2.SPEAR_Backend.Model.Classes;
+import com.group2.SPEAR_Backend.Model.User;
+import com.group2.SPEAR_Backend.Repository.ClassesRepository;
 import com.group2.SPEAR_Backend.Repository.UserRepository;
 import com.group2.SPEAR_Backend.Service.ClassesService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -24,6 +24,9 @@ public class ClassesController {
 
     @Autowired
     private UserRepository uRepo;
+
+    @Autowired
+    private ClassesRepository cRepo;
 
 
     //all teacher services
@@ -52,9 +55,9 @@ public class ClassesController {
 
 
 
-    @PutMapping("/teacher/updateClass/{id}")
-    public ResponseEntity<ClassesDTO> updateClass(@PathVariable Long id, @RequestBody ClassesDTO updatedClass) {
-        ClassesDTO response = cServ.updateClass(id, updatedClass);
+    @PutMapping("/teacher/updateClass/{classId}")
+    public ResponseEntity<ClassesDTO> updateClass(@PathVariable Long classId, @RequestBody ClassesDTO classRequest) {
+        ClassesDTO response = cServ.updateClass(classId, classRequest);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
@@ -143,6 +146,47 @@ public class ClassesController {
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(404).body(new ClassesDTO(404, e.getMessage(), (List<Classes>) null));
         }
+    }
+
+    //need fixing
+    @GetMapping("/teacher/see-teachers/{department}")
+    public ResponseEntity<List<User>> getTeachersByDepartment(@PathVariable String department) {
+        return ResponseEntity.ok(cServ.getTeachersByDepartment(department));
+    }
+
+    @GetMapping("/{classId}/list-candidate-advisers")
+    public ResponseEntity<List<User>> getCandidateAdvisers(@PathVariable Long classId) {
+        return ResponseEntity.ok(cServ.getCandidateAdvisers(classId));
+    }
+
+    @GetMapping("/teacher/{classId}/list-qualified-advisers")
+    public ResponseEntity<List<User>> getQualifiedAdvisers(@PathVariable Long classId) {
+        return ResponseEntity.ok(cServ.getQualifiedAdvisers(classId));
+    }
+
+    @PostMapping("/teacher/{classId}/qualified-adviser/{teacherId}")
+    public ResponseEntity<String> addQualifiedAdviser(@PathVariable Long classId, @PathVariable Long teacherId) {
+        return ResponseEntity.ok(cServ.addQualifiedAdviser(classId, teacherId));
+    }
+
+    @DeleteMapping("/teacher/{classId}/qualified-adviser/{teacherId}")
+    public ResponseEntity<String> removeQualifiedAdviser(@PathVariable Long classId, @PathVariable Long teacherId) {
+        return ResponseEntity.ok(cServ.removeQualifiedAdviser(classId, teacherId));
+    }
+
+    //this bitch is for checking duplicate in creating a class
+    @GetMapping("/teacher/classes/check-duplicate")
+    public ResponseEntity<Map<String, Boolean>> checkDuplicateClass(
+            @RequestParam String courseCode,
+            @RequestParam String section,
+            @RequestParam String schoolYear) {
+
+        Optional<Classes> existingClass = cRepo.findByCourseCodeAndSectionAndSchoolYear(courseCode, section, schoolYear);
+
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("exists", existingClass.isPresent());
+
+        return ResponseEntity.ok(response);
     }
 
 

@@ -76,6 +76,19 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
     @Query("SELECT c FROM Classes c WHERE c.courseCode = :courseCode AND c.section = :section AND c.isDeleted = false")
     Optional<Classes> findByCourseCodeAndSectionPage(@Param("courseCode") String courseCode, @Param("section") String section);
 
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.UserDTO(u.firstname, u.lastname, u.email, u.interests, u.department) FROM User u WHERE u.role = 'TEACHER' AND u.department = :department")
+    List<User> findTeachersByDepartment(@Param("department") String department);
+
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.UserDTO(u.firstname, u.lastname, u.email, u.interests, u.department) FROM User u WHERE u.role = 'TEACHER' AND u.department = :department AND u.interests = :interest")
+    List<User> findCandidateAdvisers(@Param("department") String department, @Param("interest") String interest);
+
+    @Query("SELECT c FROM Classes c WHERE c.courseCode = :courseCode AND c.section = :section AND c.schoolYear = :schoolYear AND c.isDeleted = false")
+    Optional<Classes> findByCourseCodeAndSectionAndSchoolYear(
+            @Param("courseCode") String courseCode,
+            @Param("section") String section,
+            @Param("schoolYear") String schoolYear
+    );
+
 
 
 }

@@ -58,14 +58,14 @@ public class Classes {
 
     //add list of advisers, many2many user and class
     //query join interest and user (teacher)
-
+    @JsonIgnore
     @ManyToMany
     @JoinTable(
             name = "qualified_advisers",
             joinColumns = @JoinColumn(name = "class_id"),
             inverseJoinColumns = @JoinColumn(name = "teacher_id")
     )
-    private Set<User> candidateAdvisers = new HashSet<>();
+    private Set<User> qualifiedAdvisers = new HashSet<>();
 
     public Classes() {}
 
@@ -186,5 +186,13 @@ public class Classes {
 
     public void setIsDeleted(Boolean deleted) {
         isDeleted = deleted;
+    }
+
+    public Set<User> getQualifiedAdvisers() {
+        return qualifiedAdvisers;
+    }
+
+    public void setQualifiedAdvisers(Set<User> qualifiedAdvisers) {
+        this.qualifiedAdvisers = qualifiedAdvisers;
     }
 }
