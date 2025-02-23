@@ -50,6 +50,10 @@ public interface UserRepository extends JpaRepository <User, Integer> {
             "FROM User u WHERE u.email = :email AND u.isDeleted = false")
     Optional<UserDTO> findByUsernameWithoutPassword(@Param("email") String email);
 
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.UserDTO(u.firstname, u.lastname, u.email, u.interests, u.department) " +
+            "FROM User u WHERE u.role = 'TEACHER' AND LOWER(u.department) = LOWER(:department)")
+    List<UserDTO> findTeachersByDepartment(@Param("department") String department);
+
 
 
 

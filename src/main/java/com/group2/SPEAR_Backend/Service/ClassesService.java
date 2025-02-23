@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -110,16 +111,11 @@ public class ClassesService {
     //super mortal sin (figure this one later)
     //UPDATE: one semester later pa na solve (yucks rey)
     public List<ClassesDTO> getAllClasses() {
-        try {
-            List<ClassesDTO> classesList = cRepo.findAllClassesWithCreator();
-            if (!classesList.isEmpty()) {
-                return classesList;
-            } else {
-                throw new NoSuchElementException("No classes found");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Error occurred while fetching classes: " + e.getMessage());
+        List<ClassesDTO> classes = cRepo.findAllClassesWithCreator();
+        if (classes.isEmpty()) {
+            throw new NoSuchElementException("No classes found.");
         }
+        return classes;
     }
 
 
@@ -433,8 +429,8 @@ public class ClassesService {
 
 
     //add candidate advisers
-    public List<User> getTeachersByDepartment(String department) {
-        return cRepo.findTeachersByDepartment(department);
+    public List<UserDTO> getTeachersByDepartment(String department) {
+        return uRepo.findTeachersByDepartment(department);
     }
 
     public List<User> getCandidateAdvisers(Long classId) {
@@ -461,6 +457,14 @@ public class ClassesService {
         clazz.getQualifiedAdvisers().remove(teacher);
         cRepo.save(clazz);
         return "Teacher removed from Qualified Advisers";
+    }
+
+    public List<ClassesDTO> getClassesForQualifiedAdviser(int teacherId) {
+        List<ClassesDTO> classes = cRepo.findClassesByQualifiedAdviser(teacherId);
+        if (classes.isEmpty()) {
+            return new ArrayList<>(); // Instead of throwing an exception, return an empty list
+        }
+        return classes;
     }
 }
 

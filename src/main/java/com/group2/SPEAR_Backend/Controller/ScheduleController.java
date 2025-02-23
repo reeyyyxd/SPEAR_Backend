@@ -26,12 +26,19 @@ public class ScheduleController {
         return ResponseEntity.ok(scheduleService.getAllSchedules());
     }
 
-//    @GetMapping("/teacher/{teacherId}")
-//    public ResponseEntity<List<ScheduleDTO>> getSchedulesByTeacher(@PathVariable int teacherId) {
-//        return ResponseEntity.ok(scheduleService.getSchedulesByTeacher(teacherId));
-//    }
+    @GetMapping("/teacher/get-my-schedule/{teacherId}")
+    public ResponseEntity<List<ScheduleDTO>> getSchedulesByTeacher(@PathVariable int teacherId) {
+        return ResponseEntity.ok(scheduleService.getSchedulesByTeacher(teacherId));
+    }
 
-    @PutMapping("/update-schedule/{schedid}")
+    @GetMapping("teacher/schedule/by-teacher-and-class")
+    public ResponseEntity<List<ScheduleDTO>> getSchedulesByTeacherNameAndClassCode(
+            @RequestParam String teacherName,
+            @RequestParam String classCode) {
+        return ResponseEntity.ok(scheduleService.getSchedulesByTeacherNameAndClassCode(teacherName, classCode));
+    }
+
+    @PutMapping("teacher/update-schedule/{schedid}")
     public ResponseEntity<ScheduleDTO> updateSchedule(
             @PathVariable int schedid,
             @RequestBody ScheduleDTO updatedScheduleDTO
@@ -39,7 +46,7 @@ public class ScheduleController {
         return ResponseEntity.ok(scheduleService.updateSchedule(schedid, updatedScheduleDTO));
     }
 
-    @DeleteMapping("/delete-schedule/{schedid}")
+    @DeleteMapping("teacher/delete-schedule/{schedid}")
     public ResponseEntity<Map<String, String>> deleteSchedule(@PathVariable int schedid) {
         scheduleService.deleteSchedule(schedid);
         return ResponseEntity.ok(Map.of("message", "Schedule deleted successfully"));

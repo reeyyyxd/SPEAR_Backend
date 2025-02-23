@@ -54,8 +54,8 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
     List<ClassesDTO> findClassesByCreator(@Param("userId") int userId);
 
     @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO( " +
-            "c.cid, c.classKey, c.courseCode, c.courseDescription, c.schoolYear, " +
-            "c.section, c.semester, u.firstname, u.lastname, u.role, c.maxTeamSize) " +
+            "c.cid, c.courseCode, c.section, c.schoolYear, c.semester, c.courseDescription, " +
+            "c.maxTeamSize, c.classKey, c.createdBy.uid, c.createdBy.firstname, c.createdBy.lastname) " +
             "FROM Classes c JOIN c.createdBy u " +
             "WHERE c.isDeleted = false")
     List<ClassesDTO> findAllClassesWithCreator();
@@ -88,6 +88,12 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
             @Param("section") String section,
             @Param("schoolYear") String schoolYear
     );
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO( " +
+            "c.cid, c.courseCode, c.courseDescription, c.schoolYear, c.section, c.semester, " +
+            "c.createdBy.firstname, c.createdBy.lastname, c.createdBy.role) " +
+            "FROM Classes c JOIN c.qualifiedAdvisers q " +
+            "WHERE q.uid = :teacherId")
+    List<ClassesDTO> findClassesByQualifiedAdviser(@Param("teacherId") int teacherId);
 
 
 

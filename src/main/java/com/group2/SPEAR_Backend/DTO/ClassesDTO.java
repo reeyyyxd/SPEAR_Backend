@@ -35,6 +35,10 @@ public class ClassesDTO {
     private String lastname;
     private String role;
 
+    private Integer createdById;
+    private String createdByFirstname;
+    private String createdByLastname;
+
     public ClassesDTO() {
         super();
     }
@@ -76,6 +80,37 @@ public class ClassesDTO {
         this.uid = uid;
         this.firstname = firstname;
         this.lastname = lastname;
+    }
+
+    public ClassesDTO(Long cid, String courseCode, String courseDescription,
+                      String schoolYear, String section, String semester,
+                      String firstname, String lastname, String role) {
+        this.cid = cid;
+        this.courseCode = courseCode;
+        this.courseDescription = courseDescription;
+        this.schoolYear = schoolYear;
+        this.section = section;
+        this.semester = semester;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.role = role;
+    }
+
+    // Constructor to include creator's details
+    public ClassesDTO(Long cid, String courseCode, String section, String schoolYear,
+                      String semester, String courseDescription, int maxTeamSize, String classKey,
+                      Integer createdById, String createdByFirstname, String createdByLastname) {
+        this.cid = cid;
+        this.courseCode = courseCode;
+        this.section = section;
+        this.schoolYear = schoolYear;
+        this.semester = semester;
+        this.courseDescription = courseDescription;
+        this.maxTeamSize = maxTeamSize;
+        this.classKey = classKey;
+        this.createdById = createdById;
+        this.createdByFirstname = createdByFirstname;
+        this.createdByLastname = createdByLastname;
     }
 
 
@@ -323,5 +358,29 @@ public class ClassesDTO {
 
     public void setMaxTeamSize(int maxTeamSize) {
         this.maxTeamSize = maxTeamSize;
+    }
+
+    public Integer getCreatedById() {
+        return createdById;
+    }
+
+    public void setCreatedById(Integer createdById) {
+        this.createdById = createdById;
+    }
+
+    public String getCreatedByFirstname() {
+        return createdByFirstname;
+    }
+
+    public void setCreatedByFirstname(String createdByFirstname) {
+        this.createdByFirstname = createdByFirstname;
+    }
+
+    public String getCreatedByLastname() {
+        return createdByLastname;
+    }
+
+    public void setCreatedByLastname(String createdByLastname) {
+        this.createdByLastname = createdByLastname;
     }
 }

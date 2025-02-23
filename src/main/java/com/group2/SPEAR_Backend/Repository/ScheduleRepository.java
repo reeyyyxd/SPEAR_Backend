@@ -9,7 +9,9 @@ import java.util.List;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
 
-    @Query("SELECT s FROM Schedule s WHERE s.teacher.uid = :teacherId")
+    @Query("SELECT s FROM Schedule s JOIN FETCH s.scheduleOfClasses c WHERE s.teacher.uid = :teacherId")
     List<Schedule> findSchedulesByTeacher(@Param("teacherId") int teacherId);
 
+    @Query("SELECT s FROM Schedule s WHERE CONCAT(s.teacher.firstname, ' ', s.teacher.lastname) = :teacherName AND s.scheduleOfClasses.courseCode = :classCode")
+    List<Schedule> findSchedulesByTeacherNameAndClassCode(@Param("teacherName") String teacherName, @Param("classCode") String classCode);
 }

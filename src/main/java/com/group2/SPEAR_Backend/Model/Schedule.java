@@ -20,12 +20,18 @@ public class Schedule {
     @JoinColumn(name = "teacher_id", referencedColumnName = "uid", nullable = false)
     private User teacher;
 
+    //add foreign key for classes - schedule (ClassSchedule) if qualified
+    @ManyToOne
+    @JoinColumn(name = "class_id", referencedColumnName = "cid", nullable = false)
+    private Classes scheduleOfClasses;
+
     public Schedule() {}
 
-    public Schedule(String day, String time, User teacher) {
+    public Schedule(String day, String time, User teacher, Classes scheduleOfClasses) {
         this.day = day;
         this.time = time;
         this.teacher = teacher;
+        this.scheduleOfClasses = scheduleOfClasses;
     }
 
     public int getSchedid() {
@@ -51,5 +57,11 @@ public class Schedule {
     }
     public void setTeacher(User teacher) {
         this.teacher = teacher;
+    }
+    public Classes getScheduleOfClasses() {
+        return scheduleOfClasses;
+    }
+    public void setScheduleOfClasses(Classes scheduleOfClasses) {
+        this.scheduleOfClasses = scheduleOfClasses;
     }
 }

@@ -150,7 +150,7 @@ public class ClassesController {
 
     //need fixing
     @GetMapping("/teacher/see-teachers/{department}")
-    public ResponseEntity<List<User>> getTeachersByDepartment(@PathVariable String department) {
+    public ResponseEntity<List<UserDTO>> getTeachersByDepartment(@PathVariable String department) {
         return ResponseEntity.ok(cServ.getTeachersByDepartment(department));
     }
 
@@ -187,6 +187,11 @@ public class ClassesController {
         response.put("exists", existingClass.isPresent());
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/teacher/{teacherId}/qualified-adviser-classes")
+    public ResponseEntity<List<ClassesDTO>> getClassesForQualifiedAdviser(@PathVariable int teacherId) {
+        return ResponseEntity.ok(cServ.getClassesForQualifiedAdviser(teacherId));
     }
 
 

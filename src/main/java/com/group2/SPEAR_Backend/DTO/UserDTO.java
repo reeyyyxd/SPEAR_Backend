@@ -70,6 +70,14 @@ public class UserDTO {
         this.lastname = lastname;
     }
 
+    public UserDTO(String firstname, String lastname, String email, String interests, String department) {
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.email = email;
+        this.interests = interests;
+        this.department = department;
+    }
+
     public UserDTO() {}
 
     public int getStatusCode() {
