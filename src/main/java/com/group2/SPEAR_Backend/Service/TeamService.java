@@ -147,14 +147,14 @@ public class TeamService {
                 .map(team -> new TeamDTO(
                         team.getTid(),
                         team.getGroupName(),
-                        team.getProject().getProjectName(),
-                        team.getProject().getPid(),
+                        (team.getProject() != null) ? team.getProject().getProjectName() : "No Project Assigned",
+                        (team.getProject() != null) ? team.getProject().getPid() : null,
                         team.getLeader().getUid(),
                         team.getClassRef().getCid(),
                         team.getMembers().stream().map(User::getUid).toList(),
                         team.isRecruitmentOpen(),
                         null,
-                        team.getProject().getDescription(),
+                        (team.getProject() != null) ? team.getProject().getDescription() : "No Description Available",
                         team.getAdviser().getUid(),
                         team.getSchedule().getSchedid()
                 ))
@@ -165,21 +165,23 @@ public class TeamService {
         Team team = tRepo.findActiveTeamById(teamId)
                 .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
 
-        List<FeatureDTO> features = fRepo.findByProjectId(team.getProject().getPid()).stream()
-                .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
-                .toList();
+        List<FeatureDTO> features = (team.getProject() != null) ?
+                fRepo.findByProjectId(team.getProject().getPid()).stream()
+                        .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
+                        .toList()
+                : new ArrayList<>();
 
         return new TeamDTO(
                 team.getTid(),
                 team.getGroupName(),
-                team.getProject().getProjectName(),
-                team.getProject().getPid(),
+                (team.getProject() != null) ? team.getProject().getProjectName() : "No Project Assigned",
+                (team.getProject() != null) ? team.getProject().getPid() : null,
                 team.getLeader().getUid(),
                 team.getClassRef().getCid(),
                 team.getMembers().stream().map(User::getUid).toList(),
                 team.isRecruitmentOpen(),
                 features,
-                team.getProject().getDescription(),
+                (team.getProject() != null) ? team.getProject().getDescription() : "No Description Available",
                 team.getAdviser().getUid(),
                 team.getSchedule().getSchedid()
         );
@@ -261,17 +263,22 @@ public class TeamService {
         Team team = tRepo.findMyTeamByClassId(userId, classId)
                 .orElseThrow(() -> new NoSuchElementException("No team found for the user in this class."));
 
+        // Null handling for project
+        String projectName = (team.getProject() != null) ? team.getProject().getProjectName() : "No Project Assigned";
+        Integer projectId = (team.getProject() != null) ? team.getProject().getPid() : null;
+        String projectDescription = (team.getProject() != null) ? team.getProject().getDescription() : "No Description Available";
+
         return new TeamDTO(
                 team.getTid(),
                 team.getGroupName(),
-                team.getProject().getProjectName(),
-                team.getProject().getPid(),
+                projectName,  // Handle null project name
+                projectId,    // Handle null project ID
                 team.getLeader().getUid(),
                 team.getClassRef().getCid(),
                 team.getMembers().stream().map(User::getUid).toList(),
                 team.isRecruitmentOpen(),
                 null,
-                team.getProject().getDescription(),
+                projectDescription,  // Handle null project description
                 team.getAdviser().getUid(),
                 team.getSchedule().getSchedid()
         );

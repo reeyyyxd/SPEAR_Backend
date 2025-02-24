@@ -143,9 +143,9 @@ public class TeamController {
     }
 
 
-    @GetMapping("/team/my/{classId}")
+    @GetMapping("/team/my/{classId}/{userId}")
     public ResponseEntity<TeamDTO> getMyTeam(
-            @RequestParam int userId,
+            @PathVariable int userId, // Change from @RequestParam to @PathVariable
             @PathVariable int classId) {
         TeamDTO myTeam = tServ.getMyTeam(userId, classId);
         return ResponseEntity.ok(myTeam);

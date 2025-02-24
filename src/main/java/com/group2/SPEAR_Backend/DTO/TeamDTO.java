@@ -7,7 +7,7 @@ public class TeamDTO {
     private int tid;
     private String groupName;
     private String projectName;
-    private int projectId;
+    private Integer projectId; // Change to Integer to handle null values
     private int leaderId;
     private Long classId;
     private List<Integer> memberIds;
@@ -19,19 +19,19 @@ public class TeamDTO {
 
     public TeamDTO() {}
 
-    public TeamDTO(int tid, String groupName, String projectName, int projectId, int leaderId, Long classId,
+    public TeamDTO(int tid, String groupName, String projectName, Integer projectId, int leaderId, Long classId,
                    List<Integer> memberIds, boolean isRecruitmentOpen, List<FeatureDTO> features,
                    String projectDescription, int adviserId, int scheduleId) {
         this.tid = tid;
         this.groupName = groupName;
-        this.projectName = projectName;
+        this.projectName = (projectName != null) ? projectName : "No Project Assigned"; // Default value
         this.projectId = projectId;
         this.leaderId = leaderId;
         this.classId = classId;
         this.memberIds = memberIds;
         this.isRecruitmentOpen = isRecruitmentOpen;
         this.features = features;
-        this.projectDescription = projectDescription;
+        this.projectDescription = (projectDescription != null) ? projectDescription : "No Description Available"; // Default value
         this.adviserId = adviserId;
         this.scheduleId = scheduleId;
     }
@@ -53,11 +53,11 @@ public class TeamDTO {
         this.groupName = groupName;
     }
 
-    public int getProjectId() {
+    public Integer getProjectId() { // Return Integer instead of int
         return projectId;
     }
 
-    public void setProjectId(int projectId) {
+    public void setProjectId(Integer projectId) {
         this.projectId = projectId;
     }
 
@@ -106,7 +106,7 @@ public class TeamDTO {
     }
 
     public void setProjectDescription(String projectDescription) {
-        this.projectDescription = projectDescription;
+        this.projectDescription = (projectDescription != null) ? projectDescription : "No Description Available"; // Default value
     }
 
     public int getAdviserId() {
