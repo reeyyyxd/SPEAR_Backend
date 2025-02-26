@@ -11,7 +11,7 @@ import com.group2.SPEAR_Backend.Model.Feature;
 import com.group2.SPEAR_Backend.Service.FeatureService;
 
 @RestController
-@CrossOrigin(origins = {"http://localhost:5173", "http://10.147.17.37:5173"})
+@CrossOrigin(origins = {"http://localhost:5173", "http://10.147.17.37:5173", "http://10.147.17.166:5173"})
 public class FeatureController {
 
     @Autowired

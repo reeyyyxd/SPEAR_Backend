@@ -10,6 +10,7 @@ public class ProjectProposal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int pid;
 
+    //change the proposed by to
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "proposed_by", referencedColumnName = "uid")
     private User proposedBy;
@@ -37,6 +38,9 @@ public class ProjectProposal {
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
+    //do something, no constructors yet.
+    private String ratings;
+
     public ProjectProposal() {
     }
 
@@ -49,13 +53,6 @@ public class ProjectProposal {
         this.adviser = adviser;
     }
 
-    public ProjectProposal(User proposedBy, String projectName, Classes classProposal, String description) {
-        this.proposedBy = proposedBy;
-        this.projectName = projectName;
-        this.classProposal = classProposal;
-        this.description = description;
-        this.status = "PENDING";
-    }
     public int getPid() {
         return pid;
     }
@@ -126,5 +123,17 @@ public class ProjectProposal {
 
     public void setDeleted(Boolean deleted) {
         isDeleted = deleted;
+    }
+
+    public Boolean getDeleted() {
+        return isDeleted;
+    }
+
+    public String getRatings() {
+        return ratings;
+    }
+
+    public void setRatings(String ratings) {
+        this.ratings = ratings;
     }
 }

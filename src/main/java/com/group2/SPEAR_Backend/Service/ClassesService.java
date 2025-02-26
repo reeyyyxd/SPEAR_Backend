@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ClassesService {
@@ -314,7 +315,7 @@ public class ClassesService {
     }
 
 
-    public Object[] getTotalUsersInClass(Long classId) {
+    public Long getTotalUsersInClass(Long classId) {
         return cRepo.findTotalUsersInClass(classId);
     }
 
@@ -466,5 +467,20 @@ public class ClassesService {
         }
         return classes;
     }
-}
+    public List<UserDTO> getQualifiedAdvisersForClass(Long classId, int teacherId) {
+        Optional<Classes> classOpt = cRepo.findById(classId);
 
+        if (classOpt.isEmpty()) {
+            throw new RuntimeException("Class not found.");
+        }
+        Classes classObj = classOpt.get();
+        if (classObj.getCreatedBy().getUid() != teacherId) {
+            throw new RuntimeException("You are not authorized to view the advisers for this class.");
+        }
+        List<User> advisers = cRepo.findQualifiedAdvisersByClassId(classId);
+
+        return advisers.stream().map(adviser ->
+                new UserDTO(adviser.getFirstname(), adviser.getLastname(), adviser.getEmail(), adviser.getRole(), adviser.getDepartment())
+        ).collect(Collectors.toList());
+    }
+}

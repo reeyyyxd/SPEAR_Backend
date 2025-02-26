@@ -16,7 +16,7 @@ import java.security.Principal;
 import java.util.*;
 
 @RestController
-@CrossOrigin(origins = {"http://localhost:5173", "http://10.147.17.37:5173"})
+@CrossOrigin(origins = {"http://localhost:5173", "http://10.147.17.37:5173", "http://10.147.17.166:5173"})
 public class ClassesController {
 
     @Autowired
@@ -110,10 +110,10 @@ public class ClassesController {
     }
 
     @GetMapping("/class/{classId}/total-users")
-    public ResponseEntity<Object[]> getTotalUsersInClass(@PathVariable Long classId) {
-        Object[] totalUsers = cServ.getTotalUsersInClass(classId);
+    public ResponseEntity<Long> getTotalUsersInClass(@PathVariable Long classId) {
+        Long totalUsers = cServ.getTotalUsersInClass(classId);
         if (totalUsers == null) {
-            return ResponseEntity.status(404).body(null);
+            return ResponseEntity.ok(0L);
         }
         return ResponseEntity.ok(totalUsers);
     }
@@ -172,6 +172,14 @@ public class ClassesController {
     @DeleteMapping("/teacher/{classId}/qualified-adviser/{teacherId}")
     public ResponseEntity<String> removeQualifiedAdviser(@PathVariable Long classId, @PathVariable Long teacherId) {
         return ResponseEntity.ok(cServ.removeQualifiedAdviser(classId, teacherId));
+    }
+
+    @GetMapping("/{teacherId}/class/{classId}/qualified-advisers")
+    public ResponseEntity<List<UserDTO>> getQualifiedAdvisers(
+            @PathVariable Long classId,
+            @PathVariable int teacherId) {
+        List<UserDTO> advisers = cServ.getQualifiedAdvisersForClass(classId, teacherId);
+        return ResponseEntity.ok(advisers);
     }
 
     //this bitch is for checking duplicate in creating a class

@@ -15,21 +15,11 @@ public class ProjectProposalDTO {
     private Boolean isDeleted;
     private List<FeatureDTO> features;
     public String courseCode;
+    public String ratings;
 
     public ProjectProposalDTO() {}
 
-//    //non-capstone
-//    public ProjectProposalDTO(int pid, String projectName, String description, String status, String reason,
-//                              int proposedById, Long classId, Boolean isDeleted) {
-//        this.pid = pid;
-//        this.projectName = projectName;
-//        this.description = description;
-//        this.status = status;
-//        this.reason = reason;
-//        this.proposedById = proposedById;
-//        this.classId = classId;
-//        this.isDeleted = isDeleted;
-//    }
+
 
     //for all
     public ProjectProposalDTO(int pid, String projectName, String description, String status, String reason,
@@ -130,5 +120,29 @@ public class ProjectProposalDTO {
 
     public void setFeatures(List<FeatureDTO> features) {
         this.features = features;
+    }
+
+    public Boolean getDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        isDeleted = deleted;
+    }
+
+    public String getCourseCode() {
+        return courseCode;
+    }
+
+    public void setCourseCode(String courseCode) {
+        this.courseCode = courseCode;
+    }
+
+    public String getRatings() {
+        return ratings;
+    }
+
+    public void setRatings(String ratings) {
+        this.ratings = ratings;
     }
 }

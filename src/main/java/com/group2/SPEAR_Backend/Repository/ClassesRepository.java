@@ -38,8 +38,11 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
     Classes findByCourseCodeAndSection(@Param("courseCode") String courseCode, @Param("section") String section);
 
 
-    @Query("SELECT c.courseDescription, COUNT(u) FROM Classes c LEFT JOIN c.enrolledStudents u WHERE c.cid = :classId GROUP BY c.cid")
-    Object[] findTotalUsersInClass(@Param("classId") Long classId);
+    @Query("SELECT COUNT(u) FROM Classes c LEFT JOIN c.enrolledStudents u WHERE c.cid = :classId GROUP BY c.cid")
+    Long findTotalUsersInClass(@Param("classId") Long classId);
+
+    @Query("SELECT u FROM Classes c JOIN c.qualifiedAdvisers u WHERE c.cid = :classId")
+    List<User> findQualifiedAdvisersByClassId(@Param("classId") Long classId);
 
     //changed for queueit from u.role from the end, to u.uid 3rd from last.
     //took the liberty to change this because I did not see any changes from this endpoint

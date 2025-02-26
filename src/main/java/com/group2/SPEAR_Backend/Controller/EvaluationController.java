@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 @RestController
-@CrossOrigin(origins = {"http://localhost:5173", "http://10.147.17.37:5173"})
+@CrossOrigin(origins = {"http://localhost:5173", "http://10.147.17.37:5173", "http://10.147.17.166:5173"})
 public class EvaluationController {
 
     @Autowired
