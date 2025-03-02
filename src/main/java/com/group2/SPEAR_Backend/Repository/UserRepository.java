@@ -50,9 +50,24 @@ public interface UserRepository extends JpaRepository <User, Integer> {
             "FROM User u WHERE u.email = :email AND u.isDeleted = false")
     Optional<UserDTO> findByUsernameWithoutPassword(@Param("email") String email);
 
-    @Query("SELECT new com.group2.SPEAR_Backend.DTO.UserDTO(u.firstname, u.lastname, u.email, u.interests, u.department) " +
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.UserDTO(u.firstname, u.lastname, u.email, u.role, u.uid, u.interests, u.department) " +
             "FROM User u WHERE u.role = 'TEACHER' AND LOWER(u.department) = LOWER(:department)")
     List<UserDTO> findTeachersByDepartment(@Param("department") String department);
+
+    @Query("SELECT u FROM User u " +
+            "WHERE u.uid IN (SELECT ue.uid FROM Classes c JOIN c.enrolledStudents ue WHERE c.cid = :classId) " +
+            "AND u.uid NOT IN (SELECT m.uid FROM Team t JOIN t.members m WHERE t.classRef.cid = :classId) " +
+            "AND u.role = 'STUDENT' AND u.isDeleted = false")
+    List<User> findAvailableStudentsForTeam(@Param("classId") Long classId);
+
+
+    @Query("SELECT u FROM User u WHERE u IN " +
+            "(SELECT c.enrolledStudents FROM Classes c WHERE c.cid = :classId) " +
+            "AND u.uid NOT IN (SELECT m.uid FROM Team t JOIN t.members m WHERE t.classRef.cid = :classId) " +
+            "AND (LOWER(u.firstname) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR LOWER(u.lastname) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
+    List<User> findAvailableStudentsForTeamWithSearch(@Param("classId") Long classId, @Param("searchTerm") String searchTerm);
+
+
 
 
 

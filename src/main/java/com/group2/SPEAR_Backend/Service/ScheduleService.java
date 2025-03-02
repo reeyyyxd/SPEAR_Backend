@@ -47,7 +47,7 @@ public class ScheduleService {
     public List<ScheduleDTO> getSchedulesByTeacher(int teacherId) {
         List<Schedule> schedules = scheduleRepo.findSchedulesByTeacher(teacherId);
         if (schedules.isEmpty()) {
-            throw new NoSuchElementException("No schedules found for teacher ID " + teacherId);
+            throw new NoSuchElementException("No schedules found");
         }
         return schedules.stream().map(this::convertToDTO).toList();
     }

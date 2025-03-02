@@ -148,6 +148,7 @@ public class ClassesController {
         }
     }
 
+    //this is for selecting advisers
     //need fixing
     @GetMapping("/teacher/see-teachers/{department}")
     public ResponseEntity<List<UserDTO>> getTeachersByDepartment(@PathVariable String department) {
@@ -158,27 +159,34 @@ public class ClassesController {
     public ResponseEntity<List<User>> getCandidateAdvisers(@PathVariable Long classId) {
         return ResponseEntity.ok(cServ.getCandidateAdvisers(classId));
     }
-
-    @GetMapping("/teacher/{classId}/list-qualified-advisers")
-    public ResponseEntity<List<User>> getQualifiedAdvisers(@PathVariable Long classId) {
-        return ResponseEntity.ok(cServ.getQualifiedAdvisers(classId));
-    }
-
-    @PostMapping("/teacher/{classId}/qualified-adviser/{teacherId}")
-    public ResponseEntity<String> addQualifiedAdviser(@PathVariable Long classId, @PathVariable Long teacherId) {
-        return ResponseEntity.ok(cServ.addQualifiedAdviser(classId, teacherId));
-    }
-
-    @DeleteMapping("/teacher/{classId}/qualified-adviser/{teacherId}")
-    public ResponseEntity<String> removeQualifiedAdviser(@PathVariable Long classId, @PathVariable Long teacherId) {
-        return ResponseEntity.ok(cServ.removeQualifiedAdviser(classId, teacherId));
-    }
-
-    @GetMapping("/{teacherId}/class/{classId}/qualified-advisers")
-    public ResponseEntity<List<UserDTO>> getQualifiedAdvisers(
+    @PostMapping("/teacher/{classId}/qualified-adviser")
+    public ResponseEntity<String> addQualifiedAdviser(
             @PathVariable Long classId,
-            @PathVariable int teacherId) {
-        List<UserDTO> advisers = cServ.getQualifiedAdvisersForClass(classId, teacherId);
+            @RequestBody Map<String, String> requestBody) {
+
+        String email = requestBody.get("email");
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest().body("Error: Email is required.");
+        }
+
+        return ResponseEntity.ok(cServ.addQualifiedAdviser(classId, email));
+    }
+
+    @DeleteMapping("/teacher/{classId}/qualified-adviser")
+    public ResponseEntity<String> removeQualifiedAdviser(
+            @PathVariable Long classId,
+            @RequestParam String email) {
+
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest().body("Error: Email is required.");
+        }
+
+        return ResponseEntity.ok(cServ.removeQualifiedAdviser(classId, email));
+    }
+
+    @GetMapping("/class/{classId}/qualified-advisers")
+    public ResponseEntity<List<UserDTO>> getQualifiedAdvisers(@PathVariable Long classId) {
+        List<UserDTO> advisers = cServ.getQualifiedAdvisersForClass(classId);
         return ResponseEntity.ok(advisers);
     }
 

@@ -36,21 +36,19 @@ public class TeamController {
             int leaderId = Integer.parseInt(requestBody.getOrDefault("leaderId", "0"));
             Long classId = Long.parseLong(requestBody.getOrDefault("classId", "0"));
             String groupName = requestBody.get("groupName");
-            int adviserId = Integer.parseInt(requestBody.getOrDefault("adviserId", "0"));
-            int scheduleId = Integer.parseInt(requestBody.getOrDefault("scheduleId", "0"));
 
-            if (leaderId == 0 || classId == 0 || groupName == null || groupName.trim().isEmpty() || adviserId == 0 || scheduleId == 0) {
+            if (leaderId == 0 || classId == 0 || groupName == null || groupName.trim().isEmpty()) {
                 response.put("error", "Missing or invalid input data.");
                 return ResponseEntity.badRequest().body(response);
             }
 
-            // Create team
-            tServ.createTeam(leaderId, classId, groupName, adviserId, scheduleId);
-            response.put("message", "Team has been created successfully.");
+            // Create team with only leader and class, adviser & schedule will be null
+            tServ.createTeam(leaderId, classId, groupName);
+            response.put("message", "Team has been created successfully with recruitment OPEN.");
             return ResponseEntity.ok(response);
 
         } catch (NumberFormatException e) {
-            response.put("error", "Invalid number format for leaderId, classId, adviserId, or scheduleId.");
+            response.put("error", "Invalid number format for leaderId or classId.");
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             response.put("error", "An error occurred while creating the team: " + e.getMessage());
@@ -144,13 +142,17 @@ public class TeamController {
 
 
     @GetMapping("/team/my/{classId}/{userId}")
-    public ResponseEntity<TeamDTO> getMyTeam(
-            @PathVariable int userId, // Change from @RequestParam to @PathVariable
-            @PathVariable int classId) {
-        TeamDTO myTeam = tServ.getMyTeam(userId, classId);
-        return ResponseEntity.ok(myTeam);
+    public ResponseEntity<?> getMyTeam(@PathVariable int userId, @PathVariable int classId) {
+        try {
+            TeamDTO myTeam = tServ.getMyTeam(userId, classId);
+            return ResponseEntity.ok(myTeam);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No team found.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
+        }
     }
-
     @GetMapping("/teams/{teamId}/members")
     public ResponseEntity<List<UserDTO>> getTeamMembers(@PathVariable int teamId) {
         List<UserDTO> members = tServ.getTeamMembers(teamId);
@@ -167,6 +169,14 @@ public class TeamController {
         Map<String, String> response = new HashMap<>();
         response.put("message", "You have successfully left the team.");
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/team/{classId}/available-students")
+    public ResponseEntity<List<UserDTO>> getAvailableStudents(
+            @PathVariable Long classId,
+            @RequestParam(required = false, defaultValue = "") String searchTerm) {
+        List<UserDTO> students = tServ.getAvailableStudentsForTeam(classId, searchTerm);
+        return ResponseEntity.ok(students);
     }
 
 

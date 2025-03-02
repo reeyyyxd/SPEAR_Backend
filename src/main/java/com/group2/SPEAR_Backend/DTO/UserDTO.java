@@ -70,12 +70,34 @@ public class UserDTO {
         this.lastname = lastname;
     }
 
+    //qualified adviser
+    public UserDTO(String firstname, String lastname, String email, String role, Integer uid, String interests, String department) {
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.email = email;
+        this.role = (role != null) ? role.toUpperCase() : "N/A";
+        this.uid = uid;
+        this.interests = interests;
+        this.department = department;
+    }
+
+    // Correct Constructor for Query
     public UserDTO(String firstname, String lastname, String email, String interests, String department) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
         this.interests = interests;
         this.department = department;
+    }
+
+
+
+    //this bitch is for search
+    public UserDTO(String firstname, String lastname, String email, Integer uid) {
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.email = email;
+        this.uid = uid;
     }
 
     public UserDTO() {}

@@ -7,36 +7,35 @@ public class TeamDTO {
     private int tid;
     private String groupName;
     private String projectName;
-    private Integer projectId; // Change to Integer to handle null values
-    private int leaderId;
+    private Integer projectId;
+    private String leaderName;
     private Long classId;
     private List<Integer> memberIds;
     private boolean isRecruitmentOpen;
     private List<FeatureDTO> features;
     private String projectDescription;
-    private int adviserId;
-    private int scheduleId;
+    private Integer adviserId;
+    private Integer scheduleId;
 
     public TeamDTO() {}
 
-    public TeamDTO(int tid, String groupName, String projectName, Integer projectId, int leaderId, Long classId,
+    public TeamDTO(int tid, String groupName, String projectName, Integer projectId, String leaderName, Long classId,
                    List<Integer> memberIds, boolean isRecruitmentOpen, List<FeatureDTO> features,
-                   String projectDescription, int adviserId, int scheduleId) {
+                   String projectDescription, Integer adviserId, Integer scheduleId) {
         this.tid = tid;
         this.groupName = groupName;
-        this.projectName = (projectName != null) ? projectName : "No Project Assigned"; // Default value
+        this.projectName = (projectName != null) ? projectName : "No Project Assigned";
         this.projectId = projectId;
-        this.leaderId = leaderId;
+        this.leaderName = leaderName;
         this.classId = classId;
         this.memberIds = memberIds;
         this.isRecruitmentOpen = isRecruitmentOpen;
         this.features = features;
-        this.projectDescription = (projectDescription != null) ? projectDescription : "No Description Available"; // Default value
+        this.projectDescription = (projectDescription != null) ? projectDescription : "No Description Available";
         this.adviserId = adviserId;
         this.scheduleId = scheduleId;
     }
 
-    // Getters and Setters
     public int getTid() {
         return tid;
     }
@@ -53,7 +52,7 @@ public class TeamDTO {
         this.groupName = groupName;
     }
 
-    public Integer getProjectId() { // Return Integer instead of int
+    public Integer getProjectId() {
         return projectId;
     }
 
@@ -61,12 +60,12 @@ public class TeamDTO {
         this.projectId = projectId;
     }
 
-    public int getLeaderId() {
-        return leaderId;
+    public String getLeaderName() {
+        return leaderName;
     }
 
-    public void setLeaderId(int leaderId) {
-        this.leaderId = leaderId;
+    public void setLeaderName(String leaderName) {
+        this.leaderName = leaderName;
     }
 
     public Long getClassId() {
@@ -106,22 +105,22 @@ public class TeamDTO {
     }
 
     public void setProjectDescription(String projectDescription) {
-        this.projectDescription = (projectDescription != null) ? projectDescription : "No Description Available"; // Default value
+        this.projectDescription = (projectDescription != null) ? projectDescription : "No Description Available";
     }
 
-    public int getAdviserId() {
+    public Integer getAdviserId() {
         return adviserId;
     }
 
-    public void setAdviserId(int adviserId) {
+    public void setAdviserId(Integer adviserId) {
         this.adviserId = adviserId;
     }
 
-    public int getScheduleId() {
+    public Integer getScheduleId() {
         return scheduleId;
     }
 
-    public void setScheduleId(int scheduleId) {
+    public void setScheduleId(Integer scheduleId) {
         this.scheduleId = scheduleId;
     }
 }

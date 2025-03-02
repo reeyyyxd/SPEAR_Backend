@@ -18,6 +18,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -458,6 +459,13 @@ public class UserService implements UserDetailsService {
             userDTO.setMessage("Error updating password: " + e.getMessage());
         }
         return userDTO;
+    }
+
+    public List<UserDTO> getAvailableStudentsForTeam(Long classId) {
+        List<User> availableStudents = userRepo.findAvailableStudentsForTeam(classId);
+        return availableStudents.stream()
+                .map(student -> new UserDTO(student.getFirstname(), student.getLastname(), student.getEmail(), student.getUid()))
+                .collect(Collectors.toList());
     }
 
 

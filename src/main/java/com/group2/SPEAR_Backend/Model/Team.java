@@ -29,11 +29,11 @@ public class Team {
     private ProjectProposal project;
 
     @ManyToOne
-    @JoinColumn(name = "adviser_id", referencedColumnName = "uid", nullable = false)
+    @JoinColumn(name = "adviser_id", referencedColumnName = "uid")
     private User adviser;
 
     @ManyToOne
-    @JoinColumn(name = "schedule_id", referencedColumnName = "schedid", nullable = false)
+    @JoinColumn(name = "schedule_id", referencedColumnName = "schedid")
     private Schedule schedule;
 
 

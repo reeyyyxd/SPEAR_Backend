@@ -162,6 +162,11 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/class/{classId}/available-students")
+    public ResponseEntity<List<UserDTO>> getAvailableStudents(@PathVariable Long classId) {
+        return ResponseEntity.ok(uServ.getAvailableStudentsForTeam(classId));
+    }
+
 
 
 
