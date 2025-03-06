@@ -14,4 +14,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
 
     @Query("SELECT s FROM Schedule s WHERE CONCAT(s.teacher.firstname, ' ', s.teacher.lastname) = :teacherName AND s.scheduleOfClasses.courseCode = :classCode")
     List<Schedule> findSchedulesByTeacherNameAndClassCode(@Param("teacherName") String teacherName, @Param("classCode") String classCode);
+
+    @Query("SELECT s FROM Schedule s WHERE s.teacher.uid = :teacherId AND NOT EXISTS (SELECT t FROM Team t WHERE t.schedule = s)")
+    List<Schedule> findSchedulesByTeacherId(@Param("teacherId") int teacherId);
 }

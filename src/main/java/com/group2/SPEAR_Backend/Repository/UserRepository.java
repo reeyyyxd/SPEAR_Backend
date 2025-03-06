@@ -64,11 +64,10 @@ public interface UserRepository extends JpaRepository <User, Integer> {
     @Query("SELECT u FROM User u WHERE u IN " +
             "(SELECT c.enrolledStudents FROM Classes c WHERE c.cid = :classId) " +
             "AND u.uid NOT IN (SELECT m.uid FROM Team t JOIN t.members m WHERE t.classRef.cid = :classId) " +
-            "AND (LOWER(u.firstname) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR LOWER(u.lastname) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
+            "AND u.uid NOT IN (SELECT t.leader.uid FROM Team t WHERE t.classRef.cid = :classId) " + // Exclude leaders
+            "AND (LOWER(u.firstname) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+            "OR LOWER(u.lastname) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
     List<User> findAvailableStudentsForTeamWithSearch(@Param("classId") Long classId, @Param("searchTerm") String searchTerm);
-
-
-
 
 
 

@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,12 +33,13 @@ public class Team {
     @JoinColumn(name = "adviser_id", referencedColumnName = "uid")
     private User adviser;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "schedule_id", referencedColumnName = "schedid")
     private Schedule schedule;
 
 
-    @ManyToMany
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "team_members",
             joinColumns = @JoinColumn(name = "team_id"),
@@ -48,8 +50,6 @@ public class Team {
     @Column(name = "is_recruitment_open")
     private boolean isRecruitmentOpen;
 
-    @Column(name = "is_deleted")
-    private boolean isDeleted = false;
 
 
     public Team() {}
@@ -119,14 +119,6 @@ public class Team {
 
     public void setRecruitmentOpen(boolean recruitmentOpen) {
         isRecruitmentOpen = recruitmentOpen;
-    }
-
-    public boolean isDeleted() {
-        return isDeleted;
-    }
-
-    public void setDeleted(boolean deleted) {
-        isDeleted = deleted;
     }
 
     public User getAdviser() {

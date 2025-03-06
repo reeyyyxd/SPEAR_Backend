@@ -350,7 +350,7 @@ public class ClassesService {
             Optional<Classes> optionalClass = cRepo.findByClassKey(classKey);
             if (optionalClass.isEmpty()) {
                 response.setStatusCode(404);
-                response.setMessage("Class not found or is deleted");
+                response.setMessage("Class not found");
                 return response;
             }
 
@@ -371,49 +371,43 @@ public class ClassesService {
                 response.setMessage("Student is not enrolled in this class");
                 return response;
             }
+
             // Remove the student from the class
             clazz.getEnrolledStudents().remove(student);
             cRepo.save(clazz);
 
+            // Remove student from teams
             List<Team> teamsWithStudent = tRepo.findActiveTeamsByMemberId(student.getUid());
             for (Team team : teamsWithStudent) {
                 if (team.getLeader().getUid() == student.getUid()) {
-                    team.setDeleted(true);
-                    tRepo.save(team);
-
+                    // Delete the team if the student was the leader
                     if (team.getProject() != null) {
-                        ppRepo.findById(team.getProject().getPid()).ifPresent(project -> {
-                            project.setDeleted(true);
-                            ppRepo.save(project);
-                        });
+                        ppRepo.findById(team.getProject().getPid()).ifPresent(ppRepo::delete);
                     }
+                    tRepo.delete(team);
                 } else {
                     team.getMembers().remove(student);
                     tRepo.save(team);
                 }
             }
 
+            // Remove all teams where the student is the leader
             List<Team> teamsCreatedByLeader = tRepo.findActiveTeamsByLeaderId(student.getUid());
             for (Team team : teamsCreatedByLeader) {
-                team.setDeleted(true);
-                tRepo.save(team);
-
                 if (team.getProject() != null) {
-                    ppRepo.findById(team.getProject().getPid()).ifPresent(project -> {
-                        project.setDeleted(true);
-                        ppRepo.save(project);
-                    });
+                    ppRepo.findById(team.getProject().getPid()).ifPresent(ppRepo::delete);
                 }
+                tRepo.delete(team);
             }
+
+            // Delete student's project proposals
             List<ProjectProposal> proposalsByStudent = ppRepo.findAllByProposedBy(student.getUid());
             for (ProjectProposal proposal : proposalsByStudent) {
-                if (!proposal.getIsDeleted()) {
-                    proposal.setDeleted(true);
-                    ppRepo.save(proposal);
-                }
+                ppRepo.delete(proposal);
             }
+
             response.setStatusCode(200);
-            response.setMessage("Student removed successfully from the class, associated teams and project proposals updated.");
+            response.setMessage("Student removed successfully from the class, teams, and project proposals.");
         } catch (Exception e) {
             response.setStatusCode(500);
             response.setMessage("Error occurred while removing student: " + e.getMessage());

@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.Controller;
 
+import com.group2.SPEAR_Backend.DTO.ScheduleDTO;
 import com.group2.SPEAR_Backend.DTO.StatusDTO;
 import com.group2.SPEAR_Backend.DTO.TeamDTO;
 import com.group2.SPEAR_Backend.DTO.UserDTO;
@@ -57,44 +58,81 @@ public class TeamController {
     }
 
 
-
-
     @PutMapping("/student/{teamId}/update-group-name")
     public ResponseEntity<Map<String, String>> updateGroupName(
             @PathVariable int teamId,
             @RequestBody Map<String, String> requestBody
     ) {
         String groupName = requestBody.get("groupName");
-        tServ.updateGroupName(teamId, groupName);
+        int requesterId = Integer.parseInt(requestBody.get("requesterId")); // Extract requester ID
+
+        tServ.updateGroupName(teamId, groupName, requesterId);
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "Group name has been updated");
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("student/delete-team/{teamId}")
-    public String deleteTeam(@PathVariable int teamId) {
-        return tServ.deleteTeam(teamId);
+    @DeleteMapping("student/delete-team/{teamId}/requester/{requesterId}")
+    public ResponseEntity<Map<String, String>> deleteTeam(
+            @PathVariable int teamId,
+            @PathVariable int requesterId
+    ) {
+        tServ.deleteTeam(teamId, requesterId);
+        return ResponseEntity.ok(Map.of("message", "Team has been deleted."));
     }
 
     @PutMapping("/student/{teamId}/open-recruitment")
-    public StatusDTO openRecruitment(@PathVariable int teamId) {
-        return tServ.openRecruitment(teamId);
+    public ResponseEntity<StatusDTO> openRecruitment(
+            @PathVariable int teamId,
+            @RequestBody Map<String, Integer> requestBody
+    ) {
+        int requesterId = requestBody.get("requesterId"); // Extract requester ID
+        return ResponseEntity.ok(tServ.openRecruitment(teamId, requesterId));
     }
 
     @PutMapping("/student/{teamId}/close-recruitment")
-    public StatusDTO closeRecruitment(@PathVariable int teamId) {
-        return tServ.closeRecruitment(teamId);
+    public ResponseEntity<StatusDTO> closeRecruitment(
+            @PathVariable int teamId,
+            @RequestBody Map<String, Integer> requestBody
+    ) {
+        int requesterId = requestBody.get("requesterId"); // Extract requester ID
+        return ResponseEntity.ok(tServ.closeRecruitment(teamId, requesterId));
     }
 
 
     @DeleteMapping("/student/{teamId}/kick-member/{memberId}")
-    public ResponseEntity<Map<String, String>> kickMember(@PathVariable int teamId, @PathVariable int memberId) {
-        tServ.kickMember(teamId, memberId);
+    public ResponseEntity<Map<String, String>> kickMember(
+            @PathVariable int teamId,
+            @PathVariable int memberId,
+            @RequestBody Map<String, Integer> requestBody
+    ) {
+        int requesterId = requestBody.get("requesterId"); // Extract requester ID
+        tServ.kickMember(teamId, requesterId, memberId);
 
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "A member has been removed from the team.");
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Map.of("message", "A member has been removed from the team."));
+    }
+
+    @PutMapping("/team/{teamId}/transfer-leadership")
+    public ResponseEntity<Map<String, String>> transferLeadership(
+            @PathVariable int teamId,
+            @RequestBody Map<String, Integer> requestBody) {
+        int requesterId = requestBody.get("requesterId"); // Extract requester ID
+        int newLeaderId = requestBody.get("newLeaderId"); // Extract new leader ID
+        tServ.transferLeadership(teamId, requesterId, newLeaderId);
+
+        return ResponseEntity.ok(Map.of("message", "Leadership transferred successfully."));
+    }
+
+    @PostMapping("/team/{teamId}/add-member")
+    public ResponseEntity<Map<String, String>> addPreferredMember(
+            @PathVariable int teamId,
+            @RequestBody Map<String, Integer> requestBody) {
+        int requesterId = requestBody.get("requesterId"); // Extract requester ID
+        int memberId = requestBody.get("memberId"); // Extract new member ID
+        tServ.addPreferredMember(teamId, requesterId, memberId);
+
+        return ResponseEntity.ok(Map.of("message", "Member added successfully."));
     }
 
     @GetMapping("/teams/all-active")
@@ -107,24 +145,6 @@ public class TeamController {
         return tServ.getTeamById(teamId);
     }
 
-    @PutMapping("/team/{teamId}/transfer-leadership")
-    public ResponseEntity<Map<String, String>> transferLeadership(
-            @PathVariable int teamId,
-            @RequestBody Map<String, Integer> requestBody) {
-        int newLeaderId = requestBody.get("newLeaderId");
-        tServ.transferLeadership(teamId, newLeaderId);
-        return ResponseEntity.ok(Map.of("message", "Leadership transferred successfully."));
-    }
-
-    @PostMapping("/team/{teamId}/add-member")
-    public ResponseEntity<Map<String, String>> addPreferredMember(
-            @PathVariable int teamId,
-            @RequestBody Map<String, Integer> requestBody) {
-        int memberId = requestBody.get("memberId");
-        tServ.addPreferredMember(teamId, memberId);
-
-        return ResponseEntity.ok(Map.of("message", "Member added successfully."));
-    }
 
     @GetMapping("/teams/class/{classId}")
     public ResponseEntity<?> getTeamsByClass(@PathVariable int classId) {
@@ -177,6 +197,18 @@ public class TeamController {
             @RequestParam(required = false, defaultValue = "") String searchTerm) {
         List<UserDTO> students = tServ.getAvailableStudentsForTeam(classId, searchTerm);
         return ResponseEntity.ok(students);
+    }
+
+    @GetMapping("/class/{classId}/qualified-teachers")
+    public ResponseEntity<List<UserDTO>> getQualifiedAdvisersForClass(@PathVariable Long classId) {
+        List<UserDTO> advisers = tServ.getQualifiedAdvisersForClass(classId);
+        return ResponseEntity.ok(advisers);
+    }
+    //schedule to change
+    @GetMapping("/adviser/{adviserId}/available-schedules")
+    public ResponseEntity<List<ScheduleDTO>> getAvailableSchedulesForAdviser(@PathVariable int adviserId) {
+        List<ScheduleDTO> schedules = tServ.getAvailableSchedulesForAdviser(adviserId);
+        return ResponseEntity.ok(schedules);
     }
 
 

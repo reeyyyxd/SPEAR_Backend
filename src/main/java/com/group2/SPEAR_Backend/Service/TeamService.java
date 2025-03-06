@@ -1,9 +1,6 @@
 package com.group2.SPEAR_Backend.Service;
 
-import com.group2.SPEAR_Backend.DTO.FeatureDTO;
-import com.group2.SPEAR_Backend.DTO.StatusDTO;
-import com.group2.SPEAR_Backend.DTO.TeamDTO;
-import com.group2.SPEAR_Backend.DTO.UserDTO;
+import com.group2.SPEAR_Backend.DTO.*;
 import com.group2.SPEAR_Backend.Model.*;
 import com.group2.SPEAR_Backend.Repository.*;
 import jakarta.transaction.Transactional;
@@ -67,28 +64,59 @@ public class TeamService {
         return tRepo.save(newTeam);
     }
 
-
-    public Team updateGroupName(int teamId, String groupName) {
+    //all the leader functions
+    @Transactional
+    public void addPreferredMember(int teamId, int requesterId, int memberId) {
         Team team = tRepo.findById(teamId)
-                .filter(t -> !t.isDeleted())
-                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
+                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found."));
+
+        if (team.getLeader().getUid() != requesterId) {
+            throw new IllegalStateException("Only the team leader can add members.");
+        }
+
+        Classes teamClass = team.getClassRef();
+        int maxTeamSize = teamClass.getMaxTeamSize();
+
+        if (!team.isRecruitmentOpen()) {
+            throw new IllegalStateException("Cannot add members. Recruitment is closed.");
+        }
+
+        if (team.getMembers().size() >= maxTeamSize) {
+            team.setRecruitmentOpen(false);
+            tRepo.save(team);
+            throw new IllegalStateException("Team is full. Recruitment is now closed.");
+        }
+
+        User newMember = uRepo.findById(memberId)
+                .orElseThrow(() -> new NoSuchElementException("User with ID " + memberId + " not found."));
+
+        if (!teamClass.getEnrolledStudents().contains(newMember)) {
+            throw new IllegalStateException("The new member must be enrolled in the same class as the team.");
+        }
+
+        team.getMembers().add(newMember);
+        tRepo.save(team);
+    }
+
+    public Team updateGroupName(int teamId, String groupName, int requesterId) {
+        Team team = tRepo.findById(teamId)
+                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found."));
+
+        if (team.getLeader().getUid() != requesterId) {
+            throw new IllegalStateException("Only the team leader can update the group name.");
+        }
         team.setGroupName(groupName);
         return tRepo.save(team);
     }
 
-    public String deleteTeam(int teamId) {
+    public StatusDTO openRecruitment(int teamId, int requesterId) {
         Team team = tRepo.findById(teamId)
-                .filter(t -> !t.isDeleted())
-                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
-        team.setDeleted(true);
-        tRepo.save(team);
-        return "Team with ID " + teamId + " has been deleted.";
-    }
+                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found."));
 
-    public StatusDTO openRecruitment(int teamId) {
-        Team team = tRepo.findById(teamId)
-                .filter(t -> !t.isDeleted())
-                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
+        if (team.getLeader().getUid() != requesterId) {
+            throw new IllegalStateException("Only the team leader can open recruitment.");
+        }
+
         team.setRecruitmentOpen(true);
         tRepo.save(team);
 
@@ -101,10 +129,14 @@ public class TeamService {
         );
     }
 
-    public StatusDTO closeRecruitment(int teamId) {
+    public StatusDTO closeRecruitment(int teamId, int requesterId) {
         Team team = tRepo.findById(teamId)
-                .filter(t -> !t.isDeleted())
-                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
+                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found."));
+
+        if (team.getLeader().getUid() != requesterId) {
+            throw new IllegalStateException("Only the team leader can close recruitment.");
+        }
+
         team.setRecruitmentOpen(false);
         tRepo.save(team);
 
@@ -118,10 +150,13 @@ public class TeamService {
     }
 
     @Transactional
-    public void kickMember(int teamId, int memberId) {
+    public void kickMember(int teamId, int requesterId, int memberId) {
         Team team = tRepo.findById(teamId)
-                .filter(t -> !t.isDeleted())
-                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
+                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found."));
+
+        if (team.getLeader().getUid() != requesterId) {
+            throw new IllegalStateException("Only the team leader can remove members.");
+        }
 
         User memberToRemove = team.getMembers().stream()
                 .filter(member -> member.getUid() == memberId)
@@ -137,10 +172,13 @@ public class TeamService {
     }
 
     @Transactional
-    public Team transferLeadership(int teamId, int newLeaderId) {
+    public void transferLeadership(int teamId, int requesterId, int newLeaderId) {
         Team team = tRepo.findById(teamId)
-                .filter(t -> !t.isDeleted())
-                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
+                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found."));
+
+        if (team.getLeader().getUid() != requesterId) {
+            throw new IllegalStateException("Only the current leader can transfer leadership.");
+        }
 
         User newLeader = uRepo.findById(newLeaderId)
                 .orElseThrow(() -> new NoSuchElementException("User with ID " + newLeaderId + " not found."));
@@ -150,38 +188,84 @@ public class TeamService {
         }
 
         team.setLeader(newLeader);
-        return tRepo.save(team);
+        tRepo.save(team);
     }
 
     @Transactional
-    public Team addPreferredMember(int teamId, int memberId) {
+    public String deleteTeam(int teamId, int requesterId) {
         Team team = tRepo.findById(teamId)
-                .filter(t -> !t.isDeleted())
-                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
+                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found."));
 
-        if (team.getMembers().size() >= 4) {
-            throw new IllegalStateException("Team already has the maximum number of members.");
+        if (team.getLeader().getUid() != requesterId) {
+            throw new IllegalStateException("Only the team leader can delete the team.");
         }
 
-        User newMember = uRepo.findById(memberId)
-                .orElseThrow(() -> new NoSuchElementException("User with ID " + memberId + " not found."));
+        // Remove the leader from members before checking if the team is empty
+        team.getMembers().remove(team.getLeader());
+        tRepo.save(team); // Save the updated team without the leader
 
-        Classes teamClass = team.getClassRef();
-
-        if (!teamClass.getEnrolledStudents().contains(newMember)) {
-            throw new IllegalStateException("The new member must be enrolled in the same class as the team.");
+        // Double-check if any members still exist
+        if (!team.getMembers().isEmpty()) {
+            throw new IllegalStateException("Cannot delete the team while there are still members.");
         }
 
-        team.getMembers().add(newMember);
+        // Delete references in the team_members table
+        tRepo.deleteTeamMembers(teamId);
 
-        return tRepo.save(team);
+        // Hard delete the team
+        tRepo.delete(team);
+
+        return "Team with ID " + teamId + " has been deleted.";
+    }
+    //scheduling
+    //schedule to change
+    public List<ScheduleDTO> getAvailableSchedulesForAdviser(int adviserId) {
+        List<Schedule> schedules = sRepo.findSchedulesByTeacherId(adviserId);
+
+        return schedules.stream()
+                .map(schedule -> new ScheduleDTO(
+                        schedule.getSchedid(),
+                        schedule.getDay(),
+                        schedule.getTime(),
+                        schedule.getTeacher().getUid(),
+                        schedule.getTeacher().getFirstname() + " " + schedule.getTeacher().getLastname(),
+                        schedule.getScheduleOfClasses().getCid(),
+                        schedule.getScheduleOfClasses().getCourseCode(),
+                        schedule.getScheduleOfClasses().getCourseDescription()
+                ))
+                .collect(Collectors.toList());
     }
 
+    @Transactional
+    public String assignAdviserAndSchedule(int teamId, int adviserId, int scheduleId) {
+        Team team = tRepo.findById(teamId)
+                .orElseThrow(() -> new NoSuchElementException("Team not found"));
+
+        User adviser = uRepo.findById(adviserId)
+                .orElseThrow(() -> new NoSuchElementException("Adviser not found"));
+
+        Schedule schedule = sRepo.findById(scheduleId)
+                .orElseThrow(() -> new NoSuchElementException("Schedule not found"));
+
+        Optional<Team> conflictingTeam = tRepo.findBySchedule(schedule);
+        if (conflictingTeam.isPresent() && conflictingTeam.get().getTid() != teamId) {
+            return "Error: This schedule is already assigned to another team.";
+        }
+        team.setAdviser(adviser);
+        team.setSchedule(schedule);
+        tRepo.save(team);
+
+        return "Adviser and Schedule successfully assigned to the team.";
+    }
+
+
+
+
+    //non-member function
     @Transactional
     public void leaveTeam(int teamId, int userId) {
         Team team = tRepo.findById(teamId)
-                .filter(t -> !t.isDeleted())
-                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found or has been deleted."));
+                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found."));
 
         User user = uRepo.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with ID " + userId + " not found."));
@@ -189,26 +273,24 @@ public class TeamService {
         if (!team.getMembers().contains(user)) {
             throw new IllegalStateException("User is not a member of this team.");
         }
+
         if (team.getLeader().getUid() == userId) {
-            throw new IllegalStateException("Leader cannot leave the team. Transfer leadership or disband the team.");
+            throw new IllegalStateException("Leaders cannot leave their own team. Transfer leadership or disband the team.");
         }
+
         team.getMembers().remove(user);
+
+        if (team.getMembers().isEmpty()) {
+            tRepo.delete(team); // Permanently delete if no members are left
+            throw new IllegalStateException("All members have left. The team has been disbanded.");
+        }
+
         tRepo.save(team);
     }
 
 
 
-
     //all get functions
-
-    public List<UserDTO> getAvailableStudentsForTeam(Long classId) {
-        List<User> availableStudents = uRepo.findAvailableStudentsForTeam(classId);
-        return availableStudents.stream()
-                .map(student -> new UserDTO(student.getFirstname(), student.getLastname()))
-                .collect(Collectors.toList());
-    }
-
-
     public List<TeamDTO> getAllActiveTeams() {
         return tRepo.findAllActiveTeams().stream()
                 .map(team -> new TeamDTO(
@@ -259,7 +341,6 @@ public class TeamService {
         if (activeTeams.isEmpty()) {
             throw new NoSuchElementException("No active teams found for class ID " + classId);
         }
-
         List<TeamDTO> teamDTOs = new ArrayList<>();
         for (Team team : activeTeams) {
             List<FeatureDTO> features = fRepo.findByProjectId(team.getProject().getPid()).stream()
@@ -296,6 +377,12 @@ public class TeamService {
         Integer adviserId = (team.getAdviser() != null) ? team.getAdviser().getUid() : null;
         Integer scheduleId = (team.getSchedule() != null) ? team.getSchedule().getSchedid() : null;
 
+        // leader is nono
+        List<String> memberNames = team.getMembers().stream()
+                .filter(member -> team.getLeader() == null || member.getUid() != team.getLeader().getUid()) // Exclude leader
+                .map(member -> member.getFirstname() + " " + member.getLastname())
+                .collect(Collectors.toList());
+
         return new TeamDTO(
                 team.getTid(),
                 team.getGroupName(),
@@ -308,7 +395,8 @@ public class TeamService {
                 null,
                 projectDescription,
                 adviserId,
-                scheduleId
+                scheduleId,
+                memberNames // Excluded leader from the list
         );
     }
 
@@ -326,7 +414,20 @@ public class TeamService {
                 .collect(Collectors.toList());
     }
 
+    public List<UserDTO> getQualifiedAdvisersForClass(Long classId) {
+        List<User> advisers = cRepo.findQualifiedAdvisersByClassId(classId);
 
+        return advisers.stream()
+                .map(adviser -> new UserDTO(
+                        adviser.getUid(),
+                        adviser.getFirstname(),
+                        adviser.getLastname(),
+                        adviser.getEmail(),
+                        adviser.getRole(),
+                        adviser.getDepartment()
+                ))
+                .collect(Collectors.toList());
+    }
 
 
 

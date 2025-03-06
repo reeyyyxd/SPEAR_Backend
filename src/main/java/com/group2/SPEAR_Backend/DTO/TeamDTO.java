@@ -11,6 +11,7 @@ public class TeamDTO {
     private String leaderName;
     private Long classId;
     private List<Integer> memberIds;
+    private List<String> memberNames;
     private boolean isRecruitmentOpen;
     private List<FeatureDTO> features;
     private String projectDescription;
@@ -35,6 +36,26 @@ public class TeamDTO {
         this.adviserId = adviserId;
         this.scheduleId = scheduleId;
     }
+
+    //fullname members
+    public TeamDTO(int tid, String groupName, String projectName, Integer projectId, String leaderName, Long classId,
+                   List<Integer> memberIds, boolean isRecruitmentOpen, List<FeatureDTO> features,
+                   String projectDescription, Integer adviserId, Integer scheduleId, List<String> memberNames) {
+        this.tid = tid;
+        this.groupName = groupName;
+        this.projectName = (projectName != null) ? projectName : "No Project Assigned";
+        this.projectId = projectId;
+        this.leaderName = leaderName;
+        this.classId = classId;
+        this.memberIds = memberIds;
+        this.memberNames = memberNames; // Assigning member full names
+        this.isRecruitmentOpen = isRecruitmentOpen;
+        this.features = features;
+        this.projectDescription = (projectDescription != null) ? projectDescription : "No Description Available";
+        this.adviserId = adviserId;
+        this.scheduleId = scheduleId;
+    }
+
 
     public int getTid() {
         return tid;
@@ -122,5 +143,21 @@ public class TeamDTO {
 
     public void setScheduleId(Integer scheduleId) {
         this.scheduleId = scheduleId;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    public List<String> getMemberNames() {
+        return memberNames;
+    }
+
+    public void setMemberNames(List<String> memberNames) {
+        this.memberNames = memberNames;
     }
 }
