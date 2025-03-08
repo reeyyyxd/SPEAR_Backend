@@ -51,9 +51,17 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
     @Query("SELECT t FROM Team t WHERE t.schedule = :schedule")
     Optional<Team> findBySchedule(@Param("schedule") Schedule schedule);
 
+
     @Modifying
     @Query(value = "DELETE FROM team_members WHERE team_id = :teamId", nativeQuery = true)
     void deleteTeamMembers(@Param("teamId") int teamId);
+
+
+
+
+
+
+
 
 
 }

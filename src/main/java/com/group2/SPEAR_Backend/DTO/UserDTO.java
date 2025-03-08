@@ -71,15 +71,16 @@ public class UserDTO {
     }
 
     //qualified adviser
-    public UserDTO(String firstname, String lastname, String email, String role, Integer uid, String interests, String department) {
+    public UserDTO(Integer uid, String firstname, String lastname, String email, String role, String interests, String department) {
+        this.uid = uid;
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
         this.role = (role != null) ? role.toUpperCase() : "N/A";
-        this.uid = uid;
         this.interests = interests;
         this.department = department;
     }
+
 
     // Correct Constructor for Query
     public UserDTO(String firstname, String lastname, String email, String interests, String department) {

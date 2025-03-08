@@ -7,6 +7,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -36,6 +37,8 @@ public class TeamService {
 
     @Autowired
     private ScheduleRepository sRepo;
+
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("h:mm a");
 
 
     //reverse function from create project proposal
@@ -80,6 +83,7 @@ public class TeamService {
         if (!team.isRecruitmentOpen()) {
             throw new IllegalStateException("Cannot add members. Recruitment is closed.");
         }
+
 
         if (team.getMembers().size() >= maxTeamSize) {
             team.setRecruitmentOpen(false);
@@ -192,41 +196,33 @@ public class TeamService {
     }
 
     @Transactional
-    public String deleteTeam(int teamId, int requesterId) {
+    public void deleteTeam(int teamId, int requesterId) {
         Team team = tRepo.findById(teamId)
-                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found."));
+                .orElseThrow(() -> new NoSuchElementException("Team not found"));
 
+        // Ensure only the leader can delete the team
         if (team.getLeader().getUid() != requesterId) {
             throw new IllegalStateException("Only the team leader can delete the team.");
         }
 
-        // Remove the leader from members before checking if the team is empty
-        team.getMembers().remove(team.getLeader());
-        tRepo.save(team); // Save the updated team without the leader
+        // Detach the schedule before deleting the team
+        team.setSchedule(null);  // ✅ Prevents deletion of the schedule
+        tRepo.save(team);
 
-        // Double-check if any members still exist
-        if (!team.getMembers().isEmpty()) {
-            throw new IllegalStateException("Cannot delete the team while there are still members.");
-        }
-
-        // Delete references in the team_members table
-        tRepo.deleteTeamMembers(teamId);
-
-        // Hard delete the team
-        tRepo.delete(team);
-
-        return "Team with ID " + teamId + " has been deleted.";
+        // Now delete the team
+        tRepo.deleteById(teamId);
     }
     //scheduling
     //schedule to change
-    public List<ScheduleDTO> getAvailableSchedulesForAdviser(int adviserId) {
-        List<Schedule> schedules = sRepo.findSchedulesByTeacherId(adviserId);
+    public List<ScheduleDTO> getAvailableSchedulesForAdviser(int adviserId, Long classId) {
+        List<Schedule> schedules = sRepo.findAvailableSchedulesForAdviserAndClass(adviserId, classId);
 
         return schedules.stream()
                 .map(schedule -> new ScheduleDTO(
                         schedule.getSchedid(),
                         schedule.getDay(),
-                        schedule.getTime(),
+                        schedule.getStartTime(),
+                        schedule.getEndTime(),
                         schedule.getTeacher().getUid(),
                         schedule.getTeacher().getFirstname() + " " + schedule.getTeacher().getLastname(),
                         schedule.getScheduleOfClasses().getCid(),
@@ -237,9 +233,17 @@ public class TeamService {
     }
 
     @Transactional
-    public String assignAdviserAndSchedule(int teamId, int adviserId, int scheduleId) {
+    public String assignAdviserAndSchedule(int teamId, int adviserId, int scheduleId, int requesterId) {
         Team team = tRepo.findById(teamId)
                 .orElseThrow(() -> new NoSuchElementException("Team not found"));
+
+        User requester = uRepo.findById(requesterId)
+                .orElseThrow(() -> new NoSuchElementException("Requester not found"));
+
+        // Ensure only the leader can assign an adviser
+        if (team.getLeader().getUid() != requesterId) {
+            throw new IllegalStateException("Only the team leader can assign an adviser and schedule.");
+        }
 
         User adviser = uRepo.findById(adviserId)
                 .orElseThrow(() -> new NoSuchElementException("Adviser not found"));
@@ -247,10 +251,12 @@ public class TeamService {
         Schedule schedule = sRepo.findById(scheduleId)
                 .orElseThrow(() -> new NoSuchElementException("Schedule not found"));
 
+        // Check if the schedule is already assigned to another team
         Optional<Team> conflictingTeam = tRepo.findBySchedule(schedule);
         if (conflictingTeam.isPresent() && conflictingTeam.get().getTid() != teamId) {
-            return "Error: This schedule is already assigned to another team.";
+            throw new IllegalStateException("This schedule is already assigned to another team.");
         }
+
         team.setAdviser(adviser);
         team.setSchedule(schedule);
         tRepo.save(team);
@@ -270,21 +276,20 @@ public class TeamService {
         User user = uRepo.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with ID " + userId + " not found."));
 
+        // Check if user is actually in the team
         if (!team.getMembers().contains(user)) {
             throw new IllegalStateException("User is not a member of this team.");
         }
 
+        // Check if the user leaving is the leader
         if (team.getLeader().getUid() == userId) {
             throw new IllegalStateException("Leaders cannot leave their own team. Transfer leadership or disband the team.");
         }
 
+        // Remove the user from the team
         team.getMembers().remove(user);
 
-        if (team.getMembers().isEmpty()) {
-            tRepo.delete(team); // Permanently delete if no members are left
-            throw new IllegalStateException("All members have left. The team has been disbanded.");
-        }
-
+        // Save the updated team state
         tRepo.save(team);
     }
 
@@ -372,14 +377,19 @@ public class TeamService {
         String projectName = (team.getProject() != null) ? team.getProject().getProjectName() : "No Project Assigned";
         Integer projectId = (team.getProject() != null) ? team.getProject().getPid() : null;
         String projectDescription = (team.getProject() != null) ? team.getProject().getDescription() : "No Description Available";
-        String leaderName = team.getLeader() != null ? team.getLeader().getFirstname() + " " + team.getLeader().getLastname() : "Unknown Leader";
+        String leaderName = (team.getLeader() != null) ? team.getLeader().getFirstname() + " " + team.getLeader().getLastname() : "Unknown Leader";
 
-        Integer adviserId = (team.getAdviser() != null) ? team.getAdviser().getUid() : null;
-        Integer scheduleId = (team.getSchedule() != null) ? team.getSchedule().getSchedid() : null;
+        // ✅ Fix: Convert `DayofWeek` enum to string
+        String scheduleDay = (team.getSchedule() != null) ? team.getSchedule().getDay().name() : "No Day Set";
 
-        // leader is nono
+        // ✅ Fix: Format LocalTime into "h:mm a"
+        String scheduleTime = (team.getSchedule() != null)
+                ? team.getSchedule().getStartTime().format(TIME_FORMATTER) + " - " + team.getSchedule().getEndTime().format(TIME_FORMATTER)
+                : "No Time Set";
+
+        // Exclude leader from the member list
         List<String> memberNames = team.getMembers().stream()
-                .filter(member -> team.getLeader() == null || member.getUid() != team.getLeader().getUid()) // Exclude leader
+                .filter(member -> team.getLeader() == null || member.getUid() != team.getLeader().getUid())
                 .map(member -> member.getFirstname() + " " + member.getLastname())
                 .collect(Collectors.toList());
 
@@ -394,9 +404,10 @@ public class TeamService {
                 team.isRecruitmentOpen(),
                 null,
                 projectDescription,
-                adviserId,
-                scheduleId,
-                memberNames // Excluded leader from the list
+                team.getAdviser() != null ? team.getAdviser().getFirstname() + " " + team.getAdviser().getLastname() : "No Adviser Assigned",
+                scheduleDay,
+                scheduleTime,
+                memberNames
         );
     }
 
@@ -424,10 +435,13 @@ public class TeamService {
                         adviser.getLastname(),
                         adviser.getEmail(),
                         adviser.getRole(),
+                        adviser.getInterests(),
                         adviser.getDepartment()
                 ))
                 .collect(Collectors.toList());
     }
+
+
 
 
 

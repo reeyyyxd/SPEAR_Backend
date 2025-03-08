@@ -73,13 +73,19 @@ public class TeamController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("student/delete-team/{teamId}/requester/{requesterId}")
+    @DeleteMapping("/student/delete-team/{teamId}/requester/{userId}")
     public ResponseEntity<Map<String, String>> deleteTeam(
             @PathVariable int teamId,
-            @PathVariable int requesterId
-    ) {
-        tServ.deleteTeam(teamId, requesterId);
-        return ResponseEntity.ok(Map.of("message", "Team has been deleted."));
+            @PathVariable int userId) {
+
+        try {
+            tServ.deleteTeam(teamId, userId);
+            return ResponseEntity.ok(Map.of("message", "Team successfully deleted"));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An error occurred."));
+        }
     }
 
     @PutMapping("/student/{teamId}/open-recruitment")
@@ -184,11 +190,17 @@ public class TeamController {
             @PathVariable int teamId,
             @RequestParam int userId) {
 
-        tServ.leaveTeam(teamId, userId);
+        try {
+            tServ.leaveTeam(teamId, userId);
 
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "You have successfully left the team.");
-        return ResponseEntity.ok(response);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "You have successfully left the team.");
+            return ResponseEntity.ok(response);
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An unexpected error occurred."));
+        }
     }
 
     @GetMapping("/team/{classId}/available-students")
@@ -205,10 +217,35 @@ public class TeamController {
         return ResponseEntity.ok(advisers);
     }
     //schedule to change
-    @GetMapping("/adviser/{adviserId}/available-schedules")
-    public ResponseEntity<List<ScheduleDTO>> getAvailableSchedulesForAdviser(@PathVariable int adviserId) {
-        List<ScheduleDTO> schedules = tServ.getAvailableSchedulesForAdviser(adviserId);
+    @GetMapping("/adviser/{adviserId}/available-schedules/{classId}")
+    public ResponseEntity<List<ScheduleDTO>> getAvailableSchedulesForAdviser(
+            @PathVariable int adviserId,
+            @PathVariable Long classId) {
+        List<ScheduleDTO> schedules = tServ.getAvailableSchedulesForAdviser(adviserId, classId);
         return ResponseEntity.ok(schedules);
+    }
+
+    @PutMapping("/team/{teamId}/assign-adviser-schedule")
+    public ResponseEntity<Map<String, String>> assignAdviserAndSchedule(
+            @PathVariable int teamId,
+            @RequestBody Map<String, Integer> requestBody) {  // Accept JSON body
+
+        int adviserId = requestBody.get("adviserId");
+        int scheduleId = requestBody.get("scheduleId");
+        int requesterId = requestBody.get("requesterId");
+
+        if (adviserId == 0 || scheduleId == 0 || requesterId == 0) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Missing required parameters"));
+        }
+
+        try {
+            String message = tServ.assignAdviserAndSchedule(teamId, adviserId, scheduleId, requesterId);
+            return ResponseEntity.ok(Map.of("message", message));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An error occurred."));
+        }
     }
 
 

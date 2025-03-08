@@ -481,11 +481,11 @@ public class ClassesService {
 
         return advisers.stream().map(adviser ->
                 new UserDTO(
+                        adviser.getUid(),
                         adviser.getFirstname(),
                         adviser.getLastname(),
                         adviser.getEmail(),
                         adviser.getRole() != null ? adviser.getRole().toUpperCase() : "N/A",
-                        adviser.getUid(),
                         adviser.getInterests(),
                         adviser.getDepartment()
                 )

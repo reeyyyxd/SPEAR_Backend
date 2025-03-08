@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.DTO;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TeamDTO {
@@ -17,6 +18,10 @@ public class TeamDTO {
     private String projectDescription;
     private Integer adviserId;
     private Integer scheduleId;
+    private String adviserName;  // New field for adviser's full name
+    private String scheduleDay;  // New field for schedule day
+    private String scheduleTime; // New field for schedule time
+
 
     public TeamDTO() {}
 
@@ -35,6 +40,27 @@ public class TeamDTO {
         this.projectDescription = (projectDescription != null) ? projectDescription : "No Description Available";
         this.adviserId = adviserId;
         this.scheduleId = scheduleId;
+    }
+
+    //getting teacher name and sched
+    public TeamDTO(int tid, String groupName, String projectName, Integer projectId, String leaderName, Long classId,
+                   List<Integer> memberIds, boolean isRecruitmentOpen, List<FeatureDTO> features,
+                   String projectDescription, String adviserName, String scheduleDay, String scheduleTime,
+                   List<String> memberNames) {
+        this.tid = tid;
+        this.groupName = groupName;
+        this.projectName = (projectName != null) ? projectName : "No Project Assigned";
+        this.projectId = projectId;
+        this.leaderName = leaderName;
+        this.classId = classId;
+        this.memberIds = memberIds;
+        this.memberNames = memberNames != null ? memberNames : new ArrayList<>();
+        this.isRecruitmentOpen = isRecruitmentOpen;
+        this.features = features;
+        this.projectDescription = (projectDescription != null) ? projectDescription : "No Description Available";
+        this.adviserName = (adviserName != null) ? adviserName : "No Adviser Assigned";
+        this.scheduleDay = (scheduleDay != null) ? scheduleDay : "No Schedule Set";
+        this.scheduleTime = (scheduleTime != null) ? scheduleTime : "No Schedule Set";
     }
 
     //fullname members
@@ -159,5 +185,29 @@ public class TeamDTO {
 
     public void setMemberNames(List<String> memberNames) {
         this.memberNames = memberNames;
+    }
+
+    public String getAdviserName() {
+        return adviserName;
+    }
+
+    public void setAdviserName(String adviserName) {
+        this.adviserName = adviserName;
+    }
+
+    public String getScheduleDay() {
+        return scheduleDay;
+    }
+
+    public void setScheduleDay(String scheduleDay) {
+        this.scheduleDay = scheduleDay;
+    }
+
+    public String getScheduleTime() {
+        return scheduleTime;
+    }
+
+    public void setScheduleTime(String scheduleTime) {
+        this.scheduleTime = scheduleTime;
     }
 }

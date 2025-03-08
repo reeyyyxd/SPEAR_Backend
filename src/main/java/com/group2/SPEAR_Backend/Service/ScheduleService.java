@@ -1,6 +1,7 @@
 package com.group2.SPEAR_Backend.Service;
 
 import com.group2.SPEAR_Backend.DTO.ScheduleDTO;
+import com.group2.SPEAR_Backend.Model.DayOfWeek;
 import com.group2.SPEAR_Backend.Model.Schedule;
 import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.Model.Classes;
@@ -10,6 +11,8 @@ import com.group2.SPEAR_Backend.Repository.ClassesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -25,6 +28,8 @@ public class ScheduleService {
     @Autowired
     private ClassesRepository classesRepo;
 
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("h:mm a");
+
     public ScheduleDTO createSchedule(ScheduleDTO scheduleDTO) {
         User teacher = userRepo.findById(scheduleDTO.getTeacherId())
                 .orElseThrow(() -> new NoSuchElementException("Teacher not found"));
@@ -32,10 +37,15 @@ public class ScheduleService {
         Classes scheduleOfClasses = classesRepo.findById(scheduleDTO.getClassId())
                 .orElseThrow(() -> new NoSuchElementException("Class not found"));
 
-        Schedule schedule = new Schedule(scheduleDTO.getDay(), scheduleDTO.getTime(), teacher, scheduleOfClasses);
+        Schedule schedule = new Schedule(
+                scheduleDTO.getDay(),
+                scheduleDTO.getStartTime(),
+                scheduleDTO.getEndTime(),
+                teacher,
+                scheduleOfClasses
+        );
         Schedule savedSchedule = scheduleRepo.save(schedule);
-
-        return convertToDTO(savedSchedule);
+        return ScheduleDTO.convertToDTO(savedSchedule);
     }
 
     public List<ScheduleDTO> getAllSchedules() {
@@ -71,12 +81,13 @@ public class ScheduleService {
                 .orElseThrow(() -> new NoSuchElementException("Class not found"));
 
         existingSchedule.setDay(updatedScheduleDTO.getDay());
-        existingSchedule.setTime(updatedScheduleDTO.getTime());
+        existingSchedule.setStartTime(updatedScheduleDTO.getStartTime());
+        existingSchedule.setEndTime(updatedScheduleDTO.getEndTime());
         existingSchedule.setTeacher(teacher);
         existingSchedule.setScheduleOfClasses(scheduleOfClasses);
 
         Schedule updatedSchedule = scheduleRepo.save(existingSchedule);
-        return convertToDTO(updatedSchedule);
+        return ScheduleDTO.convertToDTO(updatedSchedule);
     }
 
     public void deleteSchedule(int schedid) {
@@ -89,7 +100,8 @@ public class ScheduleService {
         return new ScheduleDTO(
                 schedule.getSchedid(),
                 schedule.getDay(),
-                schedule.getTime(),
+                schedule.getStartTime(),
+                schedule.getEndTime(),
                 schedule.getTeacher().getUid(),
                 schedule.getTeacher().getFirstname() + " " + schedule.getTeacher().getLastname(),
                 schedule.getScheduleOfClasses().getCid(),

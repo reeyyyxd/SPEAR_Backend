@@ -1,24 +1,31 @@
 package com.group2.SPEAR_Backend.DTO;
 
+import com.group2.SPEAR_Backend.Model.DayOfWeek;
 import com.group2.SPEAR_Backend.Model.Schedule;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 public class ScheduleDTO {
 
     private int schedid;
-    private String day;
-    private String time;
+    private DayOfWeek day;
+    private LocalTime startTime;  // ✅ Use LocalTime instead of String time
+    private LocalTime endTime;
     private int teacherId;
     private String teacherName;
     private Long classId;
     private String className;
     private String courseDescription;
 
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
+
     public ScheduleDTO() {}
 
-    public ScheduleDTO(int schedid, String day, String time, int teacherId, String teacherName, Long classId, String className, String courseDescription) {
+    public ScheduleDTO(int schedid, DayOfWeek day, LocalTime startTime, LocalTime endTime, int teacherId, String teacherName, Long classId, String className, String courseDescription) {
         this.schedid = schedid;
         this.day = day;
-        this.time = time;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.teacherId = teacherId;
         this.teacherName = teacherName;
         this.classId = classId;
@@ -26,11 +33,14 @@ public class ScheduleDTO {
         this.courseDescription = courseDescription;
     }
 
-    private ScheduleDTO convertToDTO(Schedule schedule) {
+
+
+    public static ScheduleDTO convertToDTO(Schedule schedule) {
         return new ScheduleDTO(
                 schedule.getSchedid(),
                 schedule.getDay(),
-                schedule.getTime(),
+                schedule.getStartTime(),
+                schedule.getEndTime(),
                 schedule.getTeacher().getUid(),
                 schedule.getTeacher().getFirstname() + " " + schedule.getTeacher().getLastname(),
                 schedule.getScheduleOfClasses().getCid(),
@@ -39,28 +49,36 @@ public class ScheduleDTO {
         );
     }
 
+    public DayOfWeek getDay() {
+        return day;
+    }
+
+    public void setDay(DayOfWeek day) {
+        this.day = day;
+    }
+
+    public LocalTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
+    }
+
     public int getSchedid() {
         return schedid;
     }
 
     public void setSchedid(int schedid) {
         this.schedid = schedid;
-    }
-
-    public String getDay() {
-        return day;
-    }
-
-    public void setDay(String day) {
-        this.day = day;
-    }
-
-    public String getTime() {
-        return time;
-    }
-
-    public void setTime(String time) {
-        this.time = time;
     }
 
     public int getTeacherId() {

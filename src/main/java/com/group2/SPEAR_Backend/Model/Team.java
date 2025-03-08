@@ -33,8 +33,8 @@ public class Team {
     @JoinColumn(name = "adviser_id", referencedColumnName = "uid")
     private User adviser;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "schedule_id", referencedColumnName = "schedid")
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "schedule_id", referencedColumnName = "schedid", unique = true)
     private Schedule schedule;
 
 

@@ -45,9 +45,6 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
     List<User> findQualifiedAdvisersByClassId(@Param("classId") Long classId);
 
 
-
-
-
     //changed for queueit from u.role from the end, to u.uid 3rd from last.
     //took the liberty to change this because I did not see any changes from this endpoint
     //namely 'incremented refactor (to be continued) dated feb 16, 2025.
