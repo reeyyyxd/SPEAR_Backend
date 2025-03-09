@@ -164,8 +164,27 @@ public class ClassesService {
         ClassesDTO response = new ClassesDTO();
         try {
             Optional<Classes> classByCourseCodeAndSection = cRepo.findByCourseCodeAndSectionPage(courseCode, section);
+
             if (classByCourseCodeAndSection.isPresent()) {
-                response.setClasses(classByCourseCodeAndSection.get());
+                Classes classes = classByCourseCodeAndSection.get();
+                Integer creatorId = (classes.getCreatedBy() != null) ? classes.getCreatedBy().getUid() : null;
+                String creatorFirstname = (classes.getCreatedBy() != null) ? classes.getCreatedBy().getFirstname() : "Unknown";
+                String creatorLastname = (classes.getCreatedBy() != null) ? classes.getCreatedBy().getLastname() : "Unknown";
+
+                response.setClasses(classes);
+                response.setCid(classes.getCid());
+                response.setCourseCode(classes.getCourseCode());
+                response.setSection(classes.getSection());
+                response.setSchoolYear(classes.getSchoolYear());
+                response.setSemester(classes.getSemester());
+                response.setCourseDescription(classes.getCourseDescription());
+                response.setMaxTeamSize(classes.getMaxTeamSize());
+                response.setClassKey(classes.getClassKey());
+                response.setCreatedById(creatorId);
+                response.setCreatedByFirstname(creatorFirstname);
+                response.setCreatedByLastname(creatorLastname);
+                response.setDeleted(classes.isDeleted());
+
                 response.setStatusCode(200);
                 response.setMessage("Class with course code and section found successfully");
             } else {
