@@ -48,7 +48,6 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
     @Query("SELECT t FROM Team t WHERE t.schedule = :schedule")
     Optional<Team> findBySchedule(@Param("schedule") Schedule schedule);
 
-
     @Modifying
     @Query(value = "DELETE FROM team_members WHERE team_id = :teamId", nativeQuery = true)
     void deleteTeamMembers(@Param("teamId") int teamId);
@@ -58,6 +57,18 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
 
     @Query("SELECT t FROM Team t JOIN t.schedule s where :day = s.day")
     List<Team> retrieveScheduledTeamsForMeetingAutomation(@Param("day") DayOfWeek day);
+
+    //for team recruitment only
+    @Query("SELECT t FROM Team t JOIN t.classRef c WHERE t.isRecruitmentOpen = true AND SIZE(t.members) < c.maxTeamSize")
+    List<Team> findOpenTeamsForRecruitment();
+
+    @Query("SELECT t FROM Team t WHERE t.leader.uid = :userId")
+    List<Team> findByLeaderUid(@Param("userId") int userId);
+
+    @Query("SELECT t FROM Team t WHERE t.adviser.uid = :adviserId AND t.schedule IS NOT NULL")
+    List<Team> findTeamsByAdviserAndSchedule(@Param("adviserId") int adviserId);
+
+
 
 
 

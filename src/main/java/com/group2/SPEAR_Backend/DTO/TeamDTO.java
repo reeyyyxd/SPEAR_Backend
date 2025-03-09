@@ -21,9 +21,12 @@ public class TeamDTO {
     private String projectDescription;
     private Integer adviserId;
     private Integer scheduleId;
-    private String adviserName;  // New field for adviser's full name
-    private String scheduleDay;  // New field for schedule day
-    private String scheduleTime; // New field for schedule time
+    private String adviserName;
+    private String scheduleDay;
+    private String scheduleTime;
+    private int maxMembers;
+    private String courseDescription;
+
 
 
     private DayOfWeek scheduledDay; // by queueit
@@ -74,7 +77,7 @@ public class TeamDTO {
     //fullname members
     public TeamDTO(int tid, String groupName, String projectName, Integer projectId, String leaderName, Long classId,
                    List<Integer> memberIds, boolean isRecruitmentOpen, List<FeatureDTO> features,
-                   String projectDescription, Integer adviserId, Integer scheduleId, List<String> memberNames) {
+                   String projectDescription, Integer adviserId, Integer scheduleId, int maxMembers) {
         this.tid = tid;
         this.groupName = groupName;
         this.projectName = (projectName != null) ? projectName : "No Project Assigned";
@@ -82,12 +85,69 @@ public class TeamDTO {
         this.leaderName = leaderName;
         this.classId = classId;
         this.memberIds = memberIds;
-        this.memberNames = memberNames; // Assigning member full names
         this.isRecruitmentOpen = isRecruitmentOpen;
         this.features = features;
         this.projectDescription = (projectDescription != null) ? projectDescription : "No Description Available";
         this.adviserId = adviserId;
         this.scheduleId = scheduleId;
+        this.maxMembers = maxMembers;
+    }
+
+    public TeamDTO(int tid, String groupName, String projectName, Integer projectId, String leaderName, Long classId,
+                   List<Integer> memberIds, boolean isRecruitmentOpen, List<FeatureDTO> features,
+                   String projectDescription, Integer adviserId, Integer scheduleId,
+                   List<String> memberNames, String adviserName, String scheduleDay, String scheduleTime) {
+
+        this.tid = tid;
+        this.groupName = groupName;
+        this.projectName = (projectName != null) ? projectName : "No Project Assigned";
+        this.projectId = projectId;
+        this.leaderName = leaderName;
+        this.classId = classId;
+        this.memberIds = (memberIds != null) ? memberIds : new ArrayList<>();
+        this.memberNames = (memberNames != null) ? memberNames : new ArrayList<>();
+        this.isRecruitmentOpen = isRecruitmentOpen;
+        this.features = (features != null) ? features : new ArrayList<>();
+        this.projectDescription = (projectDescription != null) ? projectDescription : "No Description Available";
+        this.adviserId = adviserId;
+        this.scheduleId = scheduleId;
+        this.adviserName = (adviserName != null) ? adviserName : "No Adviser Assigned";
+        this.scheduleDay = (scheduleDay != null) ? scheduleDay : "No Schedule Set";
+        this.scheduleTime = (scheduleTime != null) ? scheduleTime : "No Schedule Set";
+    }
+
+    //for advisory (last na ni pramis)
+    public TeamDTO(int tid, String groupName, String projectName, Integer projectId, String leaderName, Long classId,
+                   List<Integer> memberIds, boolean isRecruitmentOpen, List<FeatureDTO> features,
+                   String projectDescription, String adviserName, String scheduleDay, String scheduleTime,
+                   String courseDescription, List<String> memberNames) {
+
+        this.tid = tid;
+        this.groupName = groupName;
+        this.projectName = (projectName != null) ? projectName : "No Project Assigned";
+        this.projectId = projectId;
+        this.leaderName = leaderName;
+        this.classId = classId;
+        this.memberIds = (memberIds != null) ? memberIds : new ArrayList<>();
+        this.memberNames = (memberNames != null) ? memberNames : new ArrayList<>();
+        this.isRecruitmentOpen = isRecruitmentOpen;
+        this.features = (features != null) ? features : new ArrayList<>();
+        this.projectDescription = (projectDescription != null) ? projectDescription : "No Description Available";
+        this.adviserName = (adviserName != null) ? adviserName : "No Adviser Assigned";
+        this.scheduleDay = (scheduleDay != null) ? scheduleDay : "No Schedule Set";
+        this.scheduleTime = (scheduleTime != null) ? scheduleTime : "No Schedule Set";
+        this.courseDescription = (courseDescription != null) ? courseDescription : "No Class Info Available";
+    }
+
+
+
+
+    public int getMaxMembers() {
+        return maxMembers;
+    }
+
+    public void setMaxMembers(int maxMembers) {
+        this.maxMembers = maxMembers;
     }
 
     //created for queueit
@@ -113,6 +173,8 @@ public class TeamDTO {
         this.end = endTime;
         this.adviserId = uid;
     }
+
+
 
 
     public int getTid() {
@@ -265,5 +327,13 @@ public class TeamDTO {
 
     public void setEnd(LocalTime end) {
         this.end = end;
+    }
+
+    public String getCourseDescription() {
+        return courseDescription;
+    }
+
+    public void setCourseDescription(String courseDescription) {
+        this.courseDescription = courseDescription;
     }
 }

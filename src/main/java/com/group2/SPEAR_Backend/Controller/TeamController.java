@@ -6,6 +6,7 @@ import com.group2.SPEAR_Backend.DTO.TeamDTO;
 import com.group2.SPEAR_Backend.DTO.UserDTO;
 import com.group2.SPEAR_Backend.Model.Team;
 import com.group2.SPEAR_Backend.Model.User;
+import com.group2.SPEAR_Backend.Repository.TeamRepository;
 import com.group2.SPEAR_Backend.Service.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = {"http://localhost:5173", "http://10.147.17.37:5173", "http://10.147.17.166:5173"})
@@ -24,6 +26,9 @@ public class TeamController {
 
     @Autowired
     private TeamService tServ;
+
+    @Autowired
+    private TeamRepository tRepo;
 
 //    @PostMapping("/student/create/{projectId}")
 //    public Team createTeam(@PathVariable int projectId, @RequestParam String groupName) {
@@ -167,6 +172,20 @@ public class TeamController {
         }
     }
 
+    @GetMapping("/teacher/teams/adviser/{adviserId}")
+    public ResponseEntity<?> getTeamsByAdviser(@PathVariable int adviserId) {
+        try {
+            List<TeamDTO> teams = tServ.getTeamsByAdviser(adviserId);
+            return ResponseEntity.ok(teams);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
+        }
+    }
+
 
     @GetMapping("/team/my/{classId}/{userId}")
     public ResponseEntity<?> getMyTeam(@PathVariable int userId, @PathVariable int classId) {
@@ -249,6 +268,39 @@ public class TeamController {
         }
     }
 
+    //for team recuitment only
+    @GetMapping("/teams/open-for-recruitment")
+    public ResponseEntity<List<TeamDTO>> getOpenTeamsForRecruitment() {
+        List<TeamDTO> openTeams = tServ.getOpenTeamsForRecruitment();
+        return ResponseEntity.ok(openTeams);
+    }
+
+    @GetMapping("/user/{userId}/leader-teams")
+    public ResponseEntity<List<TeamDTO>> getTeamsLedByUser(@PathVariable int userId) {
+        List<Team> teams = tRepo.findByLeaderUid(userId);
+
+        List<TeamDTO> teamDTOs = teams.stream()
+                .map(team -> new TeamDTO(
+                        team.getTid(),
+                        team.getGroupName(),
+                        team.getProject() != null ? team.getProject().getProjectName() : "No Project Assigned",
+                        team.getProject() != null ? team.getProject().getPid() : null,
+                        team.getLeader().getFirstname() + " " + team.getLeader().getLastname(),
+                        team.getClassRef() != null ? team.getClassRef().getCid() : null,
+                        team.getMembers().stream().map(User::getUid).toList(),
+                        team.isRecruitmentOpen(),
+                        null, // Features can be added later
+                        team.getProject() != null ? team.getProject().getDescription() : "No Description Available",
+                        team.getAdviser() != null ? team.getAdviser().getUid() : null,
+                        team.getSchedule() != null ? team.getSchedule().getSchedid() : null,
+                        team.getClassRef() != null ? team.getClassRef().getMaxTeamSize() : 5
+                ))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(teamDTOs);
+    }
+
+// Q it controllers
     //created for queueit, retrieval of teams under a certain mentor
     @GetMapping("/team/mentored/{mentorID}")
     public ResponseEntity<Object> retrieveTeamsForMentor(@PathVariable int mentorID){
@@ -259,16 +311,15 @@ public class TeamController {
         }
     }
 
-    //created for queueit, retrieval of teams that's scheduled for today for automation
-    @GetMapping("/team/automateScheduledMeetings/{day}")
-    public ResponseEntity<Object> retrieveScheduledTeamsForMeetingAutomation(@PathVariable String day){
-        try{
-            return ResponseEntity.ok(tServ.retrieveScheduledTeamsForMeetingAutomation(day));
-        }catch (Exception e){
-            return ResponseEntity.status(400).body(e.getMessage());
-        }
+        //created for queueit, retrieval of teams that's scheduled for today for automation
+        @GetMapping("/team/automateScheduledMeetings/{day}")
+        public ResponseEntity<Object> retrieveScheduledTeamsForMeetingAutomation(@PathVariable String day){
+            try{
+                return ResponseEntity.ok(tServ.retrieveScheduledTeamsForMeetingAutomation(day));
+            }catch (Exception e){
+                return ResponseEntity.status(400).body(e.getMessage());
+            }
     }
-
 
 
 

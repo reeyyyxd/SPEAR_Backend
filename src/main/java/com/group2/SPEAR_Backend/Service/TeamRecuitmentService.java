@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TeamRecuitmentService {
@@ -30,7 +31,6 @@ public class TeamRecuitmentService {
 
     @Transactional
     public TeamRecuitment applyToTeam(int teamId, int studentId, String role, String reason) {
-        // Get the team
         Team team = tRepo.findById(teamId)
                 .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found"));
 
@@ -49,7 +49,7 @@ public class TeamRecuitmentService {
             TeamRecuitment existing = existingApplication.get();
             if (existing.getStatus() == TeamRecuitment.Status.PENDING ||
                     existing.getStatus() == TeamRecuitment.Status.ACCEPTED) {
-                throw new IllegalStateException("You already have a pending or accepted application for this team.");
+                throw new IllegalStateException("You already applied for this team. Please wait for the leader's decision");
             }
             // If rejected, allow re-application by resetting to pending
             existing.setStatus(TeamRecuitment.Status.PENDING);
@@ -62,44 +62,117 @@ public class TeamRecuitmentService {
         TeamRecuitment recruitment = new TeamRecuitment(team, student, role, reason, TeamRecuitment.Status.PENDING);
         return trRepo.save(recruitment);
     }
+//in case shits hit the fan
+//    @Transactional
+//    public void reviewApplication(int recruitmentId, boolean isAccepted, String leaderReason) {
+//        // Find recruitment request
+//        TeamRecuitment recruitment = trRepo.findById(recruitmentId)
+//                .orElseThrow(() -> new NoSuchElementException("Recruitment request not found"));
+//
+//        Team team = recruitment.getTeam();
+//
+//        if (isAccepted) {
+//            // Check if team has reached its max size
+//            if (team.getMembers().size() >= team.getClassRef().getMaxTeamSize()) {
+//                throw new IllegalStateException("Team is already full.");
+//            }
+//
+//            recruitment.setStatus(TeamRecuitment.Status.ACCEPTED);
+//            recruitment.setReason(null); // Clear reason since it's accepted
+//            team.getMembers().add(recruitment.getStudent()); // Add student to team
+//            tRepo.save(team);
+//        } else {
+//            recruitment.setStatus(TeamRecuitment.Status.REJECTED);
+//            recruitment.setReason(leaderReason != null ? leaderReason : "No reason provided.");
+//        }
+//
+//        trRepo.save(recruitment);
+//    }
 
     @Transactional
     public void reviewApplication(int recruitmentId, boolean isAccepted, String leaderReason) {
-        // Find recruitment request
         TeamRecuitment recruitment = trRepo.findById(recruitmentId)
                 .orElseThrow(() -> new NoSuchElementException("Recruitment request not found"));
 
         Team team = recruitment.getTeam();
+        User student = recruitment.getStudent();
 
         if (isAccepted) {
-            // Check if team has reached its max size
+            boolean alreadyAccepted = trRepo.findByStudentId(student.getUid()).stream()
+                    .anyMatch(r -> r.getStatus() == TeamRecuitment.Status.ACCEPTED);
+            if (alreadyAccepted) {
+                throw new IllegalStateException("This student is already accepted into another team.");
+            }
+
             if (team.getMembers().size() >= team.getClassRef().getMaxTeamSize()) {
                 throw new IllegalStateException("Team is already full.");
             }
 
             recruitment.setStatus(TeamRecuitment.Status.ACCEPTED);
-            recruitment.setReason(null); // Clear reason since it's accepted
-            team.getMembers().add(recruitment.getStudent()); // Add student to team
-            tRepo.save(team);
+            recruitment.setReason("Accepted by leader.");
+            team.getMembers().add(student);
+
+            trRepo.updateOtherApplicationsAsExpired(student.getUid(), team.getTid());
         } else {
             recruitment.setStatus(TeamRecuitment.Status.REJECTED);
             recruitment.setReason(leaderReason != null ? leaderReason : "No reason provided.");
         }
 
+        tRepo.save(team);
         trRepo.save(recruitment);
     }
 
     public List<TeamRecuitmentDTO> getPendingApplicationsByTeam(int teamId) {
-        return trRepo.findPendingByTeamId(teamId).stream()
-                .map(recruitment -> new TeamRecuitmentDTO(
-                        recruitment.getTrid(),
-                        recruitment.getTeam().getTid(),
-                        recruitment.getStudent().getUid(),
-                        recruitment.getStudent().getFirstname() + " " + recruitment.getStudent().getLastname(),
-                        recruitment.getRole(),
-                        recruitment.getReason(),
-                        recruitment.getStatus()
+        List<TeamRecuitment> applications = trRepo.findPendingApplicationsByTeam(teamId);
+        return applications.stream()
+                .map(app -> new TeamRecuitmentDTO(
+                        app.getTrid(),
+                        app.getTeam().getTid(),
+                        app.getStudent().getUid(),
+                        app.getStudent().getFirstname() + " " + app.getStudent().getLastname(),
+                        app.getTeam().getGroupName(),
+                        app.getTeam().getClassRef().getCourseDescription(),
+                        app.getRole(),
+                        app.getReason(),
+                        app.getStatus()
                 ))
-                .toList();
+                .collect(Collectors.toList());
     }
+
+    public List<TeamRecuitmentDTO> getApplicationsByStudent(int studentId) {
+        List<TeamRecuitment> applications = trRepo.findApplicationsByStudent(studentId);
+        return applications.stream()
+                .map(app -> new TeamRecuitmentDTO(
+                        app.getTrid(),
+                        app.getTeam().getTid(),
+                        app.getStudent().getUid(),
+                        app.getStudent().getFirstname() + " " + app.getStudent().getLastname(),
+                        app.getTeam().getGroupName(),
+                        app.getTeam().getClassRef() != null ? app.getTeam().getClassRef().getCourseDescription() : "No Class Assigned",
+                        app.getTeam().getLeader().getFirstname() + " " + app.getTeam().getLeader().getLastname(),
+                        app.getRole(),
+                        app.getReason(),
+                        app.getStatus()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<TeamRecuitmentDTO> getPendingApplicationsByLeader(int leaderId) {
+        List<TeamRecuitment> applications = trRepo.findPendingApplicationsByLeader(leaderId);
+
+        return applications.stream()
+                .map(app -> new TeamRecuitmentDTO(
+                        app.getTrid(),
+                        app.getTeam().getTid(),
+                        app.getStudent().getUid(),
+                        app.getStudent().getFirstname() + " " + app.getStudent().getLastname(),
+                        app.getTeam().getGroupName(),
+                        app.getTeam().getClassRef() != null ? app.getTeam().getClassRef().getCourseDescription() : "No Class Assigned",
+                        app.getRole(),
+                        app.getReason(),
+                        app.getStatus()
+                ))
+                .collect(Collectors.toList());
+    }
+
 }

@@ -31,7 +31,8 @@ public class TeamRecuitment {
     public enum Status {
         PENDING,
         ACCEPTED,
-        REJECTED
+        REJECTED,
+        EXPIRED
     }
 
    public TeamRecuitment(){

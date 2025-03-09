@@ -64,7 +64,6 @@ public class Team {
         this.schedule = schedule;
     }
 
-    // Getters and Setters
     public int getTid() {
         return tid;
     }

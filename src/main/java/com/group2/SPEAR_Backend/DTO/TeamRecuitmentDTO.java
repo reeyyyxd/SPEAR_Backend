@@ -11,9 +11,14 @@ public class TeamRecuitmentDTO {
     private String role;
     private String reason;
     private Status status;
+    private String groupName;
+    private String classDescription;
+    private String leaderName;
+
 
     public TeamRecuitmentDTO() {}
 
+    //general purposes
     public TeamRecuitmentDTO(int trid, int teamId, int studentId, String studentName, String role, String reason, Status status) {
         this.trid = trid;
         this.teamId = teamId;
@@ -23,6 +28,37 @@ public class TeamRecuitmentDTO {
         this.reason = reason;
         this.status = status;
     }
+
+    //leader only
+    public TeamRecuitmentDTO(int trid, int teamId, int studentId, String studentName,
+                             String groupName, String classDescription, String role,
+                             String reason, Status status) {
+        this.trid = trid;
+        this.teamId = teamId;
+        this.studentId = studentId;
+        this.studentName = studentName;
+        this.groupName = groupName;
+        this.classDescription = classDescription;
+        this.role = role;
+        this.reason = reason;
+        this.status = status;
+    }
+
+    //for applicant only
+    public TeamRecuitmentDTO(int trid, int teamId, int studentId, String studentName, String groupName,
+                            String classDescription, String leaderName, String role, String reason, Status status) {
+        this.trid = trid;
+        this.teamId = teamId;
+        this.studentId = studentId;
+        this.studentName = studentName;
+        this.groupName = groupName;
+        this.classDescription = classDescription;
+        this.leaderName = leaderName;
+        this.role = role;
+        this.reason = reason;
+        this.status = status;
+    }
+
 
     public int getTrid() {
         return trid;
@@ -78,5 +114,30 @@ public class TeamRecuitmentDTO {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+
+    public String getClassDescription() {
+        return classDescription;
+    }
+
+    public void setClassDescription(String classDescription) {
+        this.classDescription = classDescription;
+    }
+
+    public String getLeaderName() {
+        return leaderName;
+    }
+
+    public void setLeaderName(String leaderName) {
+        this.leaderName = leaderName;
     }
 }

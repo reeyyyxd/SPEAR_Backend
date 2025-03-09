@@ -3,6 +3,7 @@ package com.group2.SPEAR_Backend.Controller;
 import com.group2.SPEAR_Backend.DTO.TeamRecuitmentDTO;
 import com.group2.SPEAR_Backend.Service.TeamRecuitmentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,31 +17,25 @@ public class TeamRecuitmentController {
     @Autowired
     private TeamRecuitmentService trServ;
 
-    /**
-     * Student applies to a team.
-     */
     @PostMapping("/student/apply")
-    public ResponseEntity<String> applyToTeam(@RequestBody Map<String, Object> requestBody) {
-        int teamId = (int) requestBody.get("teamId");
-        int studentId = (int) requestBody.get("uid");
-        String role = (String) requestBody.get("role");
-        String reason = (String) requestBody.get("reason");
+    public ResponseEntity<?> applyToTeam(@RequestBody Map<String, Object> requestBody) {
+        try {
+            int teamId = Integer.parseInt(requestBody.get("teamId").toString());
+            int studentId = Integer.parseInt(requestBody.get("uid").toString());
+            String role = requestBody.get("role").toString();
+            String reason = requestBody.get("reason").toString();
 
-        trServ.applyToTeam(teamId, studentId, role, reason);
-        return ResponseEntity.ok("Application submitted successfully.");
+            trServ.applyToTeam(teamId, studentId, role, reason);
+            return ResponseEntity.ok(Map.of("message", "Application submitted successfully."));
+        } catch (NumberFormatException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Invalid number format for teamId or studentId."));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An unexpected error occurred."));
+        }
     }
 
-    /**
-     * Retrieves pending applications for a team.
-     */
-    @GetMapping("/team/{teamId}/pending")
-    public List<TeamRecuitmentDTO> getPendingApplications(@PathVariable int teamId) {
-        return trServ.getPendingApplicationsByTeam(teamId);
-    }
-
-    /**
-     * Team leader reviews an application.
-     */
     @PostMapping("/student/review/{recruitmentId}")
     public ResponseEntity<String> reviewApplication(
             @PathVariable int recruitmentId,
@@ -51,4 +46,17 @@ public class TeamRecuitmentController {
         trServ.reviewApplication(recruitmentId, isAccepted, leaderReason);
         return ResponseEntity.ok(isAccepted ? "Application accepted" : "Application rejected");
     }
+
+    @GetMapping("/team/{teamId}/pending-applications")
+    public ResponseEntity<List<TeamRecuitmentDTO>> getPendingApplications(@PathVariable int teamId) {
+        return ResponseEntity.ok(trServ.getPendingApplicationsByTeam(teamId));
+    }
+
+    @GetMapping("/student/{studentId}/my-applications")
+    public ResponseEntity<List<TeamRecuitmentDTO>> getMyApplications(@PathVariable int studentId) {
+        return ResponseEntity.ok(trServ.getApplicationsByStudent(studentId));
+    }
+
+
+
 }
