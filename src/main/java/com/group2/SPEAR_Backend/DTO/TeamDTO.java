@@ -54,7 +54,7 @@ public class TeamDTO {
     public TeamDTO(int tid, String groupName, String projectName, Integer projectId, String leaderName, Long classId,
                    List<Integer> memberIds, boolean isRecruitmentOpen, List<FeatureDTO> features,
                    String projectDescription, String adviserName, String scheduleDay, String scheduleTime,
-                   List<String> memberNames) {
+                   List<String> memberNames, int adviserId) {
         this.tid = tid;
         this.groupName = groupName;
         this.projectName = (projectName != null) ? projectName : "No Project Assigned";
@@ -69,6 +69,7 @@ public class TeamDTO {
         this.adviserName = (adviserName != null) ? adviserName : "No Adviser Assigned";
         this.scheduleDay = (scheduleDay != null) ? scheduleDay : "No Schedule Set";
         this.scheduleTime = (scheduleTime != null) ? scheduleTime : "No Schedule Set";
+        this.adviserId = adviserId;
     }
 
     //fullname members
