@@ -10,6 +10,7 @@ import com.group2.SPEAR_Backend.Service.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -245,6 +246,26 @@ public class TeamController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", ex.getMessage()));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An error occurred."));
+        }
+    }
+
+    //created for queueit, retrieval of teams under a certain mentor
+    @GetMapping("/team/mentored/{mentorID}")
+    public ResponseEntity<Object> retrieveTeamsForMentor(@PathVariable int mentorID){
+        try{
+            return ResponseEntity.ok(tServ.retrieveTeamsForMentor(mentorID));
+        }catch (Exception e){
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
+
+    //created for queueit, retrieval of teams that's scheduled for today for automation
+    @GetMapping("/team/automateScheduledMeetings/{day}")
+    public ResponseEntity<Object> retrieveScheduledTeamsForMeetingAutomation(@PathVariable String day){
+        try{
+            return ResponseEntity.ok(tServ.retrieveScheduledTeamsForMeetingAutomation(day));
+        }catch (Exception e){
+            return ResponseEntity.status(400).body(e.getMessage());
         }
     }
 

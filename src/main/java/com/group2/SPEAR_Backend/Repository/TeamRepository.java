@@ -1,10 +1,7 @@
 package com.group2.SPEAR_Backend.Repository;
 
 import com.group2.SPEAR_Backend.DTO.TeamDTO;
-import com.group2.SPEAR_Backend.Model.Classes;
-import com.group2.SPEAR_Backend.Model.Schedule;
-import com.group2.SPEAR_Backend.Model.Team;
-import com.group2.SPEAR_Backend.Model.User;
+import com.group2.SPEAR_Backend.Model.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -55,6 +52,12 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
     @Modifying
     @Query(value = "DELETE FROM team_members WHERE team_id = :teamId", nativeQuery = true)
     void deleteTeamMembers(@Param("teamId") int teamId);
+
+    @Query("SELECT t FROM Team t JOIN t.adviser u WHERE u.uid = :mentorID")
+    List<Team> retrieveTeamsForMentor(int mentorID);
+
+    @Query("SELECT t FROM Team t JOIN t.schedule s where :day = s.day")
+    List<Team> retrieveScheduledTeamsForMeetingAutomation(@Param("day") DayOfWeek day);
 
 
 

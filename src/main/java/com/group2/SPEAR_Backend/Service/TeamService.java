@@ -7,11 +7,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -442,12 +440,53 @@ public class TeamService {
     }
 
 
+    public List<TeamDTO> retrieveTeamsForMentor(int mentorID) {
+        List<Team> retrievedTeams = tRepo.retrieveTeamsForMentor(mentorID);
+        List<TeamDTO> teamsToReturn = new ArrayList<>();
 
+        retrievedTeams.stream()
+                .forEach(team -> {
+                    List<String> memberNames = team.getMembers().stream()
+                            .map(member -> member.getFirstname() + " " + member.getLastname())
+                            .collect(Collectors.toList());
+                    TeamDTO foo = new TeamDTO(
+                        team.getTid(),
+                        team.getGroupName(),
+                        team.getClassRef().getCid(),
+                        team.getMembers().stream().map(User::getUid).toList(),
+                        memberNames,
+                        team.getSchedule().getDay(),
+                        team.getSchedule().getStartTime(),
+                        team.getSchedule().getEndTime()
+                    );
+                    teamsToReturn.add(foo);
+                });
+        return teamsToReturn;
+    }
 
+    public List<TeamDTO> retrieveScheduledTeamsForMeetingAutomation(String concernedDay){
+        DayOfWeek day = DayOfWeek.valueOf(concernedDay);
+        List<Team> retrievedTeams = tRepo.retrieveScheduledTeamsForMeetingAutomation(day);
+        List<TeamDTO> teamsToReturn = new ArrayList<>();
 
-
-
-
-
-
+        retrievedTeams.stream()
+                .forEach(team -> {
+                    List<String> memberNames = team.getMembers().stream()
+                            .map(member -> member.getFirstname() + " " + member.getLastname())
+                            .collect(Collectors.toList());
+                    TeamDTO foo = new TeamDTO(
+                            team.getTid(),
+                            team.getGroupName(),
+                            team.getClassRef().getCid(),
+                            team.getMembers().stream().map(User::getUid).toList(),
+                            memberNames,
+                            team.getSchedule().getDay(),
+                            team.getSchedule().getStartTime(),
+                            team.getSchedule().getEndTime(),
+                            team.getAdviser().getUid()
+                    );
+                    teamsToReturn.add(foo);
+                });
+        return teamsToReturn;
+    }
 }

@@ -1,5 +1,8 @@
 package com.group2.SPEAR_Backend.DTO;
 
+import com.group2.SPEAR_Backend.Model.DayOfWeek;
+
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +24,11 @@ public class TeamDTO {
     private String adviserName;  // New field for adviser's full name
     private String scheduleDay;  // New field for schedule day
     private String scheduleTime; // New field for schedule time
+
+
+    private DayOfWeek scheduledDay; // by queueit
+    private LocalTime start; // by queueit
+    private LocalTime end; // by queueit
 
 
     public TeamDTO() {}
@@ -80,6 +88,30 @@ public class TeamDTO {
         this.projectDescription = (projectDescription != null) ? projectDescription : "No Description Available";
         this.adviserId = adviserId;
         this.scheduleId = scheduleId;
+    }
+
+    //created for queueit
+    public TeamDTO(int tid, String groupName, Long classId, List<Integer> memberIds, List<String> memberNames, DayOfWeek scheduledDay, LocalTime start, LocalTime end) {
+        this.tid = tid;
+        this.groupName = groupName;
+        this.classId = classId;
+        this.memberIds = memberIds;
+        this.memberNames = memberNames;
+        this.scheduledDay = scheduledDay;
+        this.start = start;
+        this.end = end;
+    }
+
+    public TeamDTO(int tid, String groupName, Long cid, List<Integer> list, List<String> memberNames, DayOfWeek day, LocalTime startTime, LocalTime endTime, int uid) {
+        this.tid = tid;
+        this.groupName = groupName;
+        this.classId = cid;
+        this.memberIds = list;
+        this.memberNames = memberNames;
+        this.scheduledDay = day;
+        this.start = startTime;
+        this.end = endTime;
+        this.adviserId = uid;
     }
 
 
@@ -209,5 +241,29 @@ public class TeamDTO {
 
     public void setScheduleTime(String scheduleTime) {
         this.scheduleTime = scheduleTime;
+    }
+
+    public DayOfWeek getScheduledDay() {
+        return scheduledDay;
+    }
+
+    public void setScheduledDay(DayOfWeek scheduledDay) {
+        this.scheduledDay = scheduledDay;
+    }
+
+    public LocalTime getStart() {
+        return start;
+    }
+
+    public void setStart(LocalTime start) {
+        this.start = start;
+    }
+
+    public LocalTime getEnd() {
+        return end;
+    }
+
+    public void setEnd(LocalTime end) {
+        this.end = end;
     }
 }
