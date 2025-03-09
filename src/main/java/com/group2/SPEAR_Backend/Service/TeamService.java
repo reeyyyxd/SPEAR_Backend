@@ -378,6 +378,8 @@ public class TeamService {
                     ? team.getSchedule().getStartTime().format(TIME_FORMATTER) + " - " + team.getSchedule().getEndTime().format(TIME_FORMATTER)
                     : "No Time Set";
 
+            String courseDescription = (team.getClassRef() != null) ? team.getClassRef().getCourseDescription() : "No Class Info Available";
+
             List<String> memberNames = team.getMembers().stream()
                     .filter(member -> team.getLeader() == null || member.getUid() != team.getLeader().getUid())
                     .map(member -> member.getFirstname() + " " + member.getLastname())
@@ -404,6 +406,7 @@ public class TeamService {
                     adviserName,
                     scheduleDay,
                     scheduleTime,
+                    courseDescription,
                     memberNames
             ));
         }
@@ -425,6 +428,10 @@ public class TeamService {
                 ? team.getSchedule().getStartTime().format(TIME_FORMATTER) + " - " + team.getSchedule().getEndTime().format(TIME_FORMATTER)
                 : "No Time Set";
 
+        String adviserName = (team.getAdviser() != null) ? team.getAdviser().getFirstname() + " " + team.getAdviser().getLastname() : "No Adviser Assigned";
+
+        String courseDescription = (team.getClassRef() != null) ? team.getClassRef().getCourseDescription() : "No Class Info Available";
+
         List<String> memberNames = team.getMembers().stream()
                 .filter(member -> team.getLeader() == null || member.getUid() != team.getLeader().getUid())
                 .map(member -> member.getFirstname() + " " + member.getLastname())
@@ -441,9 +448,10 @@ public class TeamService {
                 team.isRecruitmentOpen(),
                 null,
                 projectDescription,
-                team.getAdviser() != null ? team.getAdviser().getFirstname() + " " + team.getAdviser().getLastname() : "No Adviser Assigned",
+                adviserName,
                 scheduleDay,
                 scheduleTime,
+                courseDescription,
                 memberNames
         );
     }
