@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -592,5 +593,36 @@ public class TeamService {
                     teamsToReturn.add(foo);
                 });
         return teamsToReturn;
+    }
+
+    //nag create nalang ko akoa endpoint version 2 sa myTeam,
+    // kay need jud nako ang adviser ID since relational database man ato gamit
+    public TeamDTO retrieveTeamForStudentWithinClassroom(int userId, int classId) {
+        Team team = tRepo.findMyTeamByClassId(userId, classId)
+                .orElseThrow(() -> new NoSuchElementException("No team found for the user in this class."));
+
+        List<String> memberNames = team.getMembers().stream()
+                .map(member -> member.getFirstname() + " " + member.getLastname())
+                .collect(Collectors.toList());
+
+        // Get the schedule
+        Schedule schedule = team.getSchedule();
+
+        // Check if schedule is null and handle accordingly
+        DayOfWeek day = (schedule != null) ? schedule.getDay() : null;
+        LocalTime startTime = (schedule != null) ? schedule.getStartTime() : null;
+        LocalTime endTime = (schedule != null) ? schedule.getEndTime() : null;
+
+        return new TeamDTO(
+                team.getTid(),
+                team.getGroupName(),
+                team.getClassRef().getCid(),
+                team.getMembers().stream().map(User::getUid).toList(),
+                memberNames,
+                day,
+                startTime,
+                endTime,
+                team.getAdviser().getUid()
+        );
     }
 }

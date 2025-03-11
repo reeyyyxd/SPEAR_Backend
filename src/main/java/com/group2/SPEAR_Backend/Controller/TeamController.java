@@ -199,6 +199,18 @@ public class TeamController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
         }
     }
+    @GetMapping("/team/myTeam/{classId}/{userId}")
+    public ResponseEntity<?> getMyTeamQueueitVersion(@PathVariable int userId, @PathVariable int classId) {
+        try {
+            TeamDTO myTeam = tServ.retrieveTeamForStudentWithinClassroom(userId, classId);
+            return ResponseEntity.ok(myTeam);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No team found.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
+        }
+    }
     @GetMapping("/teams/{teamId}/members")
     public ResponseEntity<List<UserDTO>> getTeamMembers(@PathVariable int teamId) {
         List<UserDTO> members = tServ.getTeamMembers(teamId);
