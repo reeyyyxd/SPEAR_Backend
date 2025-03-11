@@ -2,14 +2,8 @@ package com.group2.SPEAR_Backend.Service;
 
 import com.group2.SPEAR_Backend.DTO.FeatureDTO;
 import com.group2.SPEAR_Backend.DTO.ProjectProposalDTO;
-import com.group2.SPEAR_Backend.Model.Classes;
-import com.group2.SPEAR_Backend.Model.Feature;
-import com.group2.SPEAR_Backend.Model.ProjectProposal;
-import com.group2.SPEAR_Backend.Model.User;
-import com.group2.SPEAR_Backend.Repository.ClassesRepository;
-import com.group2.SPEAR_Backend.Repository.FeatureRepository;
-import com.group2.SPEAR_Backend.Repository.ProjectProposalRepository;
-import com.group2.SPEAR_Backend.Repository.UserRepository;
+import com.group2.SPEAR_Backend.Model.*;
+import com.group2.SPEAR_Backend.Repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,7 +25,11 @@ public class ProjectProposalService {
     @Autowired
     private FeatureRepository fRepo;
 
-    //create rta
+    @Autowired
+    private TeamRepository tRepo;
+
+
+    @Transactional
     public ProjectProposal createProjectProposal(ProjectProposalDTO dto, List<FeatureDTO> features) {
         User user = uRepo.findById(dto.getProposedById())
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.getProposedById()));
@@ -39,9 +37,15 @@ public class ProjectProposalService {
         Classes clazz = cRepo.findById(dto.getClassId())
                 .orElseThrow(() -> new RuntimeException("Class not found with ID: " + dto.getClassId()));
 
-        User adviser = null;
-        ProjectProposal proposal = new ProjectProposal(user, dto.getProjectName(), clazz, dto.getDescription(), adviser);
+        Team team = dto.getTeamId() != null
+                ? tRepo.findById(dto.getTeamId()).orElseThrow(() -> new RuntimeException("Team not found with ID: " + dto.getTeamId()))
+                : null;
+
+        // Create new proposal
+        ProjectProposal proposal = new ProjectProposal(dto.getProjectName(), dto.getDescription(), user, clazz, team);
         ProjectProposal savedProposal = ppRepo.save(proposal);
+
+        // Save features if provided
         if (features != null && !features.isEmpty()) {
             List<Feature> featureEntities = features.stream()
                     .map(feature -> new Feature(feature.getFeatureTitle(), feature.getFeatureDescription(), savedProposal))
@@ -51,16 +55,35 @@ public class ProjectProposalService {
         return savedProposal;
     }
 
+    private ProjectProposalDTO mapProposalToDTO(ProjectProposal proposal) {
+        List<FeatureDTO> features = fRepo.findByProjectId(proposal.getPid()).stream()
+                .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
+                .toList();
 
-    public List<ProjectProposal> getAllActiveProposals() {
-        return ppRepo.findAllActive();
+        return new ProjectProposalDTO(
+                proposal.getPid(),
+                proposal.getProjectName(),
+                proposal.getDescription(),
+                proposal.getStatus().name(),
+                proposal.getReason(),
+                proposal.getProposedBy().getUid(),
+                proposal.getClassProposal().getCid(),
+                proposal.getTeamProject() != null ? proposal.getTeamProject().getTid() : null,
+                features,
+                proposal.getProposedBy().getFirstname() + " " + proposal.getProposedBy().getLastname(),
+                proposal.getTeamProject() != null ? proposal.getTeamProject().getGroupName() : null
+        );
     }
 
+    /**
+     * Update project proposal details and features.
+     */
+    @Transactional
     public void updateProposalAndFeatures(int proposalId, String projectName, String description, List<FeatureDTO> features) {
         ProjectProposal proposal = ppRepo.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Project proposal with ID " + proposalId + " not found"));
 
-        if (!"PENDING".equalsIgnoreCase(proposal.getStatus())) {
+        if (!ProjectStatus.PENDING.name().equalsIgnoreCase(proposal.getStatus().name())) {
             throw new IllegalArgumentException("Only proposals with status 'PENDING' can be updated.");
         }
 
@@ -71,41 +94,78 @@ public class ProjectProposalService {
             proposal.setDescription(description);
         }
 
+        // Update features
         if (features != null) {
             List<Feature> existingFeatures = fRepo.findByProjectId(proposalId);
-            fRepo.deleteAll(existingFeatures);
+            fRepo.deleteAll(existingFeatures); // Remove old features
 
-            for (FeatureDTO featureDTO : features) {
-                Feature feature = new Feature(featureDTO.getFeatureTitle(), featureDTO.getFeatureDescription(), proposal);
-                fRepo.save(feature);
-            }
+            List<Feature> newFeatures = features.stream()
+                    .map(f -> new Feature(f.getFeatureTitle(), f.getFeatureDescription(), proposal))
+                    .toList();
+
+            fRepo.saveAll(newFeatures); // Save updated features
         }
 
         ppRepo.save(proposal);
     }
 
-    public void updateCapstoneAdviser(int proposalId, int adviserId) {
-        ProjectProposal proposal = ppRepo.findById(proposalId)
-                .orElseThrow(() -> new RuntimeException("Project proposal with ID " + proposalId + " not found"));
-        User adviser = uRepo.findById(adviserId)
-                .filter(user -> "TEACHER".equalsIgnoreCase(user.getRole()))
-                .orElseThrow(() -> new RuntimeException("Adviser with ID " + adviserId + " not found or is not a teacher"));
-        proposal.setAdviser(adviser);
-        ppRepo.save(proposal);
+
+    private ProjectProposalDTO mapProposalToDTOWithFeatures(ProjectProposal proposal) {
+        List<FeatureDTO> features = fRepo.findByProjectId(proposal.getPid()).stream()
+                .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
+                .toList();
+
+        String courseCode = proposal.getClassProposal().getCourseCode();
+
+        return new ProjectProposalDTO(
+                proposal.getPid(),
+                proposal.getProjectName(),
+                proposal.getDescription(),
+                proposal.getStatus().name(),
+                proposal.getReason(),
+                proposal.getProposedBy().getUid(),
+                proposal.getClassProposal().getCid(),
+                proposal.getTeamProject() != null ? proposal.getTeamProject().getTid() : null,
+                features,
+                proposal.getProposedBy().getFirstname() + " " + proposal.getProposedBy().getLastname(),
+                proposal.getTeamProject() != null ? proposal.getTeamProject().getGroupName() : null
+        );
     }
 
+    //get all active proposals
+    public List<ProjectProposalDTO> getAllActiveProposals() {
+        return ppRepo.findAllActive().stream()
+                .map(this::mapProposalToDTOWithFeatures)
+                .toList();
+    }
+
+    public List<ProjectProposalDTO> getProposalsByClassAndStudent(Long classId, int studentId) {
+        return ppRepo.findByClassAndStudent(classId, studentId).stream().map(this::mapProposalToDTO).toList();
+    }
+
+    public List<ProjectProposalDTO> getProposalsByAdviser(int adviserId) {
+        return ppRepo.findByAdviser(adviserId).stream().map(this::mapProposalToDTO).toList();
+    }
+
+    public List<ProjectProposalDTO> getProposalsByStatus(String status) {
+        return ppRepo.findByStatus(status).stream().map(this::mapProposalToDTO).toList();
+    }
+
+
+
+    //update the proposal
     public ProjectProposal updateProposalStatus(int id, String status, String reason) {
         ProjectProposal proposal = ppRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project proposal with ID " + id + " not found"));
 
-        if ("APPROVED".equalsIgnoreCase(status)) {
-            proposal.setStatus("APPROVED");
+        if (ProjectStatus.APPROVED.name().equalsIgnoreCase(status)) {
+            proposal.setStatus(ProjectStatus.APPROVED);
             proposal.setReason(null);
-        } else if ("DENIED".equalsIgnoreCase(status)) {
+        } else if (ProjectStatus.DENIED.name().equalsIgnoreCase(status)) {
             if (reason == null || reason.isBlank()) {
                 throw new RuntimeException("Reason is required when denying a proposal");
             }
-            proposal.setStatus("DENIED");
+            proposal.setStatus(ProjectStatus.DENIED);
             proposal.setReason(reason);
         } else {
             throw new IllegalArgumentException("Invalid status. Only 'APPROVED' or 'DENIED' are allowed.");
@@ -114,6 +174,7 @@ public class ProjectProposalService {
         return ppRepo.save(proposal);
     }
 
+  //delete a proposal
     public String deleteProjectProposal(int id) {
         ProjectProposal proposal = ppRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project proposal with ID " + id + " not found"));
@@ -127,63 +188,14 @@ public class ProjectProposalService {
         }
     }
 
-    public List<ProjectProposalDTO> getProposalsByClassAndStudent(Long classId, int studentId) {
-        List<ProjectProposal> proposals = ppRepo.findByClassAndStudent(classId, studentId);
-        return proposals.stream().map(this::mapProposalToDTOWithFeatures).toList();
-    }
-
-    public List<ProjectProposalDTO> getProposalsByAdviser(int adviserId) {
-        List<ProjectProposal> proposals = ppRepo.findByAdviser(adviserId);
-        return proposals.stream().map(this::mapProposalToDTOWithFeatures).toList();
-    }
-
-    public List<ProjectProposalDTO> getProposalsByStatus(String status) {
-        List<ProjectProposal> proposals = ppRepo.findByStatus(status);
-        return proposals.stream().map(this::mapProposalToDTOWithFeatures).toList();
-    }
-
-    public List<ProjectProposalDTO> getProposalsByClassWithFeatures(Long classId) {
-        List<ProjectProposal> proposals = ppRepo.findByClassIdNotDeleted(classId);
-        return proposals.stream()
-                .map(this::mapProposalToDTOWithFeatures)
-                .toList();
-    }
-
-    private ProjectProposalDTO mapProposalToDTOWithFeatures(ProjectProposal proposal) {
-        List<FeatureDTO> features = fRepo.findByProjectId(proposal.getPid()).stream()
-                .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
-                .toList();
-
-        String courseCode = proposal.getClassProposal().getCourseCode();
-
-        return new ProjectProposalDTO(
-                proposal.getPid(),
-                proposal.getProjectName(),
-                proposal.getDescription(),
-                proposal.getStatus(),
-                proposal.getReason(),
-                proposal.getProposedBy().getUid(),
-                proposal.getClassProposal().getCid(),
-                courseCode,
-                proposal.getAdviser() != null ? proposal.getAdviser().getUid() : null,
-                proposal.getIsDeleted(),
-                features
-        );
-    }
-
-    public List<ProjectProposalDTO> getProposalsByClassAndStatus(Long classId, String status) {
-        List<ProjectProposal> proposals = ppRepo.findByClassAndStatus(classId, status);
-        return proposals.stream().map(this::mapProposalToDTOWithFeatures).toList();
-    }
-
-
+    //denied to pending
     @Transactional
     public void updateDeniedToPending(int proposalId) {
         ProjectProposal proposal = ppRepo.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found with ID: " + proposalId));
 
-        if ("DENIED".equalsIgnoreCase(proposal.getStatus())) {
-            proposal.setStatus("PENDING");
+        if (ProjectStatus.DENIED.name().equalsIgnoreCase(proposal.getStatus().name())) {
+            proposal.setStatus(ProjectStatus.PENDING);
             proposal.setReason(null);
             ppRepo.save(proposal);
         } else {
@@ -191,50 +203,17 @@ public class ProjectProposalService {
         }
     }
 
+   //approved to open
     @Transactional
     public void updateApprovedToOpenProject(int proposalId) {
         ProjectProposal proposal = ppRepo.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found with ID: " + proposalId));
 
-        if ("APPROVED".equalsIgnoreCase(proposal.getStatus())) {
-            proposal.setStatus("OPEN PROJECT");
+        if (ProjectStatus.APPROVED.name().equalsIgnoreCase(proposal.getStatus().name())) {
+            proposal.setStatus(ProjectStatus.OPEN_PROJECT);
             ppRepo.save(proposal);
         } else {
             throw new RuntimeException("Proposal is not in APPROVED status");
         }
     }
-
-    @Transactional
-    public void assignStudentToOpenProject(int proposalId, int studentId) {
-        ProjectProposal proposal = ppRepo.findById(proposalId)
-                .orElseThrow(() -> new RuntimeException("Proposal not found with ID: " + proposalId));
-
-        if (!"OPEN PROJECT".equalsIgnoreCase(proposal.getStatus())) {
-            throw new RuntimeException("Proposal is not in OPEN PROJECT status");
-        }
-
-        User student = uRepo.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found with ID: " + studentId));
-
-        proposal.setProposedBy(student);
-        proposal.setStatus("APPROVED");
-        ppRepo.save(proposal);
-    }
-
-    public String getAdviserFullNameByProposalId(int proposalId) {
-        return ppRepo.findAdviserFullNameByProposalId(proposalId);
-    }
-
-    public String getLeaderNameById(int leaderId) {
-        return uRepo.findFullNameById(leaderId);
-    }
-
-    public List<ProjectProposalDTO> getProposalsByUser(int userId) {
-        List<ProjectProposal> proposals = ppRepo.findAllByProposedBy(userId);
-        return proposals.stream()
-                .map(this::mapProposalToDTOWithFeatures)
-                .toList();
-
-    }
-
 }

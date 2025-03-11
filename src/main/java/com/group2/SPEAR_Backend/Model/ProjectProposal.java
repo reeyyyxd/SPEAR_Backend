@@ -10,47 +10,44 @@ public class ProjectProposal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int pid;
 
-    //change the proposed by to
-    @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "proposed_by", referencedColumnName = "uid")
-    private User proposedBy;
-
     @Column(name = "projectName")
     private String projectName;
-
-    @ManyToOne
-    @JoinColumn(name = "class_proposal", referencedColumnName = "cid")
-    private Classes classProposal;
 
     @Column(name = "description")
     private String description;
 
-    @Column(name = "status")
-    private String status = "PENDING";
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ProjectStatus status = ProjectStatus.PENDING;
 
-    @Column(name = "reason")
     private String reason;
-
-    @ManyToOne
-    @JoinColumn(name = "adviser", referencedColumnName = "uid", nullable = true)
-    private User adviser;
+    private String ratings;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
-    //do something, no constructors yet.
-    private String ratings;
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "proposed_by", referencedColumnName = "uid")
+    private User proposedBy;
 
-    public ProjectProposal() {
-    }
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "class_proposal", referencedColumnName = "cid")
+    private Classes classProposal;
 
-    public ProjectProposal(User proposedBy, String projectName, Classes classProposal, String description, User adviser) {
-        this.proposedBy = proposedBy;
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "team_project", referencedColumnName = "tid", nullable = true)
+    private Team teamProject;
+
+    public ProjectProposal() {}
+
+    public ProjectProposal(String projectName, String description, User proposedBy, Classes classProposal, Team teamProject) {
         this.projectName = projectName;
-        this.classProposal = classProposal;
         this.description = description;
-        this.status = "PENDING";
-        this.adviser = adviser;
+        this.proposedBy = proposedBy;
+        this.classProposal = classProposal;
+        this.teamProject = teamProject;
+        this.status = ProjectStatus.PENDING;
+        this.isDeleted = false;
     }
 
     public int getPid() {
@@ -93,11 +90,11 @@ public class ProjectProposal {
         this.description = description;
     }
 
-    public String getStatus() {
+    public ProjectStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(ProjectStatus status) {
         this.status = status;
     }
 
@@ -107,14 +104,6 @@ public class ProjectProposal {
 
     public void setReason(String reason) {
         this.reason = reason;
-    }
-
-    public User getAdviser() {
-        return adviser;
-    }
-
-    public void setAdviser(User adviser) {
-        this.adviser = adviser;
     }
 
     public Boolean getIsDeleted() {
@@ -135,5 +124,13 @@ public class ProjectProposal {
 
     public void setRatings(String ratings) {
         this.ratings = ratings;
+    }
+
+    public Team getTeamProject() {
+        return teamProject;
+    }
+
+    public void setTeamProject(Team teamProject) {
+        this.teamProject = teamProject;
     }
 }
