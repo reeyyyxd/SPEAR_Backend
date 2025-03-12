@@ -41,11 +41,10 @@ public class ProjectProposalService {
                 ? tRepo.findById(dto.getTeamId()).orElseThrow(() -> new RuntimeException("Team not found with ID: " + dto.getTeamId()))
                 : null;
 
-        // Create new proposal
         ProjectProposal proposal = new ProjectProposal(dto.getProjectName(), dto.getDescription(), user, clazz, team);
         ProjectProposal savedProposal = ppRepo.save(proposal);
 
-        // Save features if provided
+
         if (features != null && !features.isEmpty()) {
             List<Feature> featureEntities = features.stream()
                     .map(feature -> new Feature(feature.getFeatureTitle(), feature.getFeatureDescription(), savedProposal))
@@ -75,18 +74,18 @@ public class ProjectProposalService {
         );
     }
 
-    /**
-     * Update project proposal details and features.
-     */
     @Transactional
-    public void updateProposalAndFeatures(int proposalId, String projectName, String description, List<FeatureDTO> features) {
+    public void updateProposalAndFeatures(int proposalId, int userId, String projectName, String description, List<FeatureDTO> features) {
         ProjectProposal proposal = ppRepo.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Project proposal with ID " + proposalId + " not found"));
 
-        if (!ProjectStatus.PENDING.name().equalsIgnoreCase(proposal.getStatus().name())) {
-            throw new IllegalArgumentException("Only proposals with status 'PENDING' can be updated.");
+        if (proposal.getProposedBy().getUid() != userId) {
+            throw new IllegalArgumentException("You are not authorized to edit this proposal.");
         }
-
+        if (proposal.getStatus() == ProjectStatus.DENIED) {
+            proposal.setStatus(ProjectStatus.PENDING);
+            proposal.setReason(null);
+        }
         if (projectName != null && !projectName.isBlank()) {
             proposal.setProjectName(projectName);
         }
@@ -94,16 +93,15 @@ public class ProjectProposalService {
             proposal.setDescription(description);
         }
 
-        // Update features
         if (features != null) {
             List<Feature> existingFeatures = fRepo.findByProjectId(proposalId);
-            fRepo.deleteAll(existingFeatures); // Remove old features
+            fRepo.deleteAll(existingFeatures);
 
             List<Feature> newFeatures = features.stream()
                     .map(f -> new Feature(f.getFeatureTitle(), f.getFeatureDescription(), proposal))
                     .toList();
 
-            fRepo.saveAll(newFeatures); // Save updated features
+            fRepo.saveAll(newFeatures);
         }
 
         ppRepo.save(proposal);
@@ -139,6 +137,7 @@ public class ProjectProposalService {
                 .toList();
     }
 
+    //some other project proposals get functions
     public List<ProjectProposalDTO> getProposalsByClassAndStudent(Long classId, int studentId) {
         return ppRepo.findByClassAndStudent(classId, studentId).stream().map(this::mapProposalToDTO).toList();
     }
@@ -150,6 +149,46 @@ public class ProjectProposalService {
     public List<ProjectProposalDTO> getProposalsByStatus(String status) {
         return ppRepo.findByStatus(status).stream().map(this::mapProposalToDTO).toList();
     }
+    public List<ProjectProposalDTO> getProposalsByTeamId(int teamId) {
+        return ppRepo.findByTeamId(teamId).stream().map(this::mapProposalToDTO).toList();
+    }
+    public List<ProjectProposalDTO> getOpenProjectsByClassId(Long classId) {
+        return ppRepo.findOpenProjectsByClassId(classId).stream()
+                .map(this::mapProposalToDTOWithFeatures)
+                .toList();
+    }
+    public List<ProjectProposalDTO> getProposalsByAdviserAssignedTeams(int adviserId) {
+        return ppRepo.findProposalsByAdviserAssignedTeams(adviserId).stream()
+                .map(this::mapProposalToDTOWithFeatures)
+                .toList();
+    }
+
+
+
+    public ProjectProposalDTO getProposalById(int proposalId) {
+        ProjectProposal proposal = ppRepo.findById(proposalId)
+                .orElseThrow(() -> new RuntimeException("Project proposal with ID " + proposalId + " not found"));
+
+        List<FeatureDTO> features = fRepo.findByProjectId(proposalId).stream()
+                .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
+                .toList();
+
+        return new ProjectProposalDTO(
+                proposal.getPid(),
+                proposal.getProjectName(),
+                proposal.getDescription(),
+                proposal.getStatus().name(),
+                proposal.getReason(),
+                proposal.getProposedBy().getUid(),
+                proposal.getClassProposal().getCid(),
+                proposal.getTeamProject() != null ? proposal.getTeamProject().getTid() : null,
+                features,
+                proposal.getProposedBy().getFirstname() + " " + proposal.getProposedBy().getLastname(),
+                proposal.getTeamProject() != null ? proposal.getTeamProject().getGroupName() : null
+        );
+    }
+
+
 
 
 
@@ -175,18 +214,23 @@ public class ProjectProposalService {
     }
 
   //delete a proposal
-    public String deleteProjectProposal(int id) {
-        ProjectProposal proposal = ppRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Project proposal with ID " + id + " not found"));
+  public String deleteProjectProposal(int id, int userId) {
+      ProjectProposal proposal = ppRepo.findById(id)
+              .orElseThrow(() -> new RuntimeException("Project proposal with ID " + id + " not found"));
 
-        if (!proposal.getIsDeleted()) {
-            proposal.setDeleted(true);
-            ppRepo.save(proposal);
-            return "Project proposal with ID " + id + " has been deleted.";
-        } else {
-            return "Project proposal with ID " + id + " is already deleted.";
-        }
-    }
+      // Check if the current user is the owner
+      if (proposal.getProposedBy().getUid() != userId) {
+          throw new IllegalArgumentException("You are not authorized to delete this proposal.");
+      }
+
+      if (!proposal.getIsDeleted()) {
+          proposal.setDeleted(true);
+          ppRepo.save(proposal);
+          return "Project proposal with ID " + id + " has been deleted.";
+      } else {
+          return "Project proposal with ID " + id + " is already deleted.";
+      }
+  }
 
     //denied to pending
     @Transactional
@@ -204,16 +248,21 @@ public class ProjectProposalService {
     }
 
    //approved to open
-    @Transactional
-    public void updateApprovedToOpenProject(int proposalId) {
-        ProjectProposal proposal = ppRepo.findById(proposalId)
-                .orElseThrow(() -> new RuntimeException("Proposal not found with ID: " + proposalId));
+   @Transactional
+   public void updateApprovedToOpenProject(int proposalId, int userId) {
+       ProjectProposal proposal = ppRepo.findById(proposalId)
+               .orElseThrow(() -> new RuntimeException("Proposal not found with ID: " + proposalId));
 
-        if (ProjectStatus.APPROVED.name().equalsIgnoreCase(proposal.getStatus().name())) {
-            proposal.setStatus(ProjectStatus.OPEN_PROJECT);
-            ppRepo.save(proposal);
-        } else {
-            throw new RuntimeException("Proposal is not in APPROVED status");
-        }
-    }
+       // Check if the current user is the owner
+       if (proposal.getProposedBy().getUid() != userId) {
+           throw new IllegalArgumentException("You are not authorized to update this proposal.");
+       }
+
+       if (ProjectStatus.APPROVED.name().equalsIgnoreCase(proposal.getStatus().name())) {
+           proposal.setStatus(ProjectStatus.OPEN_PROJECT);
+           ppRepo.save(proposal);
+       } else {
+           throw new RuntimeException("Proposal is not in APPROVED status");
+       }
+   }
 }

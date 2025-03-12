@@ -4,6 +4,7 @@ import com.group2.SPEAR_Backend.DTO.FeatureDTO;
 import com.group2.SPEAR_Backend.DTO.ProjectProposalDTO;
 import com.group2.SPEAR_Backend.Service.ProjectProposalService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,39 +45,42 @@ public class ProjectProposalController {
         }
     }
 
-    @GetMapping("/proposals/class/{classId}/student/{studentId}")
-    public ResponseEntity<List<ProjectProposalDTO>> getProposalsByClassAndStudent(@PathVariable Long classId, @PathVariable int studentId) {
-        return ResponseEntity.ok(ppServ.getProposalsByClassAndStudent(classId, studentId));
-    }
 
-    @GetMapping("/proposals/adviser/{adviserId}")
-    public ResponseEntity<List<ProjectProposalDTO>> getProposalsByAdviser(@PathVariable int adviserId) {
-        return ResponseEntity.ok(ppServ.getProposalsByAdviser(adviserId));
-    }
-
-    @GetMapping("/proposals/status/{status}")
-    public ResponseEntity<List<ProjectProposalDTO>> getProposalsByStatus(@PathVariable String status) {
-        return ResponseEntity.ok(ppServ.getProposalsByStatus(status));
-    }
 
     @PutMapping("/student/update-proposal/{proposalId}")
-    public ResponseEntity<Map<String, String>> updateProposal(@PathVariable int proposalId, @RequestBody Map<String, Object> payload) {
+    public ResponseEntity<Map<String, String>> updateProposal(
+            @PathVariable("proposalId") int proposalId,
+            @RequestBody Map<String, Object> payload) {
         try {
+            int userId = Integer.parseInt(payload.get("userId").toString());
+
             List<Map<String, String>> featurePayload = (List<Map<String, String>>) payload.get("features");
             List<FeatureDTO> features = featurePayload != null
                     ? featurePayload.stream().map(f -> new FeatureDTO(f.get("featureTitle"), f.get("featureDescription"))).toList()
                     : null;
 
-            ppServ.updateProposalAndFeatures(proposalId, (String) payload.get("projectName"), (String) payload.get("description"), features);
+            ppServ.updateProposalAndFeatures(proposalId, userId, (String) payload.get("projectName"), (String) payload.get("description"), features);
             return ResponseEntity.ok(Map.of("message", "Proposal updated successfully"));
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Invalid userId format"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
     @DeleteMapping("/student/delete-proposal/{id}")
-    public ResponseEntity<Map<String, String>> deleteProposal(@PathVariable int id) {
-        return ResponseEntity.ok(Map.of("message", ppServ.deleteProjectProposal(id)));
+    public ResponseEntity<Map<String, String>> deleteProposal(
+            @PathVariable int id,
+            @RequestParam int userId) {
+        try {
+            return ResponseEntity.ok(Map.of("message", ppServ.deleteProjectProposal(id, userId)));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PutMapping("/teacher/status-proposal/{id}")
@@ -96,10 +100,58 @@ public class ProjectProposalController {
     }
 
     @PutMapping("/student/set-to-open-project/{proposalId}")
-    public ResponseEntity<Map<String, String>> updateApprovedToOpenProject(@PathVariable int proposalId) {
-        ppServ.updateApprovedToOpenProject(proposalId);
-        return ResponseEntity.ok(Map.of("message", "Proposal updated to OPEN PROJECT status"));
+    public ResponseEntity<Map<String, String>> updateApprovedToOpenProject(
+            @PathVariable int proposalId,
+            @RequestParam int userId) {
+        try {
+            ppServ.updateApprovedToOpenProject(proposalId, userId);
+            return ResponseEntity.ok(Map.of("message", "Proposal updated to OPEN PROJECT status"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
+
+    //get functions
+    @GetMapping("/proposals/class/{classId}/student/{studentId}")
+    public ResponseEntity<List<ProjectProposalDTO>> getProposalsByClassAndStudent(@PathVariable Long classId, @PathVariable int studentId) {
+        return ResponseEntity.ok(ppServ.getProposalsByClassAndStudent(classId, studentId));
+    }
+
+    @GetMapping("/proposals/adviser/{adviserId}")
+    public ResponseEntity<List<ProjectProposalDTO>> getProposalsByAdviser(@PathVariable int adviserId) {
+        return ResponseEntity.ok(ppServ.getProposalsByAdviser(adviserId));
+    }
+
+    @GetMapping("/proposals/status/{status}")
+    public ResponseEntity<List<ProjectProposalDTO>> getProposalsByStatus(@PathVariable String status) {
+        return ResponseEntity.ok(ppServ.getProposalsByStatus(status));
+    }
+
+    @GetMapping("/proposals/team/{teamId}")
+    public ResponseEntity<List<ProjectProposalDTO>> getProposalsByTeamId(@PathVariable int teamId) {
+        return ResponseEntity.ok(ppServ.getProposalsByTeamId(teamId));
+    }
+
+    @GetMapping("/proposals/class/{classId}/open-projects")
+    public ResponseEntity<List<ProjectProposalDTO>> getOpenProjectsByClassId(@PathVariable Long classId) {
+        return ResponseEntity.ok(ppServ.getOpenProjectsByClassId(classId));
+    }
+
+    @GetMapping("/proposals/{proposalId}")
+    public ResponseEntity<ProjectProposalDTO> getProposalById(@PathVariable int proposalId) {
+        return ResponseEntity.ok(ppServ.getProposalById(proposalId));
+    }
+
+    @GetMapping("/proposals/adviser/{adviserId}/teams")
+    public ResponseEntity<List<ProjectProposalDTO>> getProposalsByAdviserAssignedTeams(@PathVariable int adviserId) {
+        return ResponseEntity.ok(ppServ.getProposalsByAdviserAssignedTeams(adviserId));
+    }
+
+
+
+
 
 
 }

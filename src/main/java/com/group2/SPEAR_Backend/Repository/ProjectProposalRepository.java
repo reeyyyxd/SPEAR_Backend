@@ -23,4 +23,16 @@ public interface ProjectProposalRepository extends JpaRepository<ProjectProposal
 
     @Query("SELECT p FROM ProjectProposal p WHERE p.proposedBy.uid = :userId AND p.isDeleted = false")
     List<ProjectProposal> findAllByProposedBy(@Param("userId") int userId);
+
+    @Query("SELECT p FROM ProjectProposal p WHERE p.teamProject.tid = :teamId AND p.isDeleted = false")
+    List<ProjectProposal> findByTeamId(@Param("teamId") int teamId);
+
+    @Query("SELECT p FROM ProjectProposal p WHERE p.classProposal.cid = :classId AND p.status = 'OPEN_PROJECT' AND p.isDeleted = false")
+    List<ProjectProposal> findOpenProjectsByClassId(@Param("classId") Long classId);
+
+    @Query("SELECT p FROM ProjectProposal p " +
+            "JOIN p.teamProject t " +
+            "JOIN t.adviser a " +
+            "WHERE a.uid = :adviserId AND p.isDeleted = false")
+    List<ProjectProposal> findProposalsByAdviserAssignedTeams(@Param("adviserId") int adviserId);
 }
