@@ -265,4 +265,6 @@ public class ProjectProposalService {
            throw new RuntimeException("Proposal is not in APPROVED status");
        }
    }
+
+   //to be added the controls to the creator of the class
 }
