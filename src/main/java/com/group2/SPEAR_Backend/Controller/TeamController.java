@@ -312,6 +312,41 @@ public class TeamController {
         return ResponseEntity.ok(teamDTOs);
     }
 
+    @PutMapping("/team/set-official/{teamId}")
+    public ResponseEntity<Map<String, String>> setOfficialProject(
+            @PathVariable int teamId,
+            @RequestParam int proposalId,
+            @RequestParam int leaderId) {
+        try {
+            tServ.setOfficialProject(teamId, proposalId, leaderId);
+            return ResponseEntity.ok(Map.of("message", "Project successfully set as the official project for the team."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/team/unset-official/{teamId}")
+    public ResponseEntity<Map<String, String>> unsetOfficialProject(
+            @PathVariable int teamId,
+            @RequestParam int leaderId) {
+        try {
+            tServ.unsetOfficialProject(teamId, leaderId);
+            return ResponseEntity.ok(Map.of("message", "Official project removed from the team."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/team/{teamId}/official-project")
+    public ResponseEntity<?> getOfficialProjectWithAdviserAndFeatures(@PathVariable int teamId) {
+        try {
+            Map<String, Object> response = tServ.getOfficialProjectWithAdviserAndFeatures(teamId);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        }
+    }
+
 // Q it controllers
     //created for queueit, retrieval of teams under a certain mentor
     @GetMapping("/team/mentored/{mentorID}")

@@ -27,7 +27,7 @@ public interface ProjectProposalRepository extends JpaRepository<ProjectProposal
     @Query("SELECT p FROM ProjectProposal p WHERE p.teamProject.tid = :teamId AND p.isDeleted = false")
     List<ProjectProposal> findByTeamId(@Param("teamId") int teamId);
 
-    @Query("SELECT p FROM ProjectProposal p WHERE p.classProposal.cid = :classId AND p.status = 'OPEN_PROJECT' AND p.isDeleted = false")
+    @Query("SELECT p FROM ProjectProposal p WHERE p.classProposal.cid = :classId AND p.status = 'OPEN' AND p.isDeleted = false")
     List<ProjectProposal> findOpenProjectsByClassId(@Param("classId") Long classId);
 
     @Query("SELECT p FROM ProjectProposal p " +
@@ -35,4 +35,8 @@ public interface ProjectProposalRepository extends JpaRepository<ProjectProposal
             "JOIN t.adviser a " +
             "WHERE a.uid = :adviserId AND p.isDeleted = false")
     List<ProjectProposal> findProposalsByAdviserAssignedTeams(@Param("adviserId") int adviserId);
+
+    @Query("SELECT p FROM ProjectProposal p WHERE p.classProposal.cid = :classId AND p.isDeleted = false")
+    List<ProjectProposal> findByClassId(@Param("classId") Long classId);
+
 }

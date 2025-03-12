@@ -541,7 +541,69 @@ public class TeamService {
         return teamDTOs;
     }
 
+    @Transactional
+    public void setOfficialProject(int teamId, int proposalId, int leaderId) {
+        Team team = tRepo.findById(teamId)
+                .orElseThrow(() -> new RuntimeException("Team with ID " + teamId + " not found"));
 
+        if (team.getLeader().getUid() != leaderId) {
+            throw new IllegalArgumentException("Only the team leader can set an official project.");
+        }
+
+        ProjectProposal proposal = ppRepo.findById(proposalId)
+                .orElseThrow(() -> new RuntimeException("Project proposal with ID " + proposalId + " not found"));
+
+        if (proposal.getStatus() != ProjectStatus.APPROVED) {
+            throw new RuntimeException("Only an APPROVED project can be set as the official project.");
+        }
+
+        team.setProject(proposal);
+        tRepo.save(team);
+    }
+
+    @Transactional
+    public void unsetOfficialProject(int teamId, int leaderId) {
+        Team team = tRepo.findById(teamId)
+                .orElseThrow(() -> new RuntimeException("Team with ID " + teamId + " not found"));
+
+        if (team.getLeader().getUid() != leaderId) {
+            throw new IllegalArgumentException("Only the team leader can remove the official project.");
+        }
+
+        team.setProject(null);
+        tRepo.save(team);
+    }
+
+    @Transactional
+    public Map<String, Object> getOfficialProjectWithAdviserAndFeatures(int teamId) {
+        Team team = tRepo.findById(teamId)
+                .orElseThrow(() -> new RuntimeException("Team with ID " + teamId + " not found"));
+
+        if (team.getProject() == null) {
+            throw new RuntimeException("This team does not have an official project assigned.");
+        }
+
+        ProjectProposal project = team.getProject();
+        String adviserName = (team.getAdviser() != null)
+                ? team.getAdviser().getFirstname() + " " + team.getAdviser().getLastname()
+                : "No Adviser Assigned";
+
+        // Fetch project features
+        List<FeatureDTO> features = fRepo.findByProjectId(project.getPid()).stream()
+                .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
+                .collect(Collectors.toList());
+
+        // Prepare the response
+        Map<String, Object> response = new HashMap<>();
+        response.put("projectId", project.getPid());
+        response.put("projectName", project.getProjectName());
+        response.put("description", project.getDescription());
+        response.put("status", project.getStatus().name());
+        response.put("adviserName", adviserName);
+        response.put("features", features); // Adding features
+
+        return response;
+    }
 
 
     //Q it services (for maboi Jandel

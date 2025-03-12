@@ -46,7 +46,6 @@ public class ProjectProposalController {
     }
 
 
-
     @PutMapping("/student/update-proposal/{proposalId}")
     public ResponseEntity<Map<String, String>> updateProposal(
             @PathVariable("proposalId") int proposalId,
@@ -105,13 +104,31 @@ public class ProjectProposalController {
             @RequestParam int userId) {
         try {
             ppServ.updateApprovedToOpenProject(proposalId, userId);
-            return ResponseEntity.ok(Map.of("message", "Proposal updated to OPEN PROJECT status"));
+            return ResponseEntity.ok(Map.of("message", "Proposal updated to OPEN status"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @PutMapping("/student/take-ownership/{proposalId}")
+    public ResponseEntity<Map<String, String>> takeOwnership(
+            @PathVariable int proposalId,
+            @RequestParam int userId) {
+        try {
+            ppServ.takeOwnershipOfProject(proposalId, userId);
+            return ResponseEntity.ok(Map.of("message", "Project successfully claimed and accepted."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+
+
+
+
+
 
     //get functions
     @GetMapping("/proposals/class/{classId}/student/{studentId}")
@@ -147,6 +164,10 @@ public class ProjectProposalController {
     @GetMapping("/proposals/adviser/{adviserId}/teams")
     public ResponseEntity<List<ProjectProposalDTO>> getProposalsByAdviserAssignedTeams(@PathVariable int adviserId) {
         return ResponseEntity.ok(ppServ.getProposalsByAdviserAssignedTeams(adviserId));
+    }
+    @GetMapping("/teacher/proposals/{classId}")
+    public ResponseEntity<List<ProjectProposalDTO>> getProposalsByClassId(@PathVariable Long classId) {
+        return ResponseEntity.ok(ppServ.getProposalsByClassId(classId));
     }
 
 

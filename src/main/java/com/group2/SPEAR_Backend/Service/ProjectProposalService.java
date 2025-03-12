@@ -162,8 +162,11 @@ public class ProjectProposalService {
                 .map(this::mapProposalToDTOWithFeatures)
                 .toList();
     }
-
-
+    public List<ProjectProposalDTO> getProposalsByClassId(Long classId) {
+        return ppRepo.findByClassId(classId).stream()
+                .map(this::mapProposalToDTOWithFeatures)
+                .toList();
+    }
 
     public ProjectProposalDTO getProposalById(int proposalId) {
         ProjectProposal proposal = ppRepo.findById(proposalId)
@@ -253,18 +256,43 @@ public class ProjectProposalService {
        ProjectProposal proposal = ppRepo.findById(proposalId)
                .orElseThrow(() -> new RuntimeException("Proposal not found with ID: " + proposalId));
 
-       // Check if the current user is the owner
        if (proposal.getProposedBy().getUid() != userId) {
            throw new IllegalArgumentException("You are not authorized to update this proposal.");
        }
 
-       if (ProjectStatus.APPROVED.name().equalsIgnoreCase(proposal.getStatus().name())) {
-           proposal.setStatus(ProjectStatus.OPEN_PROJECT);
+       if (proposal.getStatus() == ProjectStatus.APPROVED) {
+           proposal.setStatus(ProjectStatus.OPEN);
            ppRepo.save(proposal);
        } else {
            throw new RuntimeException("Proposal is not in APPROVED status");
        }
    }
+    //take over the project
+    @Transactional
+    public void takeOwnershipOfProject(int proposalId, int userId) {
+        ProjectProposal proposal = ppRepo.findById(proposalId)
+                .orElseThrow(() -> new RuntimeException("Project proposal with ID " + proposalId + " not found"));
 
-   //to be added the controls to the creator of the class
+        if (proposal.getStatus() != ProjectStatus.OPEN) {
+            throw new RuntimeException("Only OPEN projects can be claimed.");
+        }
+
+        User user = uRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        // Change ownership and set to ACCEPTED
+        proposal.setProposedBy(user);
+        proposal.setStatus(ProjectStatus.APPROVED); // Automatically accepted
+
+        ppRepo.save(proposal);
+    }
+
+
+
+
+
+
+
+
+
 }
