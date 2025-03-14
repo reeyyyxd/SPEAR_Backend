@@ -3,6 +3,7 @@ package com.group2.SPEAR_Backend.Service;
 import com.group2.SPEAR_Backend.DTO.EvaluationDTO;
 import com.group2.SPEAR_Backend.Model.Classes;
 import com.group2.SPEAR_Backend.Model.Evaluation;
+import com.group2.SPEAR_Backend.Model.EvaluationType;
 import com.group2.SPEAR_Backend.Repository.ClassesRepository;
 import com.group2.SPEAR_Backend.Repository.EvaluationRepository;
 import com.group2.SPEAR_Backend.Repository.QuestionRepository;
@@ -31,44 +32,66 @@ public class EvaluationService {
     @Autowired
     private QuestionRepository qRepo;
 
-    public EvaluationDTO createEvaluation(Evaluation evaluation, Long classId) {
+    public EvaluationDTO createEvaluation(Evaluation evaluation, Long classId, EvaluationType evaluationType) {
         Classes classes = cRepo.findById(classId)
                 .orElseThrow(() -> new NoSuchElementException("Class not found with ID: " + classId));
 
         validateDates(evaluation.getDateOpen(), evaluation.getDateClose());
 
-        evaluation.setClasses(classes);
+        evaluation.setClassRef(classes);
+        evaluation.setEvaluationType(evaluationType);
         evaluation.setAvailability(calculateAvailability(evaluation.getDateOpen(), evaluation.getDateClose()));
 
         Evaluation savedEvaluation = eRepo.save(evaluation);
 
         return new EvaluationDTO(
+                savedEvaluation.getEid(),
+                savedEvaluation.getEvaluationType(),
+                savedEvaluation.getAvailability(),
                 savedEvaluation.getDateOpen(),
                 savedEvaluation.getDateClose(),
-                savedEvaluation.getPeriod()
+                savedEvaluation.getPeriod(),
+                savedEvaluation.getClassRef().getCid(),
+                savedEvaluation.getClassRef().getCourseCode(),
+                savedEvaluation.getClassRef().getSection(),
+                savedEvaluation.getClassRef().getCourseDescription(),
+                null, // Team Name will be fetched dynamically
+                null, // Adviser Name will be fetched dynamically
+                null, // Evaluators fetched dynamically
+                null, // Evaluatees fetched dynamically
+                false // Evaluated status fetched dynamically
         );
     }
 
-
-
-
-
     public List<EvaluationDTO> getEvaluationsByClassAsDTO(Long classId) {
-        return eRepo.findByClassesCid(classId).stream()
+        return eRepo.findByClassRef_Cid(classId).stream()
                 .map(evaluation -> new EvaluationDTO(
                         evaluation.getEid(),
+                        evaluation.getEvaluationType(),
                         evaluation.getAvailability(),
                         evaluation.getDateOpen(),
                         evaluation.getDateClose(),
                         evaluation.getPeriod(),
-                        evaluation.getClasses().getCid(),
-                        evaluation.getClasses().getCourseCode(),
-                        evaluation.getClasses().getSection(),
-                        evaluation.getClasses().getCourseDescription()
+                        evaluation.getClassRef().getCid(),
+                        evaluation.getClassRef().getCourseCode(),
+                        evaluation.getClassRef().getSection(),
+                        evaluation.getClassRef().getCourseDescription(),
+                        null, // Team Name will be fetched dynamically
+                        null, // Adviser Name will be fetched dynamically
+                        null, // Evaluators fetched dynamically
+                        null, // Evaluatees fetched dynamically
+                        false // Evaluated status fetched dynamically
                 ))
                 .collect(Collectors.toList());
     }
 
+    public List<Evaluation> getEvaluationsByType(EvaluationType evaluationType) {
+        return eRepo.findByEvaluationType(evaluationType);
+    }
+
+    public List<Evaluation> getEvaluationsByTypeAndPeriod(EvaluationType evaluationType, String period) {
+        return eRepo.findByTypeAndPeriod(evaluationType, period);
+    }
 
     public List<Evaluation> getEvaluationsByPeriod(String period) {
         return eRepo.findByPeriod(period);
@@ -82,27 +105,41 @@ public class EvaluationService {
         return eRepo.findByAvailability(availability);
     }
 
-    public EvaluationDTO updateEvaluation(Long id, Evaluation updatedEvaluation) {
+    public EvaluationDTO getEvaluationDetailsById(Long evaluationId) {
+        return eRepo.findEvaluationDetailsWithNames(evaluationId);
+    }
+
+    public EvaluationDTO updateEvaluation(Long id, Evaluation updatedEvaluation, EvaluationType evaluationType) {
         validateDates(updatedEvaluation.getDateOpen(), updatedEvaluation.getDateClose());
 
         return eRepo.findById(id).map(evaluation -> {
             evaluation.setDateOpen(updatedEvaluation.getDateOpen());
             evaluation.setDateClose(updatedEvaluation.getDateClose());
             evaluation.setPeriod(updatedEvaluation.getPeriod());
+            evaluation.setEvaluationType(evaluationType);
             evaluation.setAvailability(calculateAvailability(updatedEvaluation.getDateOpen(), updatedEvaluation.getDateClose()));
 
             Evaluation savedEvaluation = eRepo.save(evaluation);
 
             return new EvaluationDTO(
+                    savedEvaluation.getEid(),
+                    savedEvaluation.getEvaluationType(),
+                    savedEvaluation.getAvailability(),
                     savedEvaluation.getDateOpen(),
                     savedEvaluation.getDateClose(),
                     savedEvaluation.getPeriod(),
-                    savedEvaluation.getAvailability()
+                    savedEvaluation.getClassRef().getCid(),
+                    savedEvaluation.getClassRef().getCourseCode(),
+                    savedEvaluation.getClassRef().getSection(),
+                    savedEvaluation.getClassRef().getCourseDescription(),
+                    null, // Team Name - Will be retrieved dynamically
+                    null, // Adviser Name - Will be retrieved dynamically
+                    null, // Evaluator Names - Will be retrieved dynamically
+                    null, // Evaluatee Names - Will be retrieved dynamically
+                    false // Evaluated Status - Will be retrieved dynamically
             );
         }).orElseThrow(() -> new NoSuchElementException("Evaluation not found with ID: " + id));
     }
-
-
 
 
     public String deleteEvaluation(Long id) {
@@ -114,6 +151,8 @@ public class EvaluationService {
         }
     }
 
+
+    //for dates, do not touch!
     // Helper method to calculate availability based on open and close dates
     private String calculateAvailability(LocalDate dateOpen, LocalDate dateClose) {
         LocalDate today = LocalDate.now();
@@ -126,7 +165,6 @@ public class EvaluationService {
         }
     }
 
-
     // Scheduler to update evaluations every 15 seconds
     @Scheduled(fixedRate = 15000) // Executes every 15 seconds
     public void refreshEvaluationsAvailability() {
@@ -138,11 +176,6 @@ public class EvaluationService {
                 eRepo.save(evaluation);
             }
         }
-    }
-
-
-    public EvaluationDTO getEvaluationDetailsById(Long evaluationId) {
-        return eRepo.findEvaluationDetailsById(evaluationId);
     }
 
     private void validateDates(LocalDate dateOpen, LocalDate dateClose) {

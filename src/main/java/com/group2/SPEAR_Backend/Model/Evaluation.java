@@ -1,9 +1,9 @@
 package com.group2.SPEAR_Backend.Model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "evaluations")
@@ -13,9 +13,12 @@ public class Evaluation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long eid;
 
-    @JsonIgnore
+    @Enumerated(EnumType.STRING)
+    @Column(name = "evaluation_type", nullable = false)
+    private EvaluationType evaluationType;
+
     @Column(name = "availability", nullable = false)
-    private String availability; // "Open" or "Closed"
+    private String availability;
 
     @Column(name = "date_open", nullable = false)
     private LocalDate dateOpen;
@@ -24,21 +27,25 @@ public class Evaluation {
     private LocalDate dateClose;
 
     @Column(name = "period", nullable = false)
-    private String period; // Prelim, Midterm, Prefinals, Finals
+    private String period;
 
-    @ManyToOne (cascade = CascadeType.MERGE)
+    @ManyToOne
     @JoinColumn(name = "class_id", referencedColumnName = "cid", nullable = false)
-    private Classes classes;
+    private Classes classRef;
 
+    @OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<EvaluationSubmission> submissions = new HashSet<>();
 
     public Evaluation() {}
 
-    public Evaluation(String availability, LocalDate dateOpen, LocalDate dateClose, String period, Classes classes) {
+    public Evaluation(EvaluationType evaluationType, String availability, LocalDate dateOpen, LocalDate dateClose,
+                      String period, Classes classRef) {
+        this.evaluationType = evaluationType;
         this.availability = availability;
         this.dateOpen = dateOpen;
         this.dateClose = dateClose;
         this.period = period;
-        this.classes = classes;
+        this.classRef = classRef;
     }
 
     public Long getEid() {
@@ -47,6 +54,14 @@ public class Evaluation {
 
     public void setEid(Long eid) {
         this.eid = eid;
+    }
+
+    public EvaluationType getEvaluationType() {
+        return evaluationType;
+    }
+
+    public void setEvaluationType(EvaluationType evaluationType) {
+        this.evaluationType = evaluationType;
     }
 
     public String getAvailability() {
@@ -81,12 +96,19 @@ public class Evaluation {
         this.period = period;
     }
 
-    public Classes getClasses() {
-        return classes;
+    public Classes getClassRef() {
+        return classRef;
     }
 
-    public void setClasses(Classes classes) {
-        this.classes = classes;
+    public void setClassRef(Classes classRef) {
+        this.classRef = classRef;
     }
 
+    public Set<EvaluationSubmission> getSubmissions() {
+        return submissions;
+    }
+
+    public void setSubmissions(Set<EvaluationSubmission> submissions) {
+        this.submissions = submissions;
+    }
 }

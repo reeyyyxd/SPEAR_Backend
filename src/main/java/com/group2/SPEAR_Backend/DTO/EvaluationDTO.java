@@ -1,13 +1,16 @@
 package com.group2.SPEAR_Backend.DTO;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.group2.SPEAR_Backend.Model.EvaluationType;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class EvaluationDTO {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long eid;
+    private EvaluationType evaluationType;
     private String availability;
     private LocalDate dateOpen;
     private LocalDate dateClose;
@@ -16,12 +19,20 @@ public class EvaluationDTO {
     private String courseCode;
     private String section;
     private String courseDescription;
+    private String teamName;
+    private String adviserName;
+    private List<String> evaluatorNames;
+    private List<String> evaluateeNames;
+    private boolean isEvaluated;
 
     public EvaluationDTO() {}
 
-    public EvaluationDTO(Long eid, String availability, LocalDate dateOpen, LocalDate dateClose, String period,
-                         Long classId, String courseCode, String section, String courseDescription) {
+    public EvaluationDTO(Long eid, EvaluationType evaluationType, String availability, LocalDate dateOpen,
+                         LocalDate dateClose, String period, Long classId, String courseCode, String section,
+                         String courseDescription, String teamName, String adviserName,
+                         List<String> evaluatorNames, List<String> evaluateeNames, boolean isEvaluated) {
         this.eid = eid;
+        this.evaluationType = evaluationType;
         this.availability = availability;
         this.dateOpen = dateOpen;
         this.dateClose = dateClose;
@@ -30,19 +41,11 @@ public class EvaluationDTO {
         this.courseCode = courseCode;
         this.section = section;
         this.courseDescription = courseDescription;
-    }
-
-    public EvaluationDTO(LocalDate dateOpen, LocalDate dateClose, String period, String availability) {
-        this.dateOpen = dateOpen;
-        this.dateClose = dateClose;
-        this.period = period;
-        this.availability = availability;
-    }
-
-    public EvaluationDTO(LocalDate dateOpen, LocalDate dateClose, String period) {
-        this.dateOpen = dateOpen;
-        this.dateClose = dateClose;
-        this.period = period;
+        this.teamName = teamName;
+        this.adviserName = adviserName;
+        this.evaluatorNames = evaluatorNames;
+        this.evaluateeNames = evaluateeNames;
+        this.isEvaluated = isEvaluated;
     }
 
     public Long getEid() {
@@ -51,6 +54,14 @@ public class EvaluationDTO {
 
     public void setEid(Long eid) {
         this.eid = eid;
+    }
+
+    public EvaluationType getEvaluationType() {
+        return evaluationType;
+    }
+
+    public void setEvaluationType(EvaluationType evaluationType) {
+        this.evaluationType = evaluationType;
     }
 
     public String getAvailability() {
@@ -115,5 +126,45 @@ public class EvaluationDTO {
 
     public void setCourseDescription(String courseDescription) {
         this.courseDescription = courseDescription;
+    }
+
+    public String getTeamName() {
+        return teamName;
+    }
+
+    public void setTeamName(String teamName) {
+        this.teamName = teamName;
+    }
+
+    public String getAdviserName() {
+        return adviserName;
+    }
+
+    public void setAdviserName(String adviserName) {
+        this.adviserName = adviserName;
+    }
+
+    public List<String> getEvaluatorNames() {
+        return evaluatorNames;
+    }
+
+    public void setEvaluatorNames(List<String> evaluatorNames) {
+        this.evaluatorNames = evaluatorNames;
+    }
+
+    public List<String> getEvaluateeNames() {
+        return evaluateeNames;
+    }
+
+    public void setEvaluateeNames(List<String> evaluateeNames) {
+        this.evaluateeNames = evaluateeNames;
+    }
+
+    public boolean isEvaluated() {
+        return isEvaluated;
+    }
+
+    public void setEvaluated(boolean evaluated) {
+        isEvaluated = evaluated;
     }
 }
