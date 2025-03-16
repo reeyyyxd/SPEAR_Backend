@@ -99,7 +99,12 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
             "WHERE q.uid = :teacherId")
     List<ClassesDTO> findClassesByQualifiedAdviser(@Param("teacherId") int teacherId);
 
+    @Query("SELECT c FROM Classes c JOIN c.createdBy f WHERE f.uid = :facultyID")
+    List<Classes> findAllByFaculty(@Param("facultyID") int facultyID);
 
+
+    @Query("SELECT c FROM Classes c WHERE c.createdBy.uid = :facultyID AND c.cid IN :classIDList")
+    List<Classes> findSelectedByFaculty(@Param("facultyID") int facultyID, @Param("classIDList") List<Integer> classIDList);
 
 
 }

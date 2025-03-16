@@ -55,6 +55,9 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
     @Query("SELECT t FROM Team t JOIN t.adviser u WHERE u.uid = :mentorID")
     List<Team> retrieveTeamsForMentor(int mentorID);
 
+    @Query("SELECT t FROM Team t JOIN t.adviser u WHERE u.uid = :mentorID AND t.tid IN :teamIDList")
+    List<Team> retrieveSelectedTeamsForMentor(@Param("mentorID") int mentorID,@Param("teamIDList") List<Integer> teamIDList);
+
     @Query("SELECT t FROM Team t JOIN t.schedule s where :day = s.day")
     List<Team> retrieveScheduledTeamsForMeetingAutomation(@Param("day") DayOfWeek day);
 

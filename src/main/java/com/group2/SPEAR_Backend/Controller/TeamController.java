@@ -1,9 +1,6 @@
 package com.group2.SPEAR_Backend.Controller;
 
-import com.group2.SPEAR_Backend.DTO.ScheduleDTO;
-import com.group2.SPEAR_Backend.DTO.StatusDTO;
-import com.group2.SPEAR_Backend.DTO.TeamDTO;
-import com.group2.SPEAR_Backend.DTO.UserDTO;
+import com.group2.SPEAR_Backend.DTO.*;
 import com.group2.SPEAR_Backend.Model.Team;
 import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.Repository.TeamRepository;
@@ -358,23 +355,32 @@ public class TeamController {
         }
     }
 
-        //created for queueit, retrieval of teams that's scheduled for today for automation
-        @GetMapping("/team/automateScheduledMeetings/{day}")
-        public ResponseEntity<Object> retrieveScheduledTeamsForMeetingAutomation(@PathVariable String day){
-            try{
-                return ResponseEntity.ok(tServ.retrieveScheduledTeamsForMeetingAutomation(day));
-            }catch (Exception e){
-                return ResponseEntity.status(400).body(e.getMessage());
-            }
+    //created for queueit, retrieval of teams that's scheduled for today for automation
+    @GetMapping("/team/automateScheduledMeetings/{day}")
+    public ResponseEntity<Object> retrieveScheduledTeamsForMeetingAutomation(@PathVariable String day){
+        try{
+            return ResponseEntity.ok(tServ.retrieveScheduledTeamsForMeetingAutomation(day));
+        }catch (Exception e){
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
     }
 
+    @GetMapping("/team/all/notification/{facultyID}")
+    public ResponseEntity<Object> retrieveNotificationRecipientsForAllClasses(@PathVariable int facultyID){
+        return ResponseEntity.ok(tServ.retrieveNotificationRecipientsForAllClasses(facultyID));
+    }
+    @PostMapping("/team/selected/notification/{facultyID}")
+    public ResponseEntity<Object> retrieveNotificationRecipientsForSelectClasses(@PathVariable int facultyID, @RequestBody ClassesIDRequest classesIDRequest){
+        return ResponseEntity.ok(tServ.retrieveNotificationRecipientsForSelectClasses(facultyID,classesIDRequest.getClassesIDList()));
+    }
 
-
-
-
-
-
-
-
+    @GetMapping("/team/allTeamsByFaculty/notification/{facultyID}")
+    public ResponseEntity<Object> retrieveNotificationRecipientsForAllTeams(@PathVariable int facultyID){
+        return ResponseEntity.ok(tServ.retrieveNotificationRecipientsForAllTeams(facultyID));
+    }
+    @PostMapping("/team/selectedTeamsByFaculty/notification/{facultyID}")
+    public ResponseEntity<Object> retrieveNotificationRecipientsForSelectedTeams(@PathVariable int facultyID, @RequestBody TeamsIDRequest teamsIDRequest){
+        return ResponseEntity.ok(tServ.retrieveNotificationRecipientsForSelectedTeams(facultyID, teamsIDRequest.getTeamsIDList()));
+    }
 
 }

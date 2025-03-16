@@ -687,4 +687,65 @@ public class TeamService {
                 team.getAdviser().getUid()
         );
     }
+
+    public HashSet<Integer> retrieveNotificationRecipientsForAllClasses(int facultyID){
+        List<Classes> allClasses = cRepo.findAllByFaculty(facultyID);
+        Set<Integer> userIDList = new HashSet<>();
+        allClasses.stream()
+                .forEach(classes -> {
+                    classes.getEnrolledStudents().stream()
+                            .forEach(student ->{
+                                userIDList.add(Integer.valueOf(student.getUid()));
+                            });
+                });
+
+        return (HashSet<Integer>) userIDList;
+    }
+
+    public HashSet<Integer> retrieveNotificationRecipientsForSelectClasses(int facultyID, List<Integer> classIDList){
+        List<Classes> selectedClasses = cRepo.findSelectedByFaculty(facultyID, classIDList);
+
+        Set<Integer> userIDList = new HashSet<>();
+        selectedClasses.stream()
+                .forEach(classes -> {
+                    List<Team> teams = tRepo.findActiveTeamsByClassId(classes.getCid().intValue());
+                    teams.stream()
+                            .forEach(team -> {
+                                team.getMembers().stream()
+                                        .forEach(member -> {
+                                            userIDList.add(member.getUid());
+                                        });
+                            });
+                });
+
+        return (HashSet<Integer>) userIDList;
+    }
+
+    public HashSet<Integer> retrieveNotificationRecipientsForAllTeams(int facultyID){
+        List<Team> teams = tRepo.retrieveTeamsForMentor(facultyID);
+        Set<Integer> userIDList = new HashSet<>();
+        teams.stream()
+                .forEach(team -> {
+                    team.getMembers().stream()
+                            .forEach(member->{
+                                userIDList.add(member.getUid());
+                            });
+                });
+
+        return (HashSet<Integer>) userIDList;
+    }
+
+    public HashSet<Integer> retrieveNotificationRecipientsForSelectedTeams(int facultyID, List<Integer> teamIDList){
+        List<Team> teams = tRepo.retrieveSelectedTeamsForMentor(facultyID, teamIDList);
+        Set<Integer> userIDList = new HashSet<>();
+        teams.stream()
+                .forEach(team -> {
+                    team.getMembers().stream()
+                            .forEach(member->{
+                                userIDList.add(member.getUid());
+                            });
+                });
+
+        return (HashSet<Integer>) userIDList;
+    }
 }
