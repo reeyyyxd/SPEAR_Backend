@@ -26,6 +26,8 @@ public class TeamDTO {
     private String scheduleTime;
     private int maxMembers;
     private String courseDescription;
+    private Long teamId;
+
 
 
 
@@ -138,6 +140,13 @@ public class TeamDTO {
         this.scheduleDay = (scheduleDay != null) ? scheduleDay : "No Schedule Set";
         this.scheduleTime = (scheduleTime != null) ? scheduleTime : "No Schedule Set";
         this.courseDescription = (courseDescription != null) ? courseDescription : "No Class Info Available";
+    }
+
+    public TeamDTO(Long teamId, String groupName, Long classId, List<String> memberNames) {
+        this.teamId = teamId;
+        this.groupName = groupName;
+        this.classId = classId;
+        this.memberNames = memberNames;
     }
 
 
@@ -338,5 +347,13 @@ public class TeamDTO {
 
     public void setCourseDescription(String courseDescription) {
         this.courseDescription = courseDescription;
+    }
+
+    public Long getTeamId() {
+        return teamId;
+    }
+
+    public void setTeamId(Long teamId) {
+        this.teamId = teamId;
     }
 }

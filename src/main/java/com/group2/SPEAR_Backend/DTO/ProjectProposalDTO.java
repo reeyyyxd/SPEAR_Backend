@@ -117,6 +117,23 @@ public class ProjectProposalDTO {
         this.status = status;
     }
 
+    public ProjectProposalDTO(int pid, String projectName, String description, String status, String reason,
+                              int proposedById, Long classId, Integer teamId, List<FeatureDTO> features,
+                              String proposedByName, String teamName, String ratings) {
+        this.pid = pid;
+        this.projectName = projectName;
+        this.description = description;
+        this.status = status;
+        this.reason = reason;
+        this.proposedById = proposedById;
+        this.classId = classId;
+        this.teamId = teamId;
+        this.features = features;
+        this.proposedByName = proposedByName;
+        this.teamName = teamName;
+        this.ratings = ratings;
+    }
+
 
     public int getPid() { return pid; }
     public void setPid(int pid) { this.pid = pid; }

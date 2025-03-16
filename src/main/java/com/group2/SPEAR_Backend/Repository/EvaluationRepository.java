@@ -29,25 +29,32 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Long> {
     List<Evaluation> findByEvaluationType(EvaluationType evaluationType);
 
     // Get all open evaluations (evaluations that are available)
-    @Query("SELECT e FROM Evaluation e WHERE e.availability = 'Open'")
-    List<Evaluation> findOpenEvaluations();
+    @Query("SELECT e FROM Evaluation e " +
+            "JOIN e.classRef c " +
+            "JOIN c.enrolledStudents s " +
+            "WHERE s.uid = :studentId " +
+            "AND e.availability = 'Open' " +
+            "AND (e.evaluationType = 'STUDENT_TO_STUDENT' OR e.evaluationType = 'STUDENT_TO_ADVISER')")
+    List<Evaluation> findOpenEvaluationsForStudent(@Param("studentId") Long studentId);
+
+
 
     // Get evaluations filtered by type and period
     @Query("SELECT e FROM Evaluation e WHERE e.evaluationType = :evaluationType AND e.period = :period")
     List<Evaluation> findByTypeAndPeriod(@Param("evaluationType") EvaluationType evaluationType, @Param("period") String period);
 
-    // Get evaluations with full details (class, period, evaluator names, evaluatee names, team name, and adviser)
-    @Query("SELECT new com.group2.SPEAR_Backend.DTO.EvaluationDTO(" +
-            "e.eid, e.evaluationType, e.availability, e.dateOpen, e.dateClose, e.period, " +
-            "c.cid, c.courseCode, c.section, c.courseDescription, " +
-            "t.groupName, " +
-            "(SELECT CONCAT(a.firstname, ' ', a.lastname) FROM Team t LEFT JOIN t.adviser a WHERE t.classRef.cid = c.cid), " +
-            "(SELECT GROUP_CONCAT(DISTINCT u.firstname || ' ' || u.lastname) FROM EvaluationSubmission es JOIN es.evaluator u WHERE es.evaluation.eid = e.eid), " +
-            "(SELECT GROUP_CONCAT(DISTINCT u.firstname || ' ' || u.lastname) FROM Response r JOIN r.evaluatee u WHERE r.evaluation.eid = e.eid), " +
-            "(SELECT COUNT(es) > 0 FROM EvaluationSubmission es WHERE es.evaluation.eid = e.eid AND es.isEvaluated = true) " +
-            ") FROM Evaluation e " +
-            "JOIN e.classRef c " +
-            "LEFT JOIN Team t ON t.classRef.cid = c.cid " +
-            "WHERE e.eid = :evaluationId")
-    EvaluationDTO findEvaluationDetailsWithNames(@Param("evaluationId") Long evaluationId);
+    //members only
+    @Query("SELECT CONCAT(m.firstname, ' ', m.lastname) " +
+            "FROM Team t JOIN t.members m " +
+            "WHERE t.classRef.cid = :classId " +
+            "AND t.tid = (SELECT t2.tid FROM Team t2 JOIN t2.members m2 " +
+            "WHERE m2.uid = :studentId AND t2.classRef.cid = :classId)")
+    List<String> findYourTeamMembers(@Param("classId") Long classId, @Param("studentId") Long studentId);
+
+    @Query("SELECT t.tid FROM Team t JOIN t.members m " +
+            "WHERE m.uid = :studentId AND t.classRef.cid = :classId")
+    Long findTeamIdByStudent(@Param("studentId") Long studentId, @Param("classId") Long classId);
+
+
+
 }

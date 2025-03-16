@@ -2,6 +2,7 @@ package com.group2.SPEAR_Backend.DTO;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.group2.SPEAR_Backend.Model.EvaluationType;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,6 +26,7 @@ public class EvaluationDTO {
     private List<String> evaluateeNames;
     private boolean isEvaluated;
 
+
     public EvaluationDTO() {}
 
     public EvaluationDTO(Long eid, EvaluationType evaluationType, String availability, LocalDate dateOpen,
@@ -47,6 +49,26 @@ public class EvaluationDTO {
         this.evaluateeNames = evaluateeNames;
         this.isEvaluated = isEvaluated;
     }
+
+    public EvaluationDTO(Long eid, EvaluationType evaluationType, String availability, LocalDate dateOpen,
+                         LocalDate dateClose, String period, Long classId, String courseCode,
+                         String section, String courseDescription) {
+        this.eid = eid;
+        this.evaluationType = evaluationType;
+        this.availability = availability;
+        this.dateOpen = dateOpen;
+        this.dateClose = dateClose;
+        this.period = period;
+        this.classId = classId;
+        this.courseCode = courseCode;
+        this.section = section;
+        this.courseDescription = courseDescription;
+    }
+
+
+
+
+
 
     public Long getEid() {
         return eid;

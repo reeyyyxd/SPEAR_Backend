@@ -584,23 +584,57 @@ public class TeamService {
         }
 
         ProjectProposal project = team.getProject();
-        String adviserName = (team.getAdviser() != null)
+
+        // Retrieve leader's name
+        String leaderName = team.getLeader() != null
+                ? team.getLeader().getFirstname() + " " + team.getLeader().getLastname()
+                : "No Leader Assigned";
+
+        // Retrieve adviser name
+        String adviserName = team.getAdviser() != null
                 ? team.getAdviser().getFirstname() + " " + team.getAdviser().getLastname()
                 : "No Adviser Assigned";
 
-        // Fetch project features
+        // Retrieve project features
         List<FeatureDTO> features = fRepo.findByProjectId(project.getPid()).stream()
                 .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
                 .collect(Collectors.toList());
 
+        // Get project rating or set default if null
+        String rating = (project.getRatings() != null && !project.getRatings().isBlank()) ? project.getRatings() : "No Rating";
+
+        // Retrieve schedule details
+        String scheduleDay = (team.getSchedule() != null) ? team.getSchedule().getDay().name() : "No Schedule Set";
+        String scheduleTime = (team.getSchedule() != null)
+                ? team.getSchedule().getStartTime().format(DateTimeFormatter.ofPattern("h:mm a")) + " - " +
+                team.getSchedule().getEndTime().format(DateTimeFormatter.ofPattern("h:mm a"))
+                : "No Time Set";
+
+        // Retrieve course description
+        String courseDescription = team.getClassRef() != null ? team.getClassRef().getCourseDescription() : "No Class Info Available";
+
+        // Retrieve team members' names
+        List<String> memberNames = team.getMembers().stream()
+                .map(member -> member.getFirstname() + " " + member.getLastname())
+                .collect(Collectors.toList());
+
         // Prepare the response
         Map<String, Object> response = new HashMap<>();
+        response.put("teamId", team.getTid());
+        response.put("teamName", team.getGroupName());
+        response.put("classId", team.getClassRef().getCid());
+        response.put("leaderName", leaderName);
+        response.put("memberNames", memberNames);
+        response.put("scheduleDay", scheduleDay);
+        response.put("scheduleTime", scheduleTime);
+        response.put("courseDescription", courseDescription);
         response.put("projectId", project.getPid());
         response.put("projectName", project.getProjectName());
         response.put("description", project.getDescription());
         response.put("status", project.getStatus().name());
         response.put("adviserName", adviserName);
-        response.put("features", features); // Adding features
+        response.put("features", features);
+        response.put("rating", rating); // Adding project rating
 
         return response;
     }
@@ -748,4 +782,17 @@ public class TeamService {
 
         return (HashSet<Integer>) userIDList;
     }
+
+    public TeamDTO getStudentTeam(Long studentId, Long classId) {
+        Team team = tRepo.findTeamByStudentAndClass(studentId, classId);
+        if (team == null) return null;
+
+        List<String> memberNames = team.getMembers()
+                .stream()
+                .map(m -> m.getFirstname() + " " + m.getLastname())
+                .toList();
+
+        return new TeamDTO((long) team.getTid(), team.getGroupName(), team.getClassRef().getCid(), memberNames);
+    }
+
 }

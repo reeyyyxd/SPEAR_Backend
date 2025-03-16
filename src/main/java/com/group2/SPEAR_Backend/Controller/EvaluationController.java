@@ -20,9 +20,6 @@ public class EvaluationController {
     @Autowired
     private EvaluationService eServ;
 
-    /**
-     * Create an evaluation (Teacher creates evaluations)
-     */
     @PostMapping("teacher/create-evaluation/{classId}")
     public ResponseEntity<?> createEvaluation(
             @RequestBody Evaluation evaluation,
@@ -44,61 +41,6 @@ public class EvaluationController {
         }
     }
 
-    /**
-     * Get evaluations for a specific class
-     */
-    @GetMapping("/teacher/class/{classId}/evaluations")
-    public ResponseEntity<List<EvaluationDTO>> getEvaluationsByClass(@PathVariable Long classId) {
-        List<EvaluationDTO> evaluations = eServ.getEvaluationsByClassAsDTO(classId);
-        return ResponseEntity.ok(evaluations);
-    }
-
-    /**
-     * Get evaluations by availability (e.g., Open or Closed)
-     */
-    @GetMapping("student/check-availability/{availability}")
-    public List<Evaluation> getEvaluationsByAvailability(@PathVariable String availability) {
-        return eServ.getEvaluationsByAvailability(availability);
-    }
-
-    /**
-     * Get evaluations by period (Prelims, Midterms, etc.)
-     */
-    @GetMapping("/student/evaluation-period/{period}")
-    public List<Evaluation> getEvaluationsByPeriod(@PathVariable String period) {
-        return eServ.getEvaluationsByPeriod(period);
-    }
-
-    /**
-     * Get evaluations by availability and period
-     */
-    @GetMapping("/student/availability/{availability}/period/{period}")
-    public List<Evaluation> getEvaluationsByAvailabilityAndPeriod(
-            @PathVariable String availability, @PathVariable String period) {
-        return eServ.getEvaluationsByAvailabilityAndPeriod(availability, period);
-    }
-
-    /**
-     * Get evaluations by type (STUDENT_TO_STUDENT, STUDENT_TO_ADVISER, etc.)
-     */
-    @GetMapping("/evaluation/type/{evaluationType}")
-    public ResponseEntity<List<Evaluation>> getEvaluationsByType(@PathVariable EvaluationType evaluationType) {
-        List<Evaluation> evaluations = eServ.getEvaluationsByType(evaluationType);
-        return ResponseEntity.ok(evaluations);
-    }
-
-    /**
-     * Get evaluation details (including team name, evaluator/evaluatee names, adviser name)
-     */
-    @GetMapping("/evaluation/{evaluationId}/details")
-    public ResponseEntity<EvaluationDTO> getEvaluationDetails(@PathVariable Long evaluationId) {
-        EvaluationDTO evaluationDetails = eServ.getEvaluationDetailsById(evaluationId);
-        return ResponseEntity.ok(evaluationDetails);
-    }
-
-    /**
-     * Update evaluation details
-     */
     @PutMapping("teacher/update-evaluation/{id}")
     public ResponseEntity<?> updateEvaluation(
             @PathVariable Long id,
@@ -116,9 +58,6 @@ public class EvaluationController {
         }
     }
 
-    /**
-     * Delete evaluation
-     */
     @DeleteMapping("teacher/delete-evaluation/{id}")
     public ResponseEntity<?> deleteEvaluation(@PathVariable Long id) {
         try {
@@ -128,4 +67,69 @@ public class EvaluationController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
     }
+
+    //get functions
+    //get evaluations for a specific class
+    @GetMapping("/teacher/class/{classId}/evaluations")
+    public ResponseEntity<List<EvaluationDTO>> getEvaluationsByClass(@PathVariable Long classId) {
+        List<EvaluationDTO> evaluations = eServ.getEvaluationsByClassAsDTO(classId);
+        return ResponseEntity.ok(evaluations);
+    }
+
+    //get by availability
+    @GetMapping("student/check-availability/{availability}")
+    public List<Evaluation> getEvaluationsByAvailability(@PathVariable String availability) {
+        return eServ.getEvaluationsByAvailability(availability);
+    }
+
+    //get by period
+    @GetMapping("/student/evaluation-period/{period}")
+    public List<Evaluation> getEvaluationsByPeriod(@PathVariable String period) {
+        return eServ.getEvaluationsByPeriod(period);
+    }
+
+    //get by availability and period
+    @GetMapping("/student/availability/{availability}/period/{period}")
+    public List<Evaluation> getEvaluationsByAvailabilityAndPeriod(
+            @PathVariable String availability, @PathVariable String period) {
+        return eServ.getEvaluationsByAvailabilityAndPeriod(availability, period);
+    }
+
+    //get by evaluation type
+    @GetMapping("/evaluation/type/{evaluationType}")
+    public ResponseEntity<List<Evaluation>> getEvaluationsByType(@PathVariable EvaluationType evaluationType) {
+        List<Evaluation> evaluations = eServ.getEvaluationsByType(evaluationType);
+        return ResponseEntity.ok(evaluations);
+    }
+
+    //get members
+    @GetMapping("/team/{classId}/my-members")
+    public ResponseEntity<String> getYourTeamMembers(@PathVariable Long classId, @RequestParam Long studentId) {
+        String members = eServ.getYourTeamMembers(classId, studentId);
+        return ResponseEntity.ok(members);
+    }
+
+    @GetMapping("/student/{studentId}/available-evaluations")
+    public ResponseEntity<List<EvaluationDTO>> getAvailableEvaluations(
+            @PathVariable Long studentId) {
+        List<EvaluationDTO> evaluations = eServ.getEvaluationsForStudent(studentId);
+        return ResponseEntity.ok(evaluations);
+    }
+
+
+
+
+
+    @GetMapping("/{studentId}/team/{classId}")
+    public ResponseEntity<Long> getStudentTeamId(@PathVariable Long studentId, @PathVariable Long classId) {
+        Long teamId = eServ.getTeamId(studentId, classId);
+        if (teamId == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        return ResponseEntity.ok(teamId);
+    }
+
+
+
+
 }

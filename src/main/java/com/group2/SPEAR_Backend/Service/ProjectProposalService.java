@@ -8,7 +8,10 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ProjectProposalService {
@@ -190,6 +193,12 @@ public class ProjectProposalService {
                 proposal.getTeamProject() != null ? proposal.getTeamProject().getGroupName() : null
         );
     }
+    public List<ProjectProposal> getAllOfficialProjects() {
+        return tRepo.findAll().stream()
+                .map(Team::getProject)
+                .filter(project -> project != null)
+                .collect(Collectors.toList());
+    }
 
 
 
@@ -286,6 +295,29 @@ public class ProjectProposalService {
 
         ppRepo.save(proposal);
     }
+
+    //project rating
+    @Transactional
+    public void rateProjectProposal(int proposalId, int userId, String ratings) {
+        if (!ratings.matches("\\d(\\.\\d{1,2})?")) {
+            throw new IllegalArgumentException("Invalid rating format. Must be a number (e.g., '4' or '4.5').");
+        }
+
+        ProjectProposal proposal = ppRepo.findById(proposalId)
+                .orElseThrow(() -> new RuntimeException("Project proposal with ID " + proposalId + " not found"));
+
+        Classes projectClass = proposal.getClassProposal();
+        if (projectClass.getCreatedBy().getUid() != userId) {
+            throw new RuntimeException("Only the class creator can rate the project.");
+        }
+
+        proposal.setRatings(ratings);
+        ppRepo.save(proposal);
+    }
+
+
+
+
 
 
 

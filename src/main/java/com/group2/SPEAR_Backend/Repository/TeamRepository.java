@@ -71,6 +71,13 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
     @Query("SELECT t FROM Team t WHERE t.adviser.uid = :adviserId AND t.schedule IS NOT NULL")
     List<Team> findTeamsByAdviserAndSchedule(@Param("adviserId") int adviserId);
 
+    @Query("SELECT t FROM Team t JOIN t.members m WHERE m.uid = :studentId AND t.classRef.cid = :classId")
+    Team findTeamByStudentAndClass(@Param("studentId") Long studentId, @Param("classId") Long classId);
+
+
+
+
+
 
 
 

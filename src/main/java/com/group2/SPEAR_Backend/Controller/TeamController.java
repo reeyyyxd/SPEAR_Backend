@@ -344,6 +344,16 @@ public class TeamController {
         }
     }
 
+        @GetMapping("evaluation/{studentId}/class/{classId}/team")
+        public ResponseEntity<TeamDTO> getStudentTeam(@PathVariable Long studentId, @PathVariable Long classId) {
+            TeamDTO teamDTO = tServ.getStudentTeam(studentId, classId);
+            if (teamDTO == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+            return ResponseEntity.ok(teamDTO);
+        }
+
+
 // Q it controllers
     //created for queueit, retrieval of teams under a certain mentor
     @GetMapping("/team/mentored/{mentorID}")

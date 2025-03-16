@@ -130,6 +130,7 @@ public class ProjectProposalController {
 
 
 
+
     //get functions
     @GetMapping("/proposals/class/{classId}/student/{studentId}")
     public ResponseEntity<List<ProjectProposalDTO>> getProposalsByClassAndStudent(@PathVariable Long classId, @PathVariable int studentId) {
@@ -169,6 +170,28 @@ public class ProjectProposalController {
     public ResponseEntity<List<ProjectProposalDTO>> getProposalsByClassId(@PathVariable Long classId) {
         return ResponseEntity.ok(ppServ.getProposalsByClassId(classId));
     }
+    @PutMapping("/teacher/rate-project/{proposalId}")
+    public ResponseEntity<Map<String, String>> rateProject(
+            @PathVariable int proposalId,
+            @RequestBody Map<String, Object> payload) {
+        System.out.println("Received Rating Request: " + payload); // Debugging
+        try {
+            int userId = Integer.parseInt(payload.get("userId").toString()); // Ensure userId is not null
+            String rating = payload.get("rating").toString();  // Ensure rating is in string format
+
+            ppServ.rateProjectProposal(proposalId, userId, rating);
+            return ResponseEntity.ok(Map.of("message", "Project proposal rated successfully."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+
+
+
+
 
 
 
