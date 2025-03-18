@@ -1,6 +1,7 @@
 package com.group2.SPEAR_Backend.Controller;
 
 import com.group2.SPEAR_Backend.DTO.*;
+import com.group2.SPEAR_Backend.Model.Classes;
 import com.group2.SPEAR_Backend.Model.Team;
 import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.Repository.TeamRepository;
@@ -391,6 +392,35 @@ public class TeamController {
     @PostMapping("/team/selectedTeamsByFaculty/notification/{facultyID}")
     public ResponseEntity<Object> retrieveNotificationRecipientsForSelectedTeams(@PathVariable int facultyID, @RequestBody TeamsIDRequest teamsIDRequest){
         return ResponseEntity.ok(tServ.retrieveNotificationRecipientsForSelectedTeams(facultyID, teamsIDRequest.getTeamsIDList()));
+    }
+
+    // queueit
+    @GetMapping("/mentor/classrooms/{mentorId}")
+    public ResponseEntity<List<Classes>> getClassroomsForMentor(@PathVariable int mentorId) {
+        List<Classes> classrooms = tServ.getClassroomsForMentor(mentorId);
+        return ResponseEntity.ok(classrooms);
+    }
+
+    @GetMapping("/mentor/classroom/{classId}/teams/{mentorId}")
+    public ResponseEntity<Object> getTeamsByMentorAndClassroom(
+            @PathVariable int mentorId,
+            @PathVariable int classId) {
+        List<TeamDTO> teams = tServ.getTeamsByMentorAndClassroom(mentorId, classId);
+        return ResponseEntity.ok(teams);
+    }
+
+    @GetMapping("/classroom/team/{classId}")
+    public ResponseEntity<?> getTeambyClassroomID(@PathVariable int classId) {
+        try {
+            List<TeamDTO> teams = tServ.getTeambyClassroomID(classId);
+            return ResponseEntity.ok(teams);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
+        }
     }
 
 }

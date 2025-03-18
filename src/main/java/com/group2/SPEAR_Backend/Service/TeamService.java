@@ -795,4 +795,107 @@ public class TeamService {
         return new TeamDTO((long) team.getTid(), team.getGroupName(), team.getClassRef().getCid(), memberNames);
     }
 
+    public List<Classes> getClassroomsForMentor(int mentorId) {
+        return tRepo.findClassroomsForMentor(mentorId);
+    }
+
+    public List<TeamDTO> getTeamsByMentorAndClassroom(int mentorId, int classId) {
+        List<Team> activeTeams = tRepo.findTeamsByMentorAndClassroom(mentorId,classId);
+
+        if (activeTeams.isEmpty()) {
+            throw new NoSuchElementException("No active teams found for class ID " + classId);
+        }
+
+        List<TeamDTO> teamDTOs = new ArrayList<>();
+
+        for (Team team : activeTeams) {
+            String projectName = (team.getProject() != null) ? team.getProject().getProjectName() : "No Project Assigned";
+            Integer projectId = (team.getProject() != null) ? team.getProject().getPid() : null;
+            String projectDescription = (team.getProject() != null) ? team.getProject().getDescription() : "No Description Available";
+
+            String leaderName = (team.getLeader() != null) ? team.getLeader().getFirstname() + " " + team.getLeader().getLastname() : "Unknown Leader";
+
+            String adviserName = (team.getAdviser() != null) ? team.getAdviser().getFirstname() + " " + team.getAdviser().getLastname() : "No Adviser Assigned";
+
+            String scheduleDay = (team.getSchedule() != null) ? team.getSchedule().getDay().name() : "No Day Set";
+
+            String scheduleTime = (team.getSchedule() != null)
+                    ? team.getSchedule().getStartTime().format(TIME_FORMATTER) + " - " + team.getSchedule().getEndTime().format(TIME_FORMATTER)
+                    : "No Time Set";
+
+            String courseDescription = (team.getClassRef() != null) ? team.getClassRef().getCourseDescription() : "No Class Info Available";
+
+            List<String> memberNames = team.getMembers().stream()
+                    .filter(member -> team.getLeader() == null || member.getUid() != team.getLeader().getUid())
+                    .map(member -> member.getFirstname() + " " + member.getLastname())
+                    .collect(Collectors.toList());
+
+            teamDTOs.add(new TeamDTO(
+                    team.getTid(),
+                    team.getGroupName(),
+                    team.getClassRef().getCid(),
+                    team.getMembers().stream().map(User::getUid).toList(),
+                    memberNames,
+                    team.getSchedule().getDay(),
+                    team.getSchedule().getStartTime(),
+                    team.getSchedule().getEndTime(),
+                    team.getAdviser().getUid()
+            ));
+        }
+        return teamDTOs;
+    }
+
+    public List<TeamDTO> getTeambyClassroomID(int classId) {
+        List<Team> activeTeams = tRepo.findActiveTeamsByClassId(classId);
+
+        if (activeTeams.isEmpty()) {
+            throw new NoSuchElementException("No active teams found for class ID " + classId);
+        }
+
+        List<TeamDTO> teamDTOs = new ArrayList<>();
+
+        for (Team team : activeTeams) {
+            String projectName = (team.getProject() != null) ? team.getProject().getProjectName() : "No Project Assigned";
+            Integer projectId = (team.getProject() != null) ? team.getProject().getPid() : null;
+            String projectDescription = (team.getProject() != null) ? team.getProject().getDescription() : "No Description Available";
+
+            String leaderName = (team.getLeader() != null) ? team.getLeader().getFirstname() + " " + team.getLeader().getLastname() : "Unknown Leader";
+
+            String adviserName = (team.getAdviser() != null) ? team.getAdviser().getFirstname() + " " + team.getAdviser().getLastname() : "No Adviser Assigned";
+
+            String scheduleDay = (team.getSchedule() != null) ? team.getSchedule().getDay().name() : "No Day Set";
+
+            String scheduleTime = (team.getSchedule() != null)
+                    ? team.getSchedule().getStartTime().format(TIME_FORMATTER) + " - " + team.getSchedule().getEndTime().format(TIME_FORMATTER)
+                    : "No Time Set";
+
+            String courseDescription = (team.getClassRef() != null) ? team.getClassRef().getCourseDescription() : "No Class Info Available";
+
+            List<String> memberNames = team.getMembers().stream()
+                    .filter(member -> team.getLeader() == null || member.getUid() != team.getLeader().getUid())
+                    .map(member -> member.getFirstname() + " " + member.getLastname())
+                    .collect(Collectors.toList());
+
+            List<FeatureDTO> features = new ArrayList<>();
+            if (team.getProject() != null) {
+                features = fRepo.findByProjectId(projectId).stream()
+                        .map(feature -> new FeatureDTO(feature.getFeatureTitle(), feature.getFeatureDescription()))
+                        .toList();
+            }
+
+            teamDTOs.add(new TeamDTO(
+                    team.getTid(),
+                    team.getGroupName(),
+                    team.getClassRef().getCid(),
+                    team.getMembers().stream().map(User::getUid).toList(),
+                    memberNames,
+                    team.getSchedule().getDay(),
+                    team.getSchedule().getStartTime(),
+                    team.getSchedule().getEndTime(),
+                    team.getAdviser().getUid()
+            ));
+        }
+        return teamDTOs;
+    }
+
 }

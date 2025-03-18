@@ -106,7 +106,6 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
     @Query("SELECT c FROM Classes c WHERE c.createdBy.uid = :facultyID AND c.cid IN :classIDList")
     List<Classes> findSelectedByFaculty(@Param("facultyID") int facultyID, @Param("classIDList") List<Integer> classIDList);
 
-
 }
 
 
