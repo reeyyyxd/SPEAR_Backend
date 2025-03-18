@@ -354,6 +354,16 @@ public class TeamController {
             return ResponseEntity.ok(teamDTO);
         }
 
+        @GetMapping("evaluation/teacher/team-details/{teamName}")
+        public ResponseEntity<?> getTeamProjectAndMembers(@PathVariable String teamName) {
+            try {
+                TeamProjectDTO teamProject = tServ.getProjectAndMembersByTeamName(teamName);
+                return ResponseEntity.ok(teamProject);
+            } catch (NoSuchElementException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            }
+        }
+
 
 // Q it controllers
     //created for queueit, retrieval of teams under a certain mentor

@@ -21,13 +21,18 @@ public class Question {
     @JoinColumn(name = "class_id", referencedColumnName = "cid", nullable = false)
     private Classes classes;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "question_type", nullable = false)
+    private QuestionType questionType; // NEW: Question Type (TEXT, RADIO, etc.)
+
     public Question() {
     }
 
-    public Question(String questionText, Evaluation evaluation, Classes classes) {
+    public Question(String questionText, Evaluation evaluation, Classes classes, QuestionType questionType) {
         this.questionText = questionText;
         this.evaluation = evaluation;
         this.classes = classes;
+        this.questionType = questionType;
     }
 
     public Long getQid() {
@@ -60,5 +65,13 @@ public class Question {
 
     public void setClasses(Classes classes) {
         this.classes = classes;
+    }
+
+    public QuestionType getQuestionType() {
+        return questionType;
+    }
+
+    public void setQuestionType(QuestionType questionType) {
+        this.questionType = questionType;
     }
 }

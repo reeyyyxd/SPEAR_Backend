@@ -25,6 +25,7 @@ public class EvaluationDTO {
     private List<String> evaluatorNames;
     private List<String> evaluateeNames;
     private boolean isEvaluated;
+    private Long teamId;
 
 
     public EvaluationDTO() {}
@@ -64,6 +65,8 @@ public class EvaluationDTO {
         this.section = section;
         this.courseDescription = courseDescription;
     }
+
+
 
 
 

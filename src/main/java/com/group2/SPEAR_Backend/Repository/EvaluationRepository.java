@@ -28,7 +28,7 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Long> {
     // Get evaluations by their type (STUDENT-TO-STUDENT, STUDENT-TO-ADVISER, ADVISER-TO-STUDENT)
     List<Evaluation> findByEvaluationType(EvaluationType evaluationType);
 
-    // Get all open evaluations (evaluations that are available)
+    // Get all open evaluations to students
     @Query("SELECT e FROM Evaluation e " +
             "JOIN e.classRef c " +
             "JOIN c.enrolledStudents s " +
@@ -36,6 +36,15 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Long> {
             "AND e.availability = 'Open' " +
             "AND (e.evaluationType = 'STUDENT_TO_STUDENT' OR e.evaluationType = 'STUDENT_TO_ADVISER')")
     List<Evaluation> findOpenEvaluationsForStudent(@Param("studentId") Long studentId);
+
+    //Get all open evaluations to adviser
+    @Query("SELECT DISTINCT e FROM Evaluation e " +
+            "JOIN e.classRef c " +
+            "JOIN Team t ON t.classRef = c " +
+            "WHERE t.adviser.uid = :adviserId " +
+            "AND e.availability = 'Open' " +
+            "AND e.evaluationType = 'ADVISER_TO_STUDENT'")
+    List<Evaluation> findOpenEvaluationsForAdviser(@Param("adviserId") Long adviserId);
 
 
 
