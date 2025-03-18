@@ -5,10 +5,7 @@ import com.group2.SPEAR_Backend.Model.Classes;
 import com.group2.SPEAR_Backend.Model.Evaluation;
 import com.group2.SPEAR_Backend.Model.EvaluationType;
 import com.group2.SPEAR_Backend.Model.Team;
-import com.group2.SPEAR_Backend.Repository.ClassesRepository;
-import com.group2.SPEAR_Backend.Repository.EvaluationRepository;
-import com.group2.SPEAR_Backend.Repository.QuestionRepository;
-import com.group2.SPEAR_Backend.Repository.UserRepository;
+import com.group2.SPEAR_Backend.Repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -32,6 +29,9 @@ public class EvaluationService {
 
     @Autowired
     private QuestionRepository qRepo;
+
+    @Autowired
+    private TeamRepository tRepo;
 
     public EvaluationDTO createEvaluation(Evaluation evaluation, Long classId, EvaluationType evaluationType) {
         Classes classes = cRepo.findById(classId)
@@ -179,6 +179,40 @@ public class EvaluationService {
                 ))
                 .collect(Collectors.toList());
     }
+
+
+
+    public List<EvaluationDTO> getEvaluationsForAdviser(Long adviserId) {
+        return eRepo.findOpenEvaluationsForAdviser(adviserId).stream()
+                .flatMap(evaluation -> {
+                    // Fetch all teams for the adviser within the evaluation's class
+                    List<Team> teams = tRepo.findByClassIdAndAdviserId(evaluation.getClassRef().getCid(), adviserId);
+
+                    // Map each team separately
+                    return teams.stream().map(team -> new EvaluationDTO(
+                            evaluation.getEid(),
+                            evaluation.getEvaluationType(),
+                            evaluation.getAvailability(),
+                            evaluation.getDateOpen(),
+                            evaluation.getDateClose(),
+                            evaluation.getPeriod(),
+                            evaluation.getClassRef().getCid(),
+                            evaluation.getClassRef().getCourseCode(),
+                            evaluation.getClassRef().getSection(),
+                            evaluation.getClassRef().getCourseDescription(),
+                            team.getGroupName(), // Fetch correct team name
+                            team.getAdviser() != null
+                                    ? team.getAdviser().getFirstname() + " " + team.getAdviser().getLastname()
+                                    : "Unknown Adviser",
+                            null, // Evaluators
+                            null, // Evaluatees
+                            false  // Evaluated status
+                    ));
+                })
+                .collect(Collectors.toList());
+    }
+
+
 
 
     //for dates, do not touch!

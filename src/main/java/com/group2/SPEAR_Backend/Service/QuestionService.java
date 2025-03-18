@@ -65,7 +65,8 @@ public class QuestionService {
                 question.getQid(),
                 question.getQuestionText(),
                 question.getEvaluation().getEid(),
-                question.getClasses().getCid()
+                question.getClasses().getCid(),
+                question.getQuestionType()
         );
     }
 

@@ -110,15 +110,16 @@ public class EvaluationController {
     }
 
     @GetMapping("/student/{studentId}/available-evaluations")
-    public ResponseEntity<List<EvaluationDTO>> getAvailableEvaluations(
-            @PathVariable Long studentId) {
+    public ResponseEntity<List<EvaluationDTO>> getAvailableEvaluations(@PathVariable Long studentId) {
         List<EvaluationDTO> evaluations = eServ.getEvaluationsForStudent(studentId);
         return ResponseEntity.ok(evaluations);
     }
 
-
-
-
+    @GetMapping("/teacher/{adviserId}/available-evaluations")
+    public ResponseEntity<List<EvaluationDTO>> getAvailableEvaluationsForAdviser(@PathVariable Long adviserId) {
+        List<EvaluationDTO> evaluations = eServ.getEvaluationsForAdviser(adviserId);
+        return ResponseEntity.ok(evaluations);
+    }
 
     @GetMapping("/{studentId}/team/{classId}")
     public ResponseEntity<Long> getStudentTeamId(@PathVariable Long studentId, @PathVariable Long classId) {

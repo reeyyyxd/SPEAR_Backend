@@ -52,6 +52,9 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
     @Query(value = "DELETE FROM team_members WHERE team_id = :teamId", nativeQuery = true)
     void deleteTeamMembers(@Param("teamId") int teamId);
 
+    @Query("SELECT t FROM Team t WHERE t.classRef.cid = :classId AND t.adviser.uid = :adviserId")
+    List<Team> findByClassIdAndAdviserId(@Param("classId") Long classId, @Param("adviserId") Long adviserId);
+
     @Query("SELECT t FROM Team t JOIN t.adviser u WHERE u.uid = :mentorID")
     List<Team> retrieveTeamsForMentor(int mentorID);
 
@@ -73,6 +76,9 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
 
     @Query("SELECT t FROM Team t JOIN t.members m WHERE m.uid = :studentId AND t.classRef.cid = :classId")
     Team findTeamByStudentAndClass(@Param("studentId") Long studentId, @Param("classId") Long classId);
+
+    @Query("SELECT t FROM Team t WHERE t.groupName = :teamName")
+    Optional<Team> findByTeamName(@Param("teamName") String teamName);
 
 
 

@@ -639,6 +639,40 @@ public class TeamService {
         return response;
     }
 
+    public TeamProjectDTO getProjectAndMembersByTeamName(String teamName) {
+        Team team = tRepo.findByTeamName(teamName)
+                .orElseThrow(() -> new NoSuchElementException("No team found with name: " + teamName));
+
+        ProjectProposal project = team.getProject();
+        if (project == null) {
+            throw new NoSuchElementException("No official project assigned to team: " + teamName);
+        }
+
+        // Get team members
+        List<String> memberNames = team.getMembers().stream()
+                .map(member -> member.getFirstname() + " " + member.getLastname())
+                .collect(Collectors.toList());
+
+        return new TeamProjectDTO(
+                team.getTid(),
+                team.getGroupName(),
+                project.getPid(),
+                project.getProjectName(),
+                project.getDescription(),
+                project.getStatus().name(),
+                project.getRatings(),
+                memberNames
+        );
+    }
+
+
+
+
+
+
+
+
+
 
     //Q it services (for maboi Jandel
     public List<TeamDTO> retrieveTeamsForMentor(int mentorID) {
