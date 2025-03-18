@@ -211,6 +211,28 @@ public class EvaluationService {
                 })
                 .collect(Collectors.toList());
     }
+    //for admin download
+    public List<EvaluationDTO> getAllAdviserToStudentEvaluations() {
+        return eRepo.findAllAdviserToStudentEvaluations().stream()
+                .map(evaluation -> new EvaluationDTO(
+                        evaluation.getEid(),
+                        evaluation.getEvaluationType(),
+                        evaluation.getAvailability(),
+                        evaluation.getDateOpen(),
+                        evaluation.getDateClose(),
+                        evaluation.getPeriod(),
+                        evaluation.getClassRef().getCid(),
+                        evaluation.getClassRef().getCourseCode(),
+                        evaluation.getClassRef().getSection(),
+                        evaluation.getClassRef().getCourseDescription(),
+                        null,  // Team Name
+                        null,  // Adviser Name
+                        null,  // Evaluators
+                        null,  // Evaluatees
+                        false  // Evaluated status
+                ))
+                .collect(Collectors.toList());
+    }
 
 
 

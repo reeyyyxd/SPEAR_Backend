@@ -149,9 +149,10 @@ public class ProjectProposalService {
         return ppRepo.findByAdviser(adviserId).stream().map(this::mapProposalToDTO).toList();
     }
 
-    public List<ProjectProposalDTO> getProposalsByStatus(String status) {
+    public List<ProjectProposalDTO> getProposalsByStatus(ProjectStatus status) {
         return ppRepo.findByStatus(status).stream().map(this::mapProposalToDTO).toList();
     }
+
     public List<ProjectProposalDTO> getProposalsByTeamId(int teamId) {
         return ppRepo.findByTeamId(teamId).stream().map(this::mapProposalToDTO).toList();
     }
@@ -198,6 +199,11 @@ public class ProjectProposalService {
                 .map(Team::getProject)
                 .filter(project -> project != null)
                 .collect(Collectors.toList());
+    }
+    public List<ProjectProposalDTO> getAllDeletedProposals() {
+        return ppRepo.findAllDeleted().stream()
+                .map(this::mapProposalToDTOWithFeatures)
+                .toList();
     }
 
 

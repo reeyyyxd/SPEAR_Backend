@@ -360,6 +360,10 @@ public class UserService implements UserDetailsService {
         return userRepo.fetchAllSoftDeletedStudents();
     }
 
+    public List<UserDTO> getAllSoftDeletedUsers() {
+        return userRepo.fetchAllSoftDeletedUsers();
+    }
+
     public List<UserDTO> getActiveUsersByName(String firstname, String lastname) {
         try {
             return userRepo.findActiveUsersByName(firstname, lastname);
@@ -467,6 +471,7 @@ public class UserService implements UserDetailsService {
                 .map(student -> new UserDTO(student.getFirstname(), student.getLastname(), student.getEmail(), student.getUid()))
                 .collect(Collectors.toList());
     }
+
 
 
 

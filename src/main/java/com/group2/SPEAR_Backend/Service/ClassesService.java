@@ -510,4 +510,8 @@ public class ClassesService {
                 )
         ).collect(Collectors.toList());
     }
+
+    public List<ClassesDTO> getAllDeletedClasses() {
+        return cRepo.findAllDeletedClasses();
+    }
 }

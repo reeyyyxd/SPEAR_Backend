@@ -210,6 +210,11 @@ public class ClassesController {
         return ResponseEntity.ok(cServ.getClassesForQualifiedAdviser(teacherId));
     }
 
+    @GetMapping("/admin/classes/deleted")
+    public ResponseEntity<List<ClassesDTO>> getAllDeletedClasses() {
+        return ResponseEntity.ok(cServ.getAllDeletedClasses());
+    }
+
 
 
 

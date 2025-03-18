@@ -167,6 +167,11 @@ public class UserController {
         return ResponseEntity.ok(uServ.getAvailableStudentsForTeam(classId));
     }
 
+    @GetMapping("/admin/users/deleted")
+    public ResponseEntity<List<UserDTO>> getAllSoftDeletedUsers() {
+        return ResponseEntity.ok(uServ.getAllSoftDeletedUsers());
+    }
+
 
 
 

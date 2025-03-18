@@ -44,6 +44,13 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
     @Query("SELECT u FROM Classes c JOIN c.qualifiedAdvisers u WHERE c.cid = :classId")
     List<User> findQualifiedAdvisersByClassId(@Param("classId") Long classId);
 
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO( " +
+            "c.cid, c.classKey, c.courseCode, c.courseDescription, c.schoolYear, c.section, c.semester, " +
+            "c.createdBy.firstname, c.createdBy.lastname, c.createdBy.role) " +
+            "FROM Classes c " +
+            "WHERE c.isDeleted = true")
+    List<ClassesDTO> findAllDeletedClasses();
+
 
     //changed for queueit from u.role from the end, to u.uid 3rd from last.
     //took the liberty to change this because I did not see any changes from this endpoint

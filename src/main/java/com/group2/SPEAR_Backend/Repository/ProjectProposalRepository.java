@@ -1,6 +1,7 @@
 package com.group2.SPEAR_Backend.Repository;
 
 import com.group2.SPEAR_Backend.Model.ProjectProposal;
+import com.group2.SPEAR_Backend.Model.ProjectStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,7 +17,7 @@ public interface ProjectProposalRepository extends JpaRepository<ProjectProposal
     List<ProjectProposal> findByClassAndStudent(@Param("classId") Long classId, @Param("studentId") int studentId);
 
     @Query("SELECT p FROM ProjectProposal p WHERE p.status = :status AND p.isDeleted = false")
-    List<ProjectProposal> findByStatus(@Param("status") String status);
+    List<ProjectProposal> findByStatus(@Param("status") ProjectStatus status);
 
     @Query("SELECT p FROM ProjectProposal p WHERE p.proposedBy.uid = :adviserId AND p.isDeleted = false")
     List<ProjectProposal> findByAdviser(@Param("adviserId") int adviserId);
@@ -38,5 +39,8 @@ public interface ProjectProposalRepository extends JpaRepository<ProjectProposal
 
     @Query("SELECT p FROM ProjectProposal p WHERE p.classProposal.cid = :classId AND p.isDeleted = false")
     List<ProjectProposal> findByClassId(@Param("classId") Long classId);
+
+    @Query("SELECT p FROM ProjectProposal p WHERE p.isDeleted = true")
+    List<ProjectProposal> findAllDeleted();
 
 }

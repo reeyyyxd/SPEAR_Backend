@@ -28,6 +28,10 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Long> {
     // Get evaluations by their type (STUDENT-TO-STUDENT, STUDENT-TO-ADVISER, ADVISER-TO-STUDENT)
     List<Evaluation> findByEvaluationType(EvaluationType evaluationType);
 
+    //for admin download
+    @Query("SELECT e FROM Evaluation e WHERE e.evaluationType = 'ADVISER_TO_STUDENT'")
+    List<Evaluation> findAllAdviserToStudentEvaluations();
+
     // Get all open evaluations to students
     @Query("SELECT e FROM Evaluation e " +
             "JOIN e.classRef c " +
@@ -63,6 +67,7 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Long> {
     @Query("SELECT t.tid FROM Team t JOIN t.members m " +
             "WHERE m.uid = :studentId AND t.classRef.cid = :classId")
     Long findTeamIdByStudent(@Param("studentId") Long studentId, @Param("classId") Long classId);
+
 
 
 

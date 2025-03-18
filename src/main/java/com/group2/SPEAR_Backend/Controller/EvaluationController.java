@@ -129,6 +129,38 @@ public class EvaluationController {
         }
         return ResponseEntity.ok(teamId);
     }
+    //for admin download
+    @GetMapping("/admin/adviser-to-student-evaluations")
+    public ResponseEntity<List<EvaluationDTO>> getAllAdviserToStudentEvaluations() {
+        List<EvaluationDTO> evaluations = eServ.getAllAdviserToStudentEvaluations();
+        return ResponseEntity.ok(evaluations);
+    }
+
+//    @GetMapping("/admin/download/adviser-to-student-evaluations/csv")
+//    public ResponseEntity<byte[]> downloadAdviserToStudentEvaluationsCSV() {
+//        List<EvaluationDTO> evaluations = eServ.getAllAdviserToStudentEvaluations();
+//
+//        StringBuilder csvData = new StringBuilder("Evaluation ID, Type, Availability, Date Open, Date Close, Period, Course Code, Section, Description\n");
+//
+//        for (EvaluationDTO eval : evaluations) {
+//            csvData.append(eval.getEid()).append(",")
+//                    .append(eval.getEvaluationType()).append(",")
+//                    .append(eval.getAvailability()).append(",")
+//                    .append(eval.getDateOpen()).append(",")
+//                    .append(eval.getDateClose()).append(",")
+//                    .append(eval.getPeriod()).append(",")
+//                    .append(eval.getCourseCode()).append(",")
+//                    .append(eval.getSection()).append(",")
+//                    .append(eval.getCourseDescription()).append("\n");
+//        }
+//
+//        byte[] csvBytes = csvData.toString().getBytes();
+//
+//        return ResponseEntity.ok()
+//                .header("Content-Disposition", "attachment; filename=adviser_to_student_evaluations.csv")
+//                .header("Content-Type", "text/csv")
+//                .body(csvBytes);
+//    }
 
 
 

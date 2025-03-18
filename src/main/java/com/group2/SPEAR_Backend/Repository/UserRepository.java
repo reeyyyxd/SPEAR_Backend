@@ -71,6 +71,12 @@ public interface UserRepository extends JpaRepository <User, Integer> {
             "OR LOWER(u.lastname) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
     List<User> findAvailableStudentsForTeamWithSearch(@Param("classId") Long classId, @Param("searchTerm") String searchTerm);
 
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.UserDTO(200, 'User retrieved successfully', u.firstname, u.lastname, u.email, u.role) " +
+            "FROM User u WHERE u.isDeleted = true")
+    List<UserDTO> fetchAllSoftDeletedUsers();
+
+
+
 
 
 
