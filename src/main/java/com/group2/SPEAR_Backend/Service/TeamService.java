@@ -860,7 +860,6 @@ public class TeamService {
             String courseDescription = (team.getClassRef() != null) ? team.getClassRef().getCourseDescription() : "No Class Info Available";
 
             List<String> memberNames = team.getMembers().stream()
-                    .filter(member -> team.getLeader() == null || member.getUid() != team.getLeader().getUid())
                     .map(member -> member.getFirstname() + " " + member.getLastname())
                     .collect(Collectors.toList());
 
@@ -906,7 +905,6 @@ public class TeamService {
             String courseDescription = (team.getClassRef() != null) ? team.getClassRef().getCourseDescription() : "No Class Info Available";
 
             List<String> memberNames = team.getMembers().stream()
-                    .filter(member -> team.getLeader() == null || member.getUid() != team.getLeader().getUid())
                     .map(member -> member.getFirstname() + " " + member.getLastname())
                     .collect(Collectors.toList());
 
