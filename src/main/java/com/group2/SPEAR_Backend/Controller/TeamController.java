@@ -345,6 +345,7 @@ public class TeamController {
         }
     }
 
+        //for evaluation student-student
         @GetMapping("evaluation/{studentId}/class/{classId}/team")
         public ResponseEntity<TeamDTO> getStudentTeam(@PathVariable Long studentId, @PathVariable Long classId) {
             TeamDTO teamDTO = tServ.getStudentTeam(studentId, classId);
@@ -352,6 +353,16 @@ public class TeamController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
             return ResponseEntity.ok(teamDTO);
+        }
+
+        //for evaluation student-adviser
+        @GetMapping("evaluation/{studentId}/class/{classId}/adviser")
+        public ResponseEntity<AdviserDTO> getAdviserByTeam(@PathVariable Long studentId, @PathVariable Long classId) {
+            AdviserDTO adviserDTO = tServ.getAdviserByTeam(studentId, classId);
+            if (adviserDTO == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+            return ResponseEntity.ok(adviserDTO);
         }
 
         @GetMapping("evaluation/teacher/team-details/{teamName}")

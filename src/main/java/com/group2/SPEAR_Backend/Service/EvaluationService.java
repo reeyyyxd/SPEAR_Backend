@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -212,26 +214,35 @@ public class EvaluationService {
                 .collect(Collectors.toList());
     }
     //for admin download
-    public List<EvaluationDTO> getAllAdviserToStudentEvaluations() {
-        return eRepo.findAllAdviserToStudentEvaluations().stream()
-                .map(evaluation -> new EvaluationDTO(
-                        evaluation.getEid(),
-                        evaluation.getEvaluationType(),
-                        evaluation.getAvailability(),
-                        evaluation.getDateOpen(),
-                        evaluation.getDateClose(),
-                        evaluation.getPeriod(),
-                        evaluation.getClassRef().getCid(),
-                        evaluation.getClassRef().getCourseCode(),
-                        evaluation.getClassRef().getSection(),
-                        evaluation.getClassRef().getCourseDescription(),
-                        null,  // Team Name
-                        null,  // Adviser Name
-                        null,  // Evaluators
-                        null,  // Evaluatees
-                        false  // Evaluated status
-                ))
-                .collect(Collectors.toList());
+    public List<EvaluationDTO> getAllStudentsToAdviserEvaluations() {
+        return eRepo.findAllStudentsToAdviserEvaluations().stream()
+                .flatMap(evaluation -> {
+                    // Retrieve all teams for the given class
+                    List<Team> teams = tRepo.findTeamsByClassId(evaluation.getClassRef().getCid());
+
+                    // Extract unique advisers and create separate DTOs for each
+                    return teams.stream()
+                            .map(Team::getAdviser)
+                            .filter(Objects::nonNull) // Remove null values
+                            .map(adviser -> new EvaluationDTO(
+                                    evaluation.getEid(),
+                                    evaluation.getEvaluationType(),
+                                    evaluation.getAvailability(),
+                                    evaluation.getDateOpen(),
+                                    evaluation.getDateClose(),
+                                    evaluation.getPeriod(),
+                                    evaluation.getClassRef().getCid(),
+                                    evaluation.getClassRef().getCourseCode(),
+                                    evaluation.getClassRef().getSection(),
+                                    evaluation.getClassRef().getCourseDescription(),
+                                    null,  // Team Name (optional)
+                                    adviser.getFirstname() + " " + adviser.getLastname(), // Separate rows per adviser
+                                    null,  // Evaluators
+                                    null,  // Evaluatees
+                                    false  // Evaluated status
+                            ));
+                })
+                .collect(Collectors.toList()); // Flatten into a single list
     }
 
 

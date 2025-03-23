@@ -34,7 +34,7 @@ public class Evaluation {
     private Classes classRef;
 
     @OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<EvaluationSubmission> submissions = new HashSet<>();
+    private Set<Submission> submissions = new HashSet<>();
 
     public Evaluation() {}
 
@@ -104,11 +104,11 @@ public class Evaluation {
         this.classRef = classRef;
     }
 
-    public Set<EvaluationSubmission> getSubmissions() {
+    public Set<Submission> getSubmissions() {
         return submissions;
     }
 
-    public void setSubmissions(Set<EvaluationSubmission> submissions) {
+    public void setSubmissions(Set<Submission> submissions) {
         this.submissions = submissions;
     }
 }

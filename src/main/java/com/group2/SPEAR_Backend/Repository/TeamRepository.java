@@ -55,6 +55,12 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
     @Query("SELECT t FROM Team t WHERE t.classRef.cid = :classId AND t.adviser.uid = :adviserId")
     List<Team> findByClassIdAndAdviserId(@Param("classId") Long classId, @Param("adviserId") Long adviserId);
 
+    @Query("SELECT t FROM Team t WHERE t.classRef.cid = :classId")
+    List<Team> findTeamsByClassId(@Param("classId") Long classId);
+
+    @Query("SELECT t FROM Team t WHERE t.classRef = :classRef")
+    Optional<Team> findByClassRef(@Param("classRef") Classes classRef);
+
     @Query("SELECT t FROM Team t JOIN t.adviser u WHERE u.uid = :mentorID")
     List<Team> retrieveTeamsForMentor(int mentorID);
 

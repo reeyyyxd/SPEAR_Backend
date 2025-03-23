@@ -23,16 +23,25 @@ public class Question {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "question_type", nullable = false)
-    private QuestionType questionType; // NEW: Question Type (TEXT, RADIO, etc.)
+    private QuestionType questionType;
+
+    @ManyToOne
+    @JoinColumn(name = "created_by", referencedColumnName = "uid", nullable = false)
+    private User createdBy;
+
+    @Column(name = "is_reuse", nullable = false)
+    private boolean isReuse;
 
     public Question() {
     }
 
-    public Question(String questionText, Evaluation evaluation, Classes classes, QuestionType questionType) {
+    public Question(String questionText, Evaluation evaluation, Classes classes, QuestionType questionType, User createdBy, boolean isReuse) {
         this.questionText = questionText;
         this.evaluation = evaluation;
         this.classes = classes;
         this.questionType = questionType;
+        this.createdBy = createdBy;
+        this.isReuse = isReuse;
     }
 
     public Long getQid() {
@@ -73,5 +82,21 @@ public class Question {
 
     public void setQuestionType(QuestionType questionType) {
         this.questionType = questionType;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public boolean isReuse() {
+        return isReuse;
+    }
+
+    public void setReuse(boolean reuse) {
+        isReuse = reuse;
     }
 }

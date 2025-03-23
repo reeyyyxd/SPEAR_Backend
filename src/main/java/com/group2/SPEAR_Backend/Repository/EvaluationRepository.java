@@ -29,8 +29,8 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Long> {
     List<Evaluation> findByEvaluationType(EvaluationType evaluationType);
 
     //for admin download
-    @Query("SELECT e FROM Evaluation e WHERE e.evaluationType = 'ADVISER_TO_STUDENT'")
-    List<Evaluation> findAllAdviserToStudentEvaluations();
+    @Query("SELECT e FROM Evaluation e WHERE e.evaluationType = 'STUDENT_TO_ADVISER'")
+    List<Evaluation> findAllStudentsToAdviserEvaluations();
 
     // Get all open evaluations to students
     @Query("SELECT e FROM Evaluation e " +

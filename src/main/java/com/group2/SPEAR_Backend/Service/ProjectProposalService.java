@@ -142,7 +142,11 @@ public class ProjectProposalService {
 
     //some other project proposals get functions
     public List<ProjectProposalDTO> getProposalsByClassAndStudent(Long classId, int studentId) {
-        return ppRepo.findByClassAndStudent(classId, studentId).stream().map(this::mapProposalToDTO).toList();
+        return ppRepo.findByClassAndStudent(classId, studentId).stream()
+                .filter(proposal -> proposal.getTeamProject() == null || proposal.getTeamProject().getMembers().stream()
+                        .anyMatch(member -> member.getUid() == studentId))  // Ensure proposal belongs to student's team
+                .map(this::mapProposalToDTO)
+                .toList();
     }
 
     public List<ProjectProposalDTO> getProposalsByAdviser(int adviserId) {
@@ -295,9 +299,10 @@ public class ProjectProposalService {
         User user = uRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-        // Change ownership and set to ACCEPTED
+        Team newTeam = tRepo.findTeamByStudentAndClass((long) userId, proposal.getClassProposal().getCid());
         proposal.setProposedBy(user);
-        proposal.setStatus(ProjectStatus.APPROVED); // Automatically accepted
+        proposal.setTeamProject(newTeam);
+        proposal.setStatus(ProjectStatus.APPROVED);
 
         ppRepo.save(proposal);
     }

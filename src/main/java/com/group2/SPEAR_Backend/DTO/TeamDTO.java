@@ -142,9 +142,10 @@ public class TeamDTO {
         this.courseDescription = (courseDescription != null) ? courseDescription : "No Class Info Available";
     }
 
-    public TeamDTO(Long teamId, String groupName, Long classId, List<String> memberNames) {
+    public TeamDTO(Long teamId, String groupName, Long classId, List<Integer> memberIds, List<String> memberNames) {
         this.teamId = teamId;
         this.groupName = groupName;
+        this.memberIds = memberIds;
         this.classId = classId;
         this.memberNames = memberNames;
     }

@@ -3,6 +3,7 @@ package com.group2.SPEAR_Backend.Controller;
 import com.group2.SPEAR_Backend.DTO.EvaluationDTO;
 import com.group2.SPEAR_Backend.Model.Evaluation;
 import com.group2.SPEAR_Backend.Model.EvaluationType;
+import com.group2.SPEAR_Backend.Repository.EvaluationRepository;
 import com.group2.SPEAR_Backend.Service.EvaluationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,9 @@ public class EvaluationController {
 
     @Autowired
     private EvaluationService eServ;
+
+    @Autowired
+    private EvaluationRepository eRepo;
 
     @PostMapping("teacher/create-evaluation/{classId}")
     public ResponseEntity<?> createEvaluation(
@@ -96,10 +100,13 @@ public class EvaluationController {
     }
 
     //get by evaluation type
-    @GetMapping("/evaluation/type/{evaluationType}")
-    public ResponseEntity<List<Evaluation>> getEvaluationsByType(@PathVariable EvaluationType evaluationType) {
-        List<Evaluation> evaluations = eServ.getEvaluationsByType(evaluationType);
-        return ResponseEntity.ok(evaluations);
+    @GetMapping("/evaluation/{evaluationId}/get-type")
+    public ResponseEntity<EvaluationType> getEvaluationType(@PathVariable Long evaluationId) {
+        Evaluation evaluation = eRepo.findById(evaluationId).orElse(null);
+        if (evaluation == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        return ResponseEntity.ok(evaluation.getEvaluationType());
     }
 
     //get members
@@ -130,9 +137,9 @@ public class EvaluationController {
         return ResponseEntity.ok(teamId);
     }
     //for admin download
-    @GetMapping("/admin/adviser-to-student-evaluations")
-    public ResponseEntity<List<EvaluationDTO>> getAllAdviserToStudentEvaluations() {
-        List<EvaluationDTO> evaluations = eServ.getAllAdviserToStudentEvaluations();
+    @GetMapping("/admin/students-to-adviser-evaluations")
+    public ResponseEntity<List<EvaluationDTO>> getAllStudentsToAdviserEvaluations() {
+        List<EvaluationDTO> evaluations = eServ.getAllStudentsToAdviserEvaluations();
         return ResponseEntity.ok(evaluations);
     }
 

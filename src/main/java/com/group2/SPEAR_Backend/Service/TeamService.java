@@ -648,20 +648,29 @@ public class TeamService {
             throw new NoSuchElementException("No official project assigned to team: " + teamName);
         }
 
-        // Get team members
-        List<String> memberNames = team.getMembers().stream()
-                .map(member -> member.getFirstname() + " " + member.getLastname())
-                .collect(Collectors.toList());
+        // Extract Member IDs
+        List<Integer> memberIds = team.getMembers()
+                .stream()
+                .map(User::getUid)  // Get user ID
+                .toList();
 
+        // Extract Member Names
+        List<String> memberNames = team.getMembers()
+                .stream()
+                .map(m -> m.getFirstname() + " " + m.getLastname())  // Get full name
+                .toList();
+
+        // Create DTO with Member IDs and Names
         return new TeamProjectDTO(
                 team.getTid(),
                 team.getGroupName(),
                 project.getPid(),
                 project.getProjectName(),
                 project.getDescription(),
-                project.getStatus().name(),
+                project.getStatus().toString(),
                 project.getRatings(),
-                memberNames
+                memberIds,  // Include member IDs
+                memberNames  // Include member names
         );
     }
 
@@ -821,13 +830,32 @@ public class TeamService {
         Team team = tRepo.findTeamByStudentAndClass(studentId, classId);
         if (team == null) return null;
 
+        // Extract member names and IDs
+        List<Integer> memberIds = team.getMembers()
+                .stream()
+                .map(User::getUid)  // Extract ID
+                .toList();
+
         List<String> memberNames = team.getMembers()
                 .stream()
                 .map(m -> m.getFirstname() + " " + m.getLastname())
                 .toList();
 
-        return new TeamDTO((long) team.getTid(), team.getGroupName(), team.getClassRef().getCid(), memberNames);
+        return new TeamDTO((long) team.getTid(), team.getGroupName(), team.getClassRef().getCid(), memberIds, memberNames);
     }
+
+    public AdviserDTO getAdviserByTeam(Long studentId, Long classId) {
+        Team team = tRepo.findTeamByStudentAndClass(studentId, classId);
+        if (team == null || team.getAdviser() == null) {
+            return null;
+        }
+
+        User adviser = team.getAdviser();
+        return new AdviserDTO((long) adviser.getUid(), adviser.getFirstname() + " " + adviser.getLastname());
+    }
+
+
+
 
     public List<Classes> getClassroomsForMentor(int mentorId) {
         return tRepo.findClassroomsForMentor(mentorId);

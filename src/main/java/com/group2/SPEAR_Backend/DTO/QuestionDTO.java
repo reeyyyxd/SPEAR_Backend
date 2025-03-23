@@ -9,16 +9,22 @@ public class QuestionDTO {
     private Long evaluationId;
     private Long classId;
     private QuestionType questionType;
+    private Integer createdByUserId;
+    private String createdByName;
+    private boolean isReuse;
 
     public QuestionDTO() {
     }
 
-    public QuestionDTO(Long qid, String questionText, Long evaluationId, Long classId, QuestionType questionType) {
+    public QuestionDTO(Long qid, String questionText, Long evaluationId, Long classId, QuestionType questionType, Integer createdByUserId, String createdByName, boolean isReuse) {
         this.qid = qid;
         this.questionText = questionText;
         this.evaluationId = evaluationId;
         this.classId = classId;
         this.questionType = questionType;
+        this.createdByUserId = createdByUserId;
+        this.createdByName = createdByName;
+        this.isReuse = isReuse;
     }
 
     public QuestionDTO(Question question) {
@@ -26,7 +32,10 @@ public class QuestionDTO {
         this.questionText = question.getQuestionText();
         this.evaluationId = question.getEvaluation() != null ? question.getEvaluation().getEid() : null;
         this.classId = question.getClasses() != null ? question.getClasses().getCid() : null;
-        this.questionType = question.getQuestionType(); // Ensure Question Type is included
+        this.questionType = question.getQuestionType();
+        this.createdByUserId = question.getCreatedBy() != null ? question.getCreatedBy().getUid() : null;
+        this.createdByName = question.getCreatedBy() != null ? question.getCreatedBy().getFirstname() + " " + question.getCreatedBy().getLastname() : "Unknown";
+        this.isReuse = question.isReuse();
     }
 
     public Long getQid() {
@@ -67,5 +76,29 @@ public class QuestionDTO {
 
     public void setQuestionType(QuestionType questionType) {
         this.questionType = questionType;
+    }
+
+    public Integer getCreatedByUserId() {
+        return createdByUserId;
+    }
+
+    public void setCreatedByUserId(Integer createdByUserId) {
+        this.createdByUserId = createdByUserId;
+    }
+
+    public String getCreatedByName() {
+        return createdByName;
+    }
+
+    public void setCreatedByName(String createdByName) {
+        this.createdByName = createdByName;
+    }
+
+    public boolean isReuse() {
+        return isReuse;
+    }
+
+    public void setReuse(boolean reuse) {
+        isReuse = reuse;
     }
 }
