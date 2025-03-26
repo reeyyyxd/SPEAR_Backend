@@ -187,6 +187,19 @@ public class TeamDTO {
         this.adviserId = uid;
     }
 
+    public TeamDTO(int tid, String groupName, Long cid, List<Integer> list, List<String> memberNames, DayOfWeek day, LocalTime startTime, LocalTime endTime, int uid, String adviserName) {
+        this.tid = tid;
+        this.groupName = groupName;
+        this.classId = cid;
+        this.memberIds = list;
+        this.memberNames = memberNames;
+        this.scheduledDay = day;
+        this.start = startTime;
+        this.end = endTime;
+        this.adviserId = uid;
+        this.adviserName = adviserName;
+    }
+
 
 
 

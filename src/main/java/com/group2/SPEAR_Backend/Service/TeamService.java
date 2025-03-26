@@ -900,7 +900,8 @@ public class TeamService {
                     team.getSchedule().getDay(),
                     team.getSchedule().getStartTime(),
                     team.getSchedule().getEndTime(),
-                    team.getAdviser().getUid()
+                    team.getAdviser().getUid(),
+                    team.getAdviser().getFirstname()+" "+team.getAdviser().getLastname()
             ));
         }
         return teamDTOs;
@@ -952,7 +953,8 @@ public class TeamService {
                     team.getSchedule().getDay(),
                     team.getSchedule().getStartTime(),
                     team.getSchedule().getEndTime(),
-                    team.getAdviser().getUid()
+                    team.getAdviser().getUid(),
+                    team.getAdviser().getFirstname()+" "+team.getAdviser().getLastname()
             ));
         }
         return teamDTOs;
