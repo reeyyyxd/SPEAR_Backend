@@ -9,7 +9,7 @@ public class ScheduleDTO {
 
     private int schedid;
     private DayOfWeek day;
-    private LocalTime startTime;  // ✅ Use LocalTime instead of String time
+    private LocalTime startTime;
     private LocalTime endTime;
     private int teacherId;
     private String teacherName;

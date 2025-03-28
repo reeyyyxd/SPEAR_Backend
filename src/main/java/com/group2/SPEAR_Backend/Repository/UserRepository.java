@@ -75,6 +75,11 @@ public interface UserRepository extends JpaRepository <User, Integer> {
             "FROM User u WHERE u.isDeleted = true")
     List<UserDTO> fetchAllSoftDeletedUsers();
 
+    @Query("SELECT u FROM User u WHERE u.role = :role AND u.isDeleted = false")
+    List<User> findByRole(@Param("role") String role);
+
+
+
 
 
 

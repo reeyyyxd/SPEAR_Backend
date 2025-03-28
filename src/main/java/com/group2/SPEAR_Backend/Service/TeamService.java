@@ -37,6 +37,9 @@ public class TeamService {
     @Autowired
     private ScheduleRepository sRepo;
 
+    @Autowired
+    private AdviserRequestRepository arRepo;
+
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("h:mm a");
 
 
@@ -259,6 +262,85 @@ public class TeamService {
         return "Adviser and Schedule successfully assigned to the team.";
     }
 
+
+    public List<UserDTO> getStudentsWithoutTeam(Long classId) {
+        Classes clazz = cRepo.findById(classId)
+                .orElseThrow(() -> new NoSuchElementException("Class not found"));
+
+        List<User> enrolledStudents = new ArrayList<>(clazz.getEnrolledStudents());
+
+        List<User> studentsWithoutTeam = enrolledStudents.stream()
+                .filter(student -> tRepo.findTeamByStudentAndClass(Long.valueOf(student.getUid()), classId) == null)
+                .toList();
+
+        return studentsWithoutTeam.stream()
+                .map(s -> new UserDTO(s.getFirstname(), s.getLastname(), s.getEmail(), s.getUid()))
+                .toList();
+    }
+
+    //leader
+    @Transactional
+    public String dropAdviserAndSchedule(int teamId, int requesterId) {
+        Team team = tRepo.findById(teamId)
+                .orElseThrow(() -> new NoSuchElementException("Team not found"));
+
+        User requester = uRepo.findById(requesterId)
+                .orElseThrow(() -> new NoSuchElementException("Requester not found"));
+
+        // Ensure only the leader can remove adviser/schedule
+        if (team.getLeader().getUid() != requesterId) {
+            throw new IllegalStateException("Only the team leader can drop the adviser and schedule.");
+        }
+
+        if (team.getAdviser() == null && team.getSchedule() == null) {
+            throw new IllegalStateException("No adviser or schedule assigned to this team.");
+        }
+
+        team.setAdviser(null);
+        team.setSchedule(null);
+        tRepo.save(team);
+
+        return "Adviser and Schedule successfully removed from the team.";
+    }
+
+    //rekta adviser
+    @Transactional
+    public String adviserDropsTeam(int teamId, String reason, int adviserId) {
+        Team team = tRepo.findById(teamId)
+                .orElseThrow(() -> new NoSuchElementException("Team not found"));
+
+        if (team.getAdviser() == null || team.getSchedule() == null) {
+            throw new IllegalStateException("This team has no adviser or schedule to drop.");
+        }
+
+        if (team.getAdviser().getUid() != adviserId) {
+            throw new IllegalStateException("You are not the adviser of this team.");
+        }
+
+        // Remove accepted advisory request
+        AdviserRequest accepted = arRepo.findByTeamTidAndStatus(teamId, RequestStatus.ACCEPTED)
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+        if (accepted != null) {
+            arRepo.delete(accepted);
+        }
+
+        // Create DROP record
+        AdviserRequest dropRequest = new AdviserRequest(team, team.getAdviser(), team.getSchedule());
+        dropRequest.setStatus(RequestStatus.DROP);
+        dropRequest.setReason(reason);
+        arRepo.save(dropRequest);
+
+        // Null out adviser/schedule
+        team.setAdviser(null);
+        team.setSchedule(null);
+        tRepo.save(team);
+
+        return "Team adviser and schedule dropped successfully.";
+    }
+
     //for team recuitment only
     public List<TeamDTO> getOpenTeamsForRecruitment() {
         List<Team> openTeams = tRepo.findOpenTeamsForRecruitment();
@@ -471,8 +553,24 @@ public class TeamService {
                 .collect(Collectors.toList());
     }
 
-    public List<UserDTO> getQualifiedAdvisersForClass(Long classId) {
-        List<User> advisers = cRepo.findQualifiedAdvisersByClassId(classId);
+//    public List<UserDTO> getQualifiedAdvisersForClass(Long classId) {
+//        List<User> advisers = cRepo.findQualifiedAdvisersByClassId(classId);
+//
+//        return advisers.stream()
+//                .map(adviser -> new UserDTO(
+//                        adviser.getUid(),
+//                        adviser.getFirstname(),
+//                        adviser.getLastname(),
+//                        adviser.getEmail(),
+//                        adviser.getRole(),
+//                        adviser.getInterests(),
+//                        adviser.getDepartment()
+//                ))
+//                .collect(Collectors.toList());
+//    }
+
+    public List<UserDTO> getAllAdvisers() {
+        List<User> advisers = uRepo.findByRole("TEACHER");
 
         return advisers.stream()
                 .map(adviser -> new UserDTO(

@@ -32,6 +32,22 @@ public class SubmissionController {
         return ResponseEntity.ok(submissionDTO);
     }
 
+
+    @PostMapping("/submit-adviser")
+    public ResponseEntity<SubmissionDTO> createAdviserSubmission(
+            @RequestParam Long evaluationId,
+            @RequestParam int evaluatorId) {
+        Submission submission = submissionService.createAdviserSubmission(evaluationId, evaluatorId);
+        SubmissionDTO submissionDTO = new SubmissionDTO(
+                submission.getSid(),
+                submission.getEvaluator().getUid(),
+                submission.getEvaluation().getEid(),
+                submission.getSubmittedAt(),
+                submission.getStatus()
+        );
+        return ResponseEntity.ok(submissionDTO);
+    }
+
     @GetMapping("/by-evaluation/{evaluationId}")
     public List<SubmissionDTO> getSubmissionsByEvaluation(@PathVariable Long evaluationId) {
         return submissionService.getSubmissionsByEvaluation(evaluationId);

@@ -26,6 +26,11 @@ public class ScheduleController {
         return ResponseEntity.ok(scheduleService.getAllSchedules());
     }
 
+    @GetMapping("/teacher/schedules-needing-advisers")
+    public ResponseEntity<List<ScheduleDTO>> getSchedulesForClassesNeedingAdvisers() {
+        return ResponseEntity.ok(scheduleService.getSchedulesForClassesNeedingAdvisers());
+    }
+
     @GetMapping("/teacher/get-my-schedule/{teacherId}")
     public ResponseEntity<List<ScheduleDTO>> getSchedulesByTeacher(@PathVariable int teacherId) {
         return ResponseEntity.ok(scheduleService.getSchedulesByTeacher(teacherId));

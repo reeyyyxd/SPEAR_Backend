@@ -27,5 +27,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             "AND NOT EXISTS (SELECT t FROM Team t WHERE t.schedule = s)")
     List<Schedule> findAvailableSchedulesForAdviserAndClass(@Param("teacherId") int teacherId, @Param("classId") Long classId);
 
+    @Query("SELECT s FROM Schedule s WHERE s.scheduleOfClasses.needsAdvisory = true")
+    List<Schedule> findSchedulesForClassesNeedingAdvisers();
+
 
 }

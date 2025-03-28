@@ -29,14 +29,18 @@ public class Response {
     @Column(name = "score", nullable = false)
     private double score;
 
+    @Column(name = "text_response")
+    private String textResponse;  // Optional, nullable
+
     public Response() {}
 
-    public Response(User evaluator, User evaluatee, Question question, Evaluation evaluation, double score) {
+    public Response(User evaluator, User evaluatee, Question question, Evaluation evaluation, double score, String textResponse) {
         this.evaluator = evaluator;
         this.evaluatee = evaluatee;
         this.question = question;
         this.evaluation = evaluation;
         this.score = score;
+        this.textResponse = textResponse;
     }
 
     public Long getRid() {
@@ -85,5 +89,13 @@ public class Response {
 
     public void setScore(double score) {
         this.score = score;
+    }
+
+    public String getTextResponse() {
+        return textResponse;
+    }
+
+    public void setTextResponse(String textResponse) {
+        this.textResponse = textResponse;
     }
 }

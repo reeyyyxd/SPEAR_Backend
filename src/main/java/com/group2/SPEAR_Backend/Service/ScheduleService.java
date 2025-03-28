@@ -96,6 +96,13 @@ public class ScheduleService {
         scheduleRepo.delete(schedule);
     }
 
+    public List<ScheduleDTO> getSchedulesForClassesNeedingAdvisers() {
+        return scheduleRepo.findAll().stream()
+                .filter(schedule -> schedule.getScheduleOfClasses().isNeedsAdvisory())
+                .map(this::convertToDTO)
+                .toList();
+    }
+
     private ScheduleDTO convertToDTO(Schedule schedule) {
         return new ScheduleDTO(
                 schedule.getSchedid(),

@@ -243,7 +243,7 @@ public class TeamController {
 
     @GetMapping("/class/{classId}/qualified-teachers")
     public ResponseEntity<List<UserDTO>> getQualifiedAdvisersForClass(@PathVariable Long classId) {
-        List<UserDTO> advisers = tServ.getQualifiedAdvisersForClass(classId);
+        List<UserDTO> advisers = tServ.getAllAdvisers();
         return ResponseEntity.ok(advisers);
     }
     //schedule to change
@@ -374,6 +374,24 @@ public class TeamController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
             }
         }
+
+    @PostMapping("/adviser-drop/team/{teamId}")
+    public ResponseEntity<?> adviserDropTeam(@PathVariable int teamId, @RequestBody Map<String, Object> body) {
+        try {
+            String reason = (String) body.getOrDefault("reason", "Dropped by adviser.");
+            int adviserId = Integer.parseInt(body.get("adviserId").toString());
+
+            String msg = tServ.adviserDropsTeam(teamId, reason, adviserId);
+            return ResponseEntity.ok(Map.of("message", msg));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/class/{classId}/students-without-team")
+    public ResponseEntity<List<UserDTO>> getStudentsWithoutTeam(@PathVariable Long classId) {
+        return ResponseEntity.ok(tServ.getStudentsWithoutTeam(classId));
+    }
 
 
 // Q it controllers

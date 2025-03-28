@@ -59,6 +59,21 @@ public class SubmissionService {
                 .collect(Collectors.toList());
     }
 
+    public Submission createAdviserSubmission(Long evaluationId, int evaluatorId) {
+        Evaluation evaluation = evaluationRepo.findById(evaluationId)
+                .orElseThrow(() -> new NoSuchElementException("Evaluation not found with ID: " + evaluationId));
+        User evaluator = userRepo.findById(evaluatorId)
+                .orElseThrow(() -> new NoSuchElementException("Evaluator not found with ID: " + evaluatorId));
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime evaluationCloseDateTime = evaluation.getDateClose().atTime(23, 59, 59);
+
+        String status = now.isAfter(evaluationCloseDateTime) ? "Late" : "Submitted";
+
+        Submission submission = new Submission(evaluation, evaluator, now, status);
+        return submissionRepo.save(submission);
+    }
+
     private SubmissionDTO toDTO(Submission submission) {
         return new SubmissionDTO(
                 submission.getSid(),
@@ -68,6 +83,8 @@ public class SubmissionService {
                 submission.getStatus()
         );
     }
+
+
 
 
 }
