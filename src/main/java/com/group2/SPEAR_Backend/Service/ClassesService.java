@@ -55,7 +55,6 @@ public class ClassesService {
                 return new ClassesDTO(403, "Only users with the TEACHER role can create a class", (List<Classes>) null);
             }
 
-            // Check for duplicate class
             Optional<Classes> existingClass = cRepo.findByCourseCodeAndSectionAndSchoolYear(
                     classRequest.getCourseCode(),
                     classRequest.getSection(),
@@ -68,6 +67,7 @@ public class ClassesService {
 
             String generatedClassKey = ClassCodeGenerator.generateClassCode();
             int maxTeamSize = classRequest.getMaxTeamSize() > 0 ? classRequest.getMaxTeamSize() : 5;
+            boolean needsAdvisory = classRequest.isNeedsAdvisory();
 
             Classes newClass = new Classes(
                     createdBy,
@@ -78,12 +78,13 @@ public class ClassesService {
                     generatedClassKey,
                     classRequest.getCourseDescription(),
                     false,
-                    maxTeamSize
+                    maxTeamSize,
+                    classRequest.isNeedsAdvisory()
             );
+            newClass.setNeedsAdvisory(needsAdvisory);
 
             Classes savedClass = cRepo.save(newClass);
 
-            // Build the response DTO correctly
             response = new ClassesDTO(
                     savedClass.getCid(),
                     savedClass.getClassKey(),
@@ -95,7 +96,8 @@ public class ClassesService {
                     savedClass.getCreatedBy().getFirstname(),
                     savedClass.getCreatedBy().getLastname(),
                     savedClass.getCreatedBy().getRole(),
-                    savedClass.getMaxTeamSize()
+                    savedClass.getMaxTeamSize(),
+                    savedClass.isNeedsAdvisory()
             );
 
             response.setStatusCode(200);
@@ -119,7 +121,6 @@ public class ClassesService {
 
     public ClassesDTO getClassById(Long classId) {
         Optional<Classes> classOptional = cRepo.findActiveClassById(classId);
-
         if (classOptional.isEmpty()) {
             throw new NoSuchElementException("Class with ID " + classId + " not found or is deleted.");
         }
@@ -137,9 +138,11 @@ public class ClassesService {
                 classData.getCreatedBy().getFirstname(),
                 classData.getCreatedBy().getLastname(),
                 classData.getCreatedBy().getRole(),
-                classData.getMaxTeamSize()
+                classData.getMaxTeamSize(),
+                classData.isNeedsAdvisory()
         );
     }
+
     // Get a class by course code
     public ClassesDTO getClassByCourseCode(String courseCode, String section) {
         ClassesDTO response = new ClassesDTO();
@@ -215,6 +218,7 @@ public class ClassesService {
             existingClass.setSemester(classRequest.getSemester());
             existingClass.setCourseDescription(classRequest.getCourseDescription());
             existingClass.setMaxTeamSize(classRequest.getMaxTeamSize());
+            existingClass.setNeedsAdvisory(classRequest.isNeedsAdvisory());
 
             Classes updatedClass = cRepo.save(existingClass);
 
@@ -229,7 +233,8 @@ public class ClassesService {
                     updatedClass.getCreatedBy().getFirstname(),
                     updatedClass.getCreatedBy().getLastname(),
                     updatedClass.getCreatedBy().getRole(),
-                    updatedClass.getMaxTeamSize()
+                    updatedClass.getMaxTeamSize(),
+                    updatedClass.isNeedsAdvisory()
             );
 
             response.setStatusCode(200);
@@ -436,7 +441,6 @@ public class ClassesService {
     }
 
 
-    //add candidate advisers
     public List<UserDTO> getTeachersByDepartment(String department) {
         if (department == null || department.trim().isEmpty()) {
             throw new IllegalArgumentException("Department cannot be empty");
@@ -444,72 +448,34 @@ public class ClassesService {
         return uRepo.findTeachersByDepartment(department);
     }
 
-    public List<User> getCandidateAdvisers(Long classId) {
+    public List<UserDTO> getQualifiedAdvisersForClass(Long classId) {
         Classes clazz = cRepo.findById(classId)
                 .orElseThrow(() -> new NoSuchElementException("Class not found"));
-        return cRepo.findCandidateAdvisers(clazz.getCreatedBy().getDepartment(), clazz.getCreatedBy().getInterests());
-    }
 
-    public String addQualifiedAdviser(Long classId, String email) {
-        Classes clazz = cRepo.findById(classId)
-                .orElseThrow(() -> new RuntimeException("Class not found"));
-
-        User teacher = uRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Teacher with email '" + email + "' not found"));
-
-        if (!clazz.getQualifiedAdvisers().contains(teacher)) {
-            clazz.getQualifiedAdvisers().add(teacher);
-            cRepo.save(clazz);
-            return "Teacher " + teacher.getFirstname() + " " + teacher.getLastname() + " added as Qualified Adviser.";
-        }
-        return "Teacher is already a Qualified Adviser.";
-    }
-
-    public String removeQualifiedAdviser(Long classId, String email) {
-        Classes clazz = cRepo.findById(classId)
-                .orElseThrow(() -> new RuntimeException("Class not found"));
-
-        User teacher = uRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Teacher with email '" + email + "' not found"));
-
-        if (clazz.getQualifiedAdvisers().contains(teacher)) {
-            clazz.getQualifiedAdvisers().remove(teacher);
-            cRepo.save(clazz);
-            return "Teacher " + teacher.getFirstname() + " " + teacher.getLastname() + " removed from Qualified Advisers.";
-        }
-        return "Teacher was not found in the list of Qualified Advisers.";
-    }
-
-    public List<ClassesDTO> getClassesForQualifiedAdviser(int teacherId) {
-        List<ClassesDTO> classes = cRepo.findClassesByQualifiedAdviser(teacherId);
-        if (classes.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return classes;
-    }
-
-
-    public List<UserDTO> getQualifiedAdvisersForClass(Long classId) {
-        Optional<Classes> classOpt = cRepo.findById(classId);
-
-        if (classOpt.isEmpty()) {
-            throw new RuntimeException("Class not found.");
+        if (!clazz.isNeedsAdvisory()) {
+            return List.of();
         }
 
-        List<User> advisers = cRepo.findQualifiedAdvisersByClassId(classId);
-
-        return advisers.stream().map(adviser ->
-                new UserDTO(
-                        adviser.getUid(),
-                        adviser.getFirstname(),
-                        adviser.getLastname(),
-                        adviser.getEmail(),
-                        adviser.getRole() != null ? adviser.getRole().toUpperCase() : "N/A",
-                        adviser.getInterests(),
-                        adviser.getDepartment()
-                )
-        ).collect(Collectors.toList());
+        List<User> teachers = uRepo.findByRole("TEACHER");
+        return teachers.stream()
+                .map(teacher -> new UserDTO(
+                        teacher.getUid(),
+                        teacher.getFirstname(),
+                        teacher.getLastname(),
+                        teacher.getEmail(),
+                        "TEACHER",
+                        teacher.getInterests(),
+                        teacher.getDepartment()
+                ))
+                .collect(Collectors.toList());
     }
+
+    public List<ClassesDTO> getClassesThatNeedAdvisory() {
+        return cRepo.findDTOsForClassesNeedingAdvisory();
+    }
+
+
+
 
     public List<ClassesDTO> getAllDeletedClasses() {
         return cRepo.findAllDeletedClasses();

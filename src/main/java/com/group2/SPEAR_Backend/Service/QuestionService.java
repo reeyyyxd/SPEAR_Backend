@@ -30,6 +30,10 @@ public class QuestionService {
     @Autowired
     private QuestionTemplateRepository templateRepo;
 
+    @Autowired
+    private QuestionTemplateSetRepository templateRepoSet;
+
+
     public QuestionDTO createQuestion(Long classId, Long evaluationId, QuestionDTO questionDTO) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
@@ -198,6 +202,37 @@ public class QuestionService {
 
         Question savedQuestion = qRepo.save(newQuestion);
         return mapToDTO(savedQuestion);
+    }
+
+    public List<QuestionDTO> importTemplateSet(Long setId, Long classId, Long evaluationId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        User teacher = userRepo.findByEmail(email)
+                .orElseThrow(() -> new NoSuchElementException("Teacher not found with email: " + email));
+
+        QuestionTemplateSet set = templateRepoSet.findById(setId)
+                .orElseThrow(() -> new NoSuchElementException("Template set not found with ID: " + setId));
+
+        Classes clazz = cRepo.findById(classId)
+                .orElseThrow(() -> new NoSuchElementException("Class not found with ID: " + classId));
+
+        Evaluation evaluation = eRepo.findById(evaluationId)
+                .orElseThrow(() -> new NoSuchElementException("Evaluation not found with ID: " + evaluationId));
+
+        List<Question> questions = set.getQuestions().stream().map(template -> {
+            Question q = new Question();
+            q.setQuestionText(template.getQuestionText());
+            q.setQuestionType(template.getQuestionType());
+            q.setClasses(clazz);
+            q.setEvaluation(evaluation);
+            q.setCreatedBy(teacher);
+            q.setReuse(true);
+            return q;
+        }).collect(Collectors.toList());
+
+        List<Question> saved = qRepo.saveAll(questions);
+
+        return saved.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
 

@@ -17,12 +17,17 @@ public class QuestionTemplate {
     @Column(name = "question_type", nullable = false)
     private QuestionType questionType;
 
+    @ManyToOne
+    @JoinColumn(name = "template_set_id")
+    private QuestionTemplateSet templateSet;
+
     public QuestionTemplate() {
     }
 
-    public QuestionTemplate(String questionText, QuestionType questionType) {
+    public QuestionTemplate(String questionText, QuestionType questionType, QuestionTemplateSet templateSet) {
         this.questionText = questionText;
         this.questionType = questionType;
+        this.templateSet = templateSet;
     }
 
     public Long getId() {
@@ -47,5 +52,13 @@ public class QuestionTemplate {
 
     public void setQuestionType(QuestionType questionType) {
         this.questionType = questionType;
+    }
+
+    public QuestionTemplateSet getTemplateSet() {
+        return templateSet;
+    }
+
+    public void setTemplateSet(QuestionTemplateSet templateSet) {
+        this.templateSet = templateSet;
     }
 }

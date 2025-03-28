@@ -41,8 +41,6 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
     @Query("SELECT COUNT(u) FROM Classes c LEFT JOIN c.enrolledStudents u WHERE c.cid = :classId GROUP BY c.cid")
     Long findTotalUsersInClass(@Param("classId") Long classId);
 
-    @Query("SELECT u FROM Classes c JOIN c.qualifiedAdvisers u WHERE c.cid = :classId")
-    List<User> findQualifiedAdvisersByClassId(@Param("classId") Long classId);
 
     @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO( " +
             "c.cid, c.classKey, c.courseCode, c.courseDescription, c.schoolYear, c.section, c.semester, " +
@@ -99,19 +97,20 @@ public interface ClassesRepository extends JpaRepository<Classes, Long> {
             @Param("section") String section,
             @Param("schoolYear") String schoolYear
     );
-    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO( " +
-            "c.cid, c.courseCode, c.courseDescription, c.schoolYear, c.section, c.semester, " +
-            "c.createdBy.firstname, c.createdBy.lastname, c.createdBy.role) " +
-            "FROM Classes c JOIN c.qualifiedAdvisers q " +
-            "WHERE q.uid = :teacherId")
-    List<ClassesDTO> findClassesByQualifiedAdviser(@Param("teacherId") int teacherId);
-
     @Query("SELECT c FROM Classes c JOIN c.createdBy f WHERE f.uid = :facultyID")
     List<Classes> findAllByFaculty(@Param("facultyID") int facultyID);
 
-
     @Query("SELECT c FROM Classes c WHERE c.createdBy.uid = :facultyID AND c.cid IN :classIDList")
     List<Classes> findSelectedByFaculty(@Param("facultyID") int facultyID, @Param("classIDList") List<Integer> classIDList);
+
+    @Query("SELECT new com.group2.SPEAR_Backend.DTO.ClassesDTO( " +
+            "c.cid, c.classKey, c.courseCode, c.courseDescription, c.schoolYear, c.section, c.semester, " +
+            "c.createdBy.firstname, c.createdBy.lastname, c.createdBy.role, c.maxTeamSize, c.needsAdvisory) " +
+            "FROM Classes c " +
+            "WHERE c.needsAdvisory = true AND c.isDeleted = false")
+    List<ClassesDTO> findDTOsForClassesNeedingAdvisory();
+
+
 
 }
 

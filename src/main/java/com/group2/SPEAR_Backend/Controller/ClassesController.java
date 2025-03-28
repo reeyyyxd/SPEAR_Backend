@@ -155,40 +155,6 @@ public class ClassesController {
         return ResponseEntity.ok(cServ.getTeachersByDepartment(department));
     }
 
-    @GetMapping("/{classId}/list-candidate-advisers")
-    public ResponseEntity<List<User>> getCandidateAdvisers(@PathVariable Long classId) {
-        return ResponseEntity.ok(cServ.getCandidateAdvisers(classId));
-    }
-    @PostMapping("/teacher/{classId}/qualified-adviser")
-    public ResponseEntity<String> addQualifiedAdviser(
-            @PathVariable Long classId,
-            @RequestBody Map<String, String> requestBody) {
-
-        String email = requestBody.get("email");
-        if (email == null || email.isEmpty()) {
-            return ResponseEntity.badRequest().body("Error: Email is required.");
-        }
-
-        return ResponseEntity.ok(cServ.addQualifiedAdviser(classId, email));
-    }
-
-    @DeleteMapping("/teacher/{classId}/qualified-adviser")
-    public ResponseEntity<String> removeQualifiedAdviser(
-            @PathVariable Long classId,
-            @RequestParam String email) {
-
-        if (email == null || email.isEmpty()) {
-            return ResponseEntity.badRequest().body("Error: Email is required.");
-        }
-
-        return ResponseEntity.ok(cServ.removeQualifiedAdviser(classId, email));
-    }
-
-    @GetMapping("/class/{classId}/qualified-advisers")
-    public ResponseEntity<List<UserDTO>> getQualifiedAdvisers(@PathVariable Long classId) {
-        List<UserDTO> advisers = cServ.getQualifiedAdvisersForClass(classId);
-        return ResponseEntity.ok(advisers);
-    }
 
     //this bitch is for checking duplicate in creating a class
     @GetMapping("/teacher/classes/check-duplicate")
@@ -205,14 +171,21 @@ public class ClassesController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/teacher/{teacherId}/qualified-adviser-classes")
-    public ResponseEntity<List<ClassesDTO>> getClassesForQualifiedAdviser(@PathVariable int teacherId) {
-        return ResponseEntity.ok(cServ.getClassesForQualifiedAdviser(teacherId));
+    @GetMapping("/class/{classId}/advisers")
+    public ResponseEntity<List<UserDTO>> getAllAdvisersForClass(@PathVariable Long classId) {
+        List<UserDTO> advisers = cServ.getQualifiedAdvisersForClass(classId);
+        return ResponseEntity.ok(advisers);
     }
 
     @GetMapping("/admin/classes/deleted")
     public ResponseEntity<List<ClassesDTO>> getAllDeletedClasses() {
         return ResponseEntity.ok(cServ.getAllDeletedClasses());
+    }
+
+    @GetMapping("/class/advisory-needed")
+    public ResponseEntity<List<ClassesDTO>> getClassesThatNeedAdvisory() {
+        List<ClassesDTO> advisoryClasses = cServ.getClassesThatNeedAdvisory();
+        return ResponseEntity.ok(advisoryClasses);
     }
 
 

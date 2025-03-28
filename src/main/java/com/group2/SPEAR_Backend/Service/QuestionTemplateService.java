@@ -1,8 +1,12 @@
+// --- Service ---
 package com.group2.SPEAR_Backend.Service;
 
 import com.group2.SPEAR_Backend.DTO.QuestionTemplateDTO;
+import com.group2.SPEAR_Backend.DTO.QuestionTemplateSetDTO;
 import com.group2.SPEAR_Backend.Model.QuestionTemplate;
+import com.group2.SPEAR_Backend.Model.QuestionTemplateSet;
 import com.group2.SPEAR_Backend.Repository.QuestionTemplateRepository;
+import com.group2.SPEAR_Backend.Repository.QuestionTemplateSetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,45 +18,48 @@ import java.util.stream.Collectors;
 public class QuestionTemplateService {
 
     @Autowired
+    private QuestionTemplateSetRepository setRepo;
+
+    @Autowired
     private QuestionTemplateRepository templateRepo;
 
-    public QuestionTemplateDTO createTemplate(QuestionTemplateDTO templateDTO) {
-        QuestionTemplate template = new QuestionTemplate(
-                templateDTO.getQuestionText(),
-                templateDTO.getQuestionType()
+    public QuestionTemplateSetDTO createSet(String name) {
+        QuestionTemplateSet set = new QuestionTemplateSet(name);
+        return new QuestionTemplateSetDTO(setRepo.save(set));
+    }
+
+    public QuestionTemplateDTO addQuestionToSet(Long setId, QuestionTemplateDTO dto) {
+        QuestionTemplateSet set = setRepo.findById(setId)
+                .orElseThrow(() -> new NoSuchElementException("Set not found with ID: " + setId));
+
+        QuestionTemplate question = new QuestionTemplate(
+                dto.getQuestionText(),
+                dto.getQuestionType(),
+                set
         );
 
-        QuestionTemplate savedTemplate = templateRepo.save(template);
-        return new QuestionTemplateDTO(savedTemplate);
+        return new QuestionTemplateDTO(templateRepo.save(question));
     }
 
-    public List<QuestionTemplateDTO> getAllTemplates() {
-        return templateRepo.findAll().stream()
-                .map(QuestionTemplateDTO::new)
-                .collect(Collectors.toList());
+    public List<QuestionTemplateSetDTO> getAllSets() {
+        return setRepo.findAll().stream().map(QuestionTemplateSetDTO::new).collect(Collectors.toList());
     }
 
-    public List<QuestionTemplateDTO> getAllTemplatesAdmin() {
-        return templateRepo.findAll().stream()
-                .map(QuestionTemplateDTO::new)
-                .collect(Collectors.toList());
+    public QuestionTemplateDTO updateQuestion(Long questionId, QuestionTemplateDTO dto) {
+        QuestionTemplate question = templateRepo.findById(questionId)
+                .orElseThrow(() -> new NoSuchElementException("Question not found with ID: " + questionId));
+
+        question.setQuestionText(dto.getQuestionText());
+        question.setQuestionType(dto.getQuestionType());
+
+        return new QuestionTemplateDTO(templateRepo.save(question));
     }
 
-    public QuestionTemplateDTO updateTemplate(Long templateId, QuestionTemplateDTO updatedTemplateDTO) {
-        QuestionTemplate template = templateRepo.findById(templateId)
-                .orElseThrow(() -> new NoSuchElementException("Question Template not found with ID: " + templateId));
-
-        template.setQuestionText(updatedTemplateDTO.getQuestionText());
-        template.setQuestionType(updatedTemplateDTO.getQuestionType());
-
-        QuestionTemplate savedTemplate = templateRepo.save(template);
-        return new QuestionTemplateDTO(savedTemplate);
+    public void deleteSet(Long setId) {
+        setRepo.deleteById(setId);
     }
 
-    public void deleteTemplate(Long templateId) {
-        QuestionTemplate template = templateRepo.findById(templateId)
-                .orElseThrow(() -> new NoSuchElementException("Question Template not found with ID: " + templateId));
-
-        templateRepo.delete(template);
+    public void deleteQuestion(Long questionId) {
+        templateRepo.deleteById(questionId);
     }
 }

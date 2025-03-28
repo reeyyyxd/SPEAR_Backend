@@ -56,21 +56,18 @@ public class Classes {
     )
     private Set<User> enrolledStudents = new HashSet<>();
 
+    @Column(name = "needs_advisory", nullable = false)
+    private boolean needsAdvisory;
+
     //add list of advisers, many2many user and class
     //query join interest and user (teacher)
-    @JsonIgnore
-    @ManyToMany
-    @JoinTable(
-            name = "qualified_advisers",
-            joinColumns = @JoinColumn(name = "class_id"),
-            inverseJoinColumns = @JoinColumn(name = "teacher_id")
-    )
-    private Set<User> qualifiedAdvisers = new HashSet<>();
+
 
     public Classes() {}
 
     public Classes(User createdBy, String courseCode, String section, String schoolYear,
-                   String semester, String classKey, String courseDescription, boolean isDeleted, int maxTeamSize) {
+                   String semester, String classKey, String courseDescription, boolean isDeleted, int maxTeamSize,
+                   Boolean needsAdvisory) {
         this.createdBy = createdBy;
         this.courseCode = courseCode;
         this.section = section;
@@ -81,6 +78,7 @@ public class Classes {
         this.classKey = classKey;
         this.createdDate = LocalDate.now();
         this.maxTeamSize = maxTeamSize;
+        this.needsAdvisory = needsAdvisory;
     }
 
 
@@ -188,11 +186,11 @@ public class Classes {
         isDeleted = deleted;
     }
 
-    public Set<User> getQualifiedAdvisers() {
-        return qualifiedAdvisers;
+    public boolean isNeedsAdvisory() {
+        return needsAdvisory;
     }
 
-    public void setQualifiedAdvisers(Set<User> qualifiedAdvisers) {
-        this.qualifiedAdvisers = qualifiedAdvisers;
+    public void setNeedsAdvisory(boolean needsAdvisory) {
+        this.needsAdvisory = needsAdvisory;
     }
 }

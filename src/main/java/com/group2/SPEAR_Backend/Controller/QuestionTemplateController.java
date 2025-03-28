@@ -1,6 +1,8 @@
+// --- Controller ---
 package com.group2.SPEAR_Backend.Controller;
 
 import com.group2.SPEAR_Backend.DTO.QuestionTemplateDTO;
+import com.group2.SPEAR_Backend.DTO.QuestionTemplateSetDTO;
 import com.group2.SPEAR_Backend.Service.QuestionTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -9,36 +11,39 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/templates")
-@CrossOrigin(origins = {"http://localhost:5173", "http://10.147.17.37:5173"})
+@CrossOrigin(origins = {"http://localhost:5173", "http://10.147.17.37:5173", "http://10.147.17.166:5173"})
 public class QuestionTemplateController {
 
     @Autowired
-    private QuestionTemplateService templateService;
+    private QuestionTemplateService service;
 
-    @PostMapping("/admin/create-questions")
-    public QuestionTemplateDTO createTemplate(@RequestBody QuestionTemplateDTO templateDTO) {
-        return templateService.createTemplate(templateDTO);
+    @PostMapping("/admin/create-set")
+    public QuestionTemplateSetDTO createSet(@RequestParam String name) {
+        return service.createSet(name);
     }
 
-    @GetMapping("/teacher/get-suggested-questions")
-    public List<QuestionTemplateDTO> getAllTemplates() {
-        return templateService.getAllTemplates();
+    @PostMapping("/admin/add-question/{setId}")
+    public QuestionTemplateDTO addQuestionToSet(@PathVariable Long setId, @RequestBody QuestionTemplateDTO dto) {
+        return service.addQuestionToSet(setId, dto);
     }
 
-    @GetMapping("/admin/get-suggested-questions")
-    public List<QuestionTemplateDTO> getAllTemplatesAdmin() {
-        return templateService.getAllTemplates();
+    @PutMapping("/admin/update-question/{questionId}")
+    public QuestionTemplateDTO updateQuestion(@PathVariable Long questionId, @RequestBody QuestionTemplateDTO dto) {
+        return service.updateQuestion(questionId, dto);
     }
 
-    @PutMapping("/admin/update-question/{templateId}")
-    public QuestionTemplateDTO updateTemplate(
-            @PathVariable Long templateId,
-            @RequestBody QuestionTemplateDTO updatedTemplateDTO) {
-        return templateService.updateTemplate(templateId, updatedTemplateDTO);
+    @GetMapping("/teacher/get-template-sets")
+    public List<QuestionTemplateSetDTO> getAllSets() {
+        return service.getAllSets();
     }
 
-    @DeleteMapping("/admin/delete-question/{templateId}")
-    public void deleteTemplate(@PathVariable Long templateId) {
-        templateService.deleteTemplate(templateId);
+    @DeleteMapping("/admin/delete-set/{setId}")
+    public void deleteSet(@PathVariable Long setId) {
+        service.deleteSet(setId);
+    }
+
+    @DeleteMapping("/admin/delete-question/{questionId}")
+    public void deleteQuestion(@PathVariable Long questionId) {
+        service.deleteQuestion(questionId);
     }
 }

@@ -91,6 +91,14 @@ public class QuestionController {
         return qServ.useTemplateForClass(templateId, classId, evaluationId);
     }
 
+    @PostMapping("/teacher/import-set/{setId}/for-class/{classId}/evaluation/{evaluationId}")
+    public List<QuestionDTO> importSet(
+            @PathVariable Long setId,
+            @PathVariable Long classId,
+            @PathVariable Long evaluationId) {
+        return qServ.importTemplateSet(setId, classId, evaluationId);
+    }
+
 
 
 }
