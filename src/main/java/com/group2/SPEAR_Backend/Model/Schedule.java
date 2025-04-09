@@ -29,7 +29,7 @@ public class Schedule {
 
     //add foreign key for classes - schedule (ClassSchedule) if qualified
     @ManyToOne
-    @JoinColumn(name = "class_id", referencedColumnName = "cid", nullable = false)
+    @JoinColumn(name = "class_id", referencedColumnName = "cid")
     private Classes scheduleOfClasses;
 
     public Schedule() {}

@@ -212,8 +212,8 @@ public class TeamService {
     }
     //scheduling
     //schedule to change
-    public List<ScheduleDTO> getAvailableSchedulesForAdviser(int adviserId, Long classId) {
-        List<Schedule> schedules = sRepo.findAvailableSchedulesForAdviserAndClass(adviserId, classId);
+    public List<ScheduleDTO> getAvailableSchedulesForAdviser(int adviserId) {
+        List<Schedule> schedules = sRepo.findAvailableSchedulesForAdviser(adviserId);
 
         return schedules.stream()
                 .map(schedule -> new ScheduleDTO(
@@ -223,9 +223,9 @@ public class TeamService {
                         schedule.getEndTime(),
                         schedule.getTeacher().getUid(),
                         schedule.getTeacher().getFirstname() + " " + schedule.getTeacher().getLastname(),
-                        schedule.getScheduleOfClasses().getCid(),
-                        schedule.getScheduleOfClasses().getCourseCode(),
-                        schedule.getScheduleOfClasses().getCourseDescription()
+                        null,
+                        null,
+                        null
                 ))
                 .collect(Collectors.toList());
     }
@@ -263,18 +263,33 @@ public class TeamService {
     }
 
 
+//    public List<UserDTO> getStudentsWithoutTeam(Long classId) {
+//        Classes clazz = cRepo.findById(classId)
+//                .orElseThrow(() -> new NoSuchElementException("Class not found"));
+//
+//        List<User> enrolledStudents = new ArrayList<>(clazz.getEnrolledStudents());
+//
+//        List<User> studentsWithoutTeam = enrolledStudents.stream()
+//                .filter(student -> tRepo.findTeamByStudentAndClass(Long.valueOf(student.getUid()), classId) == null)
+//                .toList();
+//
+//        return studentsWithoutTeam.stream()
+//                .map(s -> new UserDTO(s.getFirstname(), s.getLastname(), s.getEmail(), s.getUid()))
+//                .toList();
+//    }
+
     public List<UserDTO> getStudentsWithoutTeam(Long classId) {
         Classes clazz = cRepo.findById(classId)
                 .orElseThrow(() -> new NoSuchElementException("Class not found"));
 
-        List<User> enrolledStudents = new ArrayList<>(clazz.getEnrolledStudents());
+        Set<User> enrolledStudents = clazz.getEnrolledStudents();
+        if (enrolledStudents == null || enrolledStudents.isEmpty()) {
+            return List.of();
+        }
 
-        List<User> studentsWithoutTeam = enrolledStudents.stream()
+        return enrolledStudents.stream()
                 .filter(student -> tRepo.findTeamByStudentAndClass(Long.valueOf(student.getUid()), classId) == null)
-                .toList();
-
-        return studentsWithoutTeam.stream()
-                .map(s -> new UserDTO(s.getFirstname(), s.getLastname(), s.getEmail(), s.getUid()))
+                .map(student -> new UserDTO(student.getFirstname(), student.getLastname(), student.getEmail(), student.getUid()))
                 .toList();
     }
 

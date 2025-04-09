@@ -247,11 +247,10 @@ public class TeamController {
         return ResponseEntity.ok(advisers);
     }
     //schedule to change
-    @GetMapping("/adviser/{adviserId}/available-schedules/{classId}")
+    @GetMapping("/adviser/{adviserId}/available-schedules")
     public ResponseEntity<List<ScheduleDTO>> getAvailableSchedulesForAdviser(
-            @PathVariable int adviserId,
-            @PathVariable Long classId) {
-        List<ScheduleDTO> schedules = tServ.getAvailableSchedulesForAdviser(adviserId, classId);
+            @PathVariable int adviserId) {
+        List<ScheduleDTO> schedules = tServ.getAvailableSchedulesForAdviser(adviserId);
         return ResponseEntity.ok(schedules);
     }
 

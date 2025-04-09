@@ -30,22 +30,46 @@ public class ScheduleService {
 
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("h:mm a");
 
+    private void validateNoConflictOrDuplicate(int teacherId, DayOfWeek day, LocalTime start, LocalTime end, Integer currentScheduleId) {
+        if (!start.isBefore(end)) {
+            throw new IllegalStateException("Start time must be before end time.");
+        }
+
+        List<Schedule> teacherSchedules = scheduleRepo.findSchedulesByTeacher(teacherId);
+        for (Schedule s : teacherSchedules) {
+            if (currentScheduleId != null && s.getSchedid() == currentScheduleId) continue;
+            if (s.getDay() != day) continue;
+
+            boolean isExact = s.getStartTime().equals(start) && s.getEndTime().equals(end);
+            boolean isOverlap = start.isBefore(s.getEndTime()) && end.isAfter(s.getStartTime());
+
+            if (isExact) throw new IllegalStateException("Duplicate schedule exists.");
+            if (isOverlap) throw new IllegalStateException("Conflicting schedule exists.");
+        }
+    }
+
+
     public ScheduleDTO createSchedule(ScheduleDTO scheduleDTO) {
         User teacher = userRepo.findById(scheduleDTO.getTeacherId())
                 .orElseThrow(() -> new NoSuchElementException("Teacher not found"));
 
-        Classes scheduleOfClasses = classesRepo.findById(scheduleDTO.getClassId())
-                .orElseThrow(() -> new NoSuchElementException("Class not found"));
+        validateNoConflictOrDuplicate(
+                teacher.getUid(),
+                scheduleDTO.getDay(),
+                scheduleDTO.getStartTime(),
+                scheduleDTO.getEndTime(),
+                null
+        );
 
         Schedule schedule = new Schedule(
                 scheduleDTO.getDay(),
                 scheduleDTO.getStartTime(),
                 scheduleDTO.getEndTime(),
                 teacher,
-                scheduleOfClasses
+                null
         );
-        Schedule savedSchedule = scheduleRepo.save(schedule);
-        return ScheduleDTO.convertToDTO(savedSchedule);
+
+        return ScheduleDTO.convertToDTO(scheduleRepo.save(schedule));
     }
 
     public List<ScheduleDTO> getAllSchedules() {
@@ -70,6 +94,7 @@ public class ScheduleService {
         return schedules.stream().map(this::convertToDTO).toList();
     }
 
+
     public ScheduleDTO updateSchedule(int schedid, ScheduleDTO updatedScheduleDTO) {
         Schedule existingSchedule = scheduleRepo.findById(schedid)
                 .orElseThrow(() -> new NoSuchElementException("Schedule with ID " + schedid + " not found"));
@@ -77,18 +102,23 @@ public class ScheduleService {
         User teacher = userRepo.findById(updatedScheduleDTO.getTeacherId())
                 .orElseThrow(() -> new NoSuchElementException("Teacher not found"));
 
-        Classes scheduleOfClasses = classesRepo.findById(updatedScheduleDTO.getClassId())
-                .orElseThrow(() -> new NoSuchElementException("Class not found"));
+        validateNoConflictOrDuplicate(
+                teacher.getUid(),
+                updatedScheduleDTO.getDay(),
+                updatedScheduleDTO.getStartTime(),
+                updatedScheduleDTO.getEndTime(),
+                schedid
+        );
 
         existingSchedule.setDay(updatedScheduleDTO.getDay());
         existingSchedule.setStartTime(updatedScheduleDTO.getStartTime());
         existingSchedule.setEndTime(updatedScheduleDTO.getEndTime());
         existingSchedule.setTeacher(teacher);
-        existingSchedule.setScheduleOfClasses(scheduleOfClasses);
 
-        Schedule updatedSchedule = scheduleRepo.save(existingSchedule);
-        return ScheduleDTO.convertToDTO(updatedSchedule);
+
+        return ScheduleDTO.convertToDTO(scheduleRepo.save(existingSchedule));
     }
+
 
     public void deleteSchedule(int schedid) {
         Schedule schedule = scheduleRepo.findById(schedid)
@@ -98,12 +128,16 @@ public class ScheduleService {
 
     public List<ScheduleDTO> getSchedulesForClassesNeedingAdvisers() {
         return scheduleRepo.findAll().stream()
-                .filter(schedule -> schedule.getScheduleOfClasses().isNeedsAdvisory())
+                .filter(schedule -> {
+                    Classes cls = schedule.getScheduleOfClasses();
+                    return cls != null && cls.isNeedsAdvisory();
+                })
                 .map(this::convertToDTO)
                 .toList();
     }
 
     private ScheduleDTO convertToDTO(Schedule schedule) {
+        Classes scheduleClass = schedule.getScheduleOfClasses();
         return new ScheduleDTO(
                 schedule.getSchedid(),
                 schedule.getDay(),
@@ -111,9 +145,9 @@ public class ScheduleService {
                 schedule.getEndTime(),
                 schedule.getTeacher().getUid(),
                 schedule.getTeacher().getFirstname() + " " + schedule.getTeacher().getLastname(),
-                schedule.getScheduleOfClasses().getCid(),
-                schedule.getScheduleOfClasses().getCourseCode(),
-                schedule.getScheduleOfClasses().getCourseDescription()
+                scheduleClass != null ? scheduleClass.getCid() : null,
+                scheduleClass != null ? scheduleClass.getCourseCode() : null,
+                scheduleClass != null ? scheduleClass.getCourseDescription() : null
         );
     }
 }

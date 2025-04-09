@@ -1,5 +1,6 @@
 package com.group2.SPEAR_Backend.DTO;
 
+import com.group2.SPEAR_Backend.Model.Classes;
 import com.group2.SPEAR_Backend.Model.DayOfWeek;
 import com.group2.SPEAR_Backend.Model.Schedule;
 import java.time.LocalTime;
@@ -36,6 +37,7 @@ public class ScheduleDTO {
 
 
     public static ScheduleDTO convertToDTO(Schedule schedule) {
+        Classes cls = schedule.getScheduleOfClasses();
         return new ScheduleDTO(
                 schedule.getSchedid(),
                 schedule.getDay(),
@@ -43,9 +45,9 @@ public class ScheduleDTO {
                 schedule.getEndTime(),
                 schedule.getTeacher().getUid(),
                 schedule.getTeacher().getFirstname() + " " + schedule.getTeacher().getLastname(),
-                schedule.getScheduleOfClasses().getCid(),
-                schedule.getScheduleOfClasses().getCourseCode(),
-                schedule.getScheduleOfClasses().getCourseDescription()
+                cls != null ? cls.getCid() : null,
+                cls != null ? cls.getCourseCode() : "No Class Assigned",
+                cls != null ? cls.getCourseDescription() : "No Description"
         );
     }
 
