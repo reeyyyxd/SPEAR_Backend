@@ -21,13 +21,21 @@ public class QuestionTemplate {
     @JoinColumn(name = "template_set_id")
     private QuestionTemplateSet templateSet;
 
+    @ManyToOne
+    @JoinColumn(name = "created_by", referencedColumnName = "uid", nullable = false)
+    private User createdBy;
+
+
+
+
     public QuestionTemplate() {
     }
 
-    public QuestionTemplate(String questionText, QuestionType questionType, QuestionTemplateSet templateSet) {
+    public QuestionTemplate(String questionText, QuestionType questionType, QuestionTemplateSet templateSet, User createdBy) {
         this.questionText = questionText;
         this.questionType = questionType;
         this.templateSet = templateSet;
+        this.createdBy = createdBy;
     }
 
     public Long getId() {
@@ -60,5 +68,13 @@ public class QuestionTemplate {
 
     public void setTemplateSet(QuestionTemplateSet templateSet) {
         this.templateSet = templateSet;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
     }
 }

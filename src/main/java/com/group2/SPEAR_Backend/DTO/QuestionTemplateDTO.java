@@ -7,6 +7,8 @@ public class QuestionTemplateDTO {
     private Long id;
     private String questionText;
     private QuestionType questionType;
+    private Integer createdByUserId;
+
 
     public QuestionTemplateDTO() {}
 
@@ -14,6 +16,7 @@ public class QuestionTemplateDTO {
         this.id = template.getId();
         this.questionText = template.getQuestionText();
         this.questionType = template.getQuestionType();
+        this.createdByUserId = template.getCreatedBy() != null ? template.getCreatedBy().getUid() : null;
     }
 
     public Long getId() { return id; }
@@ -24,4 +27,8 @@ public class QuestionTemplateDTO {
 
     public QuestionType getQuestionType() { return questionType; }
     public void setQuestionType(QuestionType questionType) { this.questionType = questionType; }
+
+    public Integer getCreatedByUserId() { return createdByUserId; }
+    public void setCreatedByUserId(Integer createdByUserId) { this.createdByUserId = createdByUserId; }
+
 }

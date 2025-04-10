@@ -1,4 +1,3 @@
-// --- Controller ---
 package com.group2.SPEAR_Backend.Controller;
 
 import com.group2.SPEAR_Backend.DTO.QuestionTemplateDTO;
@@ -36,6 +35,11 @@ public class QuestionTemplateController {
     public List<QuestionTemplateSetDTO> getAllSets() {
         return service.getAllSets();
     }
+
+//    @GetMapping("/teacher/my-templates")
+//    public List<QuestionTemplateDTO> getMyTemplates() {
+//        return service.getTemplatesByCurrentUser();
+//    }
 
     @DeleteMapping("/admin/delete-set/{setId}")
     public void deleteSet(@PathVariable Long setId) {

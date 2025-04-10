@@ -1,13 +1,16 @@
-// --- Service ---
 package com.group2.SPEAR_Backend.Service;
 
 import com.group2.SPEAR_Backend.DTO.QuestionTemplateDTO;
 import com.group2.SPEAR_Backend.DTO.QuestionTemplateSetDTO;
 import com.group2.SPEAR_Backend.Model.QuestionTemplate;
 import com.group2.SPEAR_Backend.Model.QuestionTemplateSet;
+import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.Repository.QuestionTemplateRepository;
 import com.group2.SPEAR_Backend.Repository.QuestionTemplateSetRepository;
+import com.group2.SPEAR_Backend.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +26,9 @@ public class QuestionTemplateService {
     @Autowired
     private QuestionTemplateRepository templateRepo;
 
+    @Autowired
+    private UserRepository userRepo;
+
     public QuestionTemplateSetDTO createSet(String name) {
         QuestionTemplateSet set = new QuestionTemplateSet(name);
         return new QuestionTemplateSetDTO(setRepo.save(set));
@@ -32,10 +38,16 @@ public class QuestionTemplateService {
         QuestionTemplateSet set = setRepo.findById(setId)
                 .orElseThrow(() -> new NoSuchElementException("Set not found with ID: " + setId));
 
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        User creator = userRepo.findByEmail(email)
+                .orElseThrow(() -> new NoSuchElementException("User not found with email: " + email));
+
         QuestionTemplate question = new QuestionTemplate(
                 dto.getQuestionText(),
                 dto.getQuestionType(),
-                set
+                set,
+                creator
         );
 
         return new QuestionTemplateDTO(templateRepo.save(question));
@@ -62,4 +74,16 @@ public class QuestionTemplateService {
     public void deleteQuestion(Long questionId) {
         templateRepo.deleteById(questionId);
     }
+
+//    public List<QuestionTemplateDTO> getTemplatesByCurrentUser() {
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        String email = auth.getName();
+//        User creator = userRepo.findByEmail(email)
+//                .orElseThrow(() -> new NoSuchElementException("User not found with email: " + email));
+//
+//        return templateRepo.findAll().stream()
+//                .filter(template -> template.getCreatedBy() != null && template.getCreatedBy().getUid().equals(creator.getUid()))
+//                .map(QuestionTemplateDTO::new)
+//                .collect(Collectors.toList());
+//    }
 }
