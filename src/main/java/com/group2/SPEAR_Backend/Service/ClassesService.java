@@ -211,13 +211,26 @@ public class ClassesService {
                 return response;
             }
 
+            // Check for teams exceeding the new maxTeamSize
+            int newMaxSize = classRequest.getMaxTeamSize();
+            List<Team> violatingTeams = tRepo.findTeamsByClassIdWithMoreThan(classId, newMaxSize);
+            if (!violatingTeams.isEmpty()) {
+                String overTeams = violatingTeams.stream()
+                        .map(Team::getGroupName)
+                        .collect(Collectors.joining(", "));
+                response.setStatusCode(409); // Conflict
+                response.setMessage("Cannot update. These teams exceed the max size: " + overTeams);
+                return response;
+            }
+
+            // Proceed to update if no violations
             Classes existingClass = classOptional.get();
             existingClass.setCourseCode(classRequest.getCourseCode());
             existingClass.setSection(classRequest.getSection());
             existingClass.setSchoolYear(classRequest.getSchoolYear());
             existingClass.setSemester(classRequest.getSemester());
             existingClass.setCourseDescription(classRequest.getCourseDescription());
-            existingClass.setMaxTeamSize(classRequest.getMaxTeamSize());
+            existingClass.setMaxTeamSize(newMaxSize);
             existingClass.setNeedsAdvisory(classRequest.isNeedsAdvisory());
 
             Classes updatedClass = cRepo.save(existingClass);
