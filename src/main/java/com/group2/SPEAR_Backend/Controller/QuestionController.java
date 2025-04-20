@@ -1,17 +1,23 @@
 package com.group2.SPEAR_Backend.Controller;
 
 import com.group2.SPEAR_Backend.DTO.QuestionDTO;
+import com.group2.SPEAR_Backend.DTO.QuestionTemplateSetDTO;
 import com.group2.SPEAR_Backend.Model.Question;
+import com.group2.SPEAR_Backend.Model.QuestionTemplateSet;
 import com.group2.SPEAR_Backend.Model.User;
+import com.group2.SPEAR_Backend.Repository.QuestionTemplateSetRepository;
 import com.group2.SPEAR_Backend.Repository.UserRepository;
 import com.group2.SPEAR_Backend.Service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = {"http://localhost:5173", "http://10.147.17.37:5173", "http://10.147.17.166:5173"})
@@ -22,6 +28,9 @@ public class QuestionController {
 
     @Autowired
     private UserRepository userRepo;
+
+    @Autowired
+    private QuestionTemplateSetRepository templateRepoSet;
 
     @PostMapping("/teacher/create-question/{classId}/{evaluationId}")
     public QuestionDTO createQuestion(
@@ -98,6 +107,62 @@ public class QuestionController {
             @PathVariable Long evaluationId) {
         return qServ.importTemplateSet(setId, classId, evaluationId);
     }
+
+    @GetMapping("/teacher/get-imported-sets/{evaluationId}")
+    public ResponseEntity<?> getImportedTemplateSets(@PathVariable Long evaluationId) {
+        try {
+            List<QuestionTemplateSetDTO> sets = qServ.getImportedTemplateSetsByEvaluation(evaluationId);
+            return ResponseEntity.ok(sets);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/teacher/delete-questions-by-set/{templateSetId}")
+    public ResponseEntity<?> deleteQuestionsByTemplateSet(@PathVariable Long templateSetId) {
+        try {
+            qServ.deleteQuestionsByTemplateSetId(templateSetId);
+            return ResponseEntity.ok().body(Map.of("message", "All questions from this template set have been deleted"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/teacher/get-my-evaluation-questions/{evaluationId}")
+    public List<QuestionDTO> getMyEvaluationQuestions(@PathVariable Long evaluationId) {
+        return qServ.getMyOwnQuestionsByEvaluation(evaluationId);
+    }
+
+    @PostMapping("/teacher/save-as-template/{evaluationId}")
+    public ResponseEntity<?> saveAsTemplateSet(
+            @PathVariable Long evaluationId,
+            @RequestBody Map<String, String> request) {
+        try {
+            String templateSetName = request.get("name");
+            return ResponseEntity.ok(qServ.saveAsTemplateSet(templateSetName, evaluationId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/teacher/my-template-sets")
+    public ResponseEntity<?> getMyTemplateSets() {
+        try {
+            return ResponseEntity.ok(qServ.getMyTemplateSets());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("teacher/import-my-template-set/{setId}/for-class/{classId}/evaluation/{evaluationId}")
+    public List<QuestionDTO> importMyTemplateSet(
+            @PathVariable Long setId,
+            @PathVariable Long classId,
+            @PathVariable Long evaluationId) {
+        return qServ.importMyTemplateSet(setId, classId, evaluationId);
+    }
+
+
 
 
 

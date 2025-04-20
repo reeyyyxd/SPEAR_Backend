@@ -21,6 +21,11 @@ public class QuestionTemplateController {
         return service.createSet(name);
     }
 
+//    @PostMapping("/teacher/create-set")
+//    public QuestionTemplateSetDTO createSet(@RequestParam String name) {
+//        return service.createSet(name);
+//    }
+
     @PostMapping("/admin/add-question/{setId}")
     public QuestionTemplateDTO addQuestionToSet(@PathVariable Long setId, @RequestBody QuestionTemplateDTO dto) {
         return service.addQuestionToSet(setId, dto);
@@ -36,10 +41,10 @@ public class QuestionTemplateController {
         return service.getAllSets();
     }
 
-//    @GetMapping("/teacher/my-templates")
-//    public List<QuestionTemplateDTO> getMyTemplates() {
-//        return service.getTemplatesByCurrentUser();
-//    }
+    @GetMapping("/teacher/my-templates")
+    public List<QuestionTemplateDTO> getMyTemplates() {
+        return service.getTemplatesByCurrentUser();
+    }
 
     @DeleteMapping("/admin/delete-set/{setId}")
     public void deleteSet(@PathVariable Long setId) {

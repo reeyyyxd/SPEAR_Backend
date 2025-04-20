@@ -10,8 +10,11 @@ public class QuestionTemplate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "question_text", nullable = false)
-    private String questionText;
+    @Column(name = "question_title", nullable = false)
+    private String questionTitle;
+
+    @Column(name = "question_details", columnDefinition = "TEXT")
+    private String questionDetails;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "question_type", nullable = false)
@@ -25,56 +28,32 @@ public class QuestionTemplate {
     @JoinColumn(name = "created_by", referencedColumnName = "uid", nullable = false)
     private User createdBy;
 
-
-
-
     public QuestionTemplate() {
     }
 
-    public QuestionTemplate(String questionText, QuestionType questionType, QuestionTemplateSet templateSet, User createdBy) {
-        this.questionText = questionText;
+    public QuestionTemplate(String questionTitle, String questionDetails, QuestionType questionType, QuestionTemplateSet templateSet, User createdBy) {
+        this.questionTitle = questionTitle;
+        this.questionDetails = questionDetails;
         this.questionType = questionType;
         this.templateSet = templateSet;
         this.createdBy = createdBy;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getQuestionTitle() { return questionTitle; }
+    public void setQuestionTitle(String questionTitle) { this.questionTitle = questionTitle; }
 
-    public String getQuestionText() {
-        return questionText;
-    }
+    public String getQuestionDetails() { return questionDetails; }
+    public void setQuestionDetails(String questionDetails) { this.questionDetails = questionDetails; }
 
-    public void setQuestionText(String questionText) {
-        this.questionText = questionText;
-    }
+    public QuestionType getQuestionType() { return questionType; }
+    public void setQuestionType(QuestionType questionType) { this.questionType = questionType; }
 
-    public QuestionType getQuestionType() {
-        return questionType;
-    }
+    public QuestionTemplateSet getTemplateSet() { return templateSet; }
+    public void setTemplateSet(QuestionTemplateSet templateSet) { this.templateSet = templateSet; }
 
-    public void setQuestionType(QuestionType questionType) {
-        this.questionType = questionType;
-    }
-
-    public QuestionTemplateSet getTemplateSet() {
-        return templateSet;
-    }
-
-    public void setTemplateSet(QuestionTemplateSet templateSet) {
-        this.templateSet = templateSet;
-    }
-
-    public User getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(User createdBy) {
-        this.createdBy = createdBy;
-    }
+    public User getCreatedBy() { return createdBy; }
+    public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
 }

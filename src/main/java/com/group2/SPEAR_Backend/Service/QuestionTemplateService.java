@@ -44,7 +44,8 @@ public class QuestionTemplateService {
                 .orElseThrow(() -> new NoSuchElementException("User not found with email: " + email));
 
         QuestionTemplate question = new QuestionTemplate(
-                dto.getQuestionText(),
+                dto.getQuestionTitle(),
+                dto.getQuestionDetails(),
                 dto.getQuestionType(),
                 set,
                 creator
@@ -54,14 +55,19 @@ public class QuestionTemplateService {
     }
 
     public List<QuestionTemplateSetDTO> getAllSets() {
-        return setRepo.findAll().stream().map(QuestionTemplateSetDTO::new).collect(Collectors.toList());
+        return setRepo.findAll().stream()
+                .filter(set -> set.getQuestions().stream()
+                        .anyMatch(q -> q.getCreatedBy().getRole().equalsIgnoreCase("ADMIN")))
+                .map(QuestionTemplateSetDTO::new)
+                .collect(Collectors.toList());
     }
 
     public QuestionTemplateDTO updateQuestion(Long questionId, QuestionTemplateDTO dto) {
         QuestionTemplate question = templateRepo.findById(questionId)
                 .orElseThrow(() -> new NoSuchElementException("Question not found with ID: " + questionId));
 
-        question.setQuestionText(dto.getQuestionText());
+        question.setQuestionTitle(dto.getQuestionTitle());
+        question.setQuestionDetails(dto.getQuestionDetails());
         question.setQuestionType(dto.getQuestionType());
 
         return new QuestionTemplateDTO(templateRepo.save(question));
@@ -75,15 +81,15 @@ public class QuestionTemplateService {
         templateRepo.deleteById(questionId);
     }
 
-//    public List<QuestionTemplateDTO> getTemplatesByCurrentUser() {
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        String email = auth.getName();
-//        User creator = userRepo.findByEmail(email)
-//                .orElseThrow(() -> new NoSuchElementException("User not found with email: " + email));
-//
-//        return templateRepo.findAll().stream()
-//                .filter(template -> template.getCreatedBy() != null && template.getCreatedBy().getUid().equals(creator.getUid()))
-//                .map(QuestionTemplateDTO::new)
-//                .collect(Collectors.toList());
-//    }
+    public List<QuestionTemplateDTO> getTemplatesByCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        User creator = userRepo.findByEmail(email)
+                .orElseThrow(() -> new NoSuchElementException("User not found with email: " + email));
+
+        return templateRepo.findAll().stream()
+                .filter(template -> template.getCreatedBy() != null && template.getCreatedBy().getUid() == creator.getUid())
+                .map(QuestionTemplateDTO::new)
+                .collect(Collectors.toList());
+    }
 }

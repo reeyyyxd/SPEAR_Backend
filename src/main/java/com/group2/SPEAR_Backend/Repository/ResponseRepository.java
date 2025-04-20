@@ -49,7 +49,7 @@ public interface ResponseRepository extends JpaRepository<Response, Long> {
             "evaluatee.uid, " +
             "CONCAT(evaluatee.firstname, ' ', evaluatee.lastname), " +
             "r.question.qid, " +
-            "r.question.questionText, " +
+            "r.question.questionTitle, " +  // <- fix here
             "r.evaluation.period, " +
             "r.score) " +
             "FROM Response r " +
