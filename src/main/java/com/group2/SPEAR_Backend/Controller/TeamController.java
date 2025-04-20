@@ -5,6 +5,7 @@ import com.group2.SPEAR_Backend.Model.Classes;
 import com.group2.SPEAR_Backend.Model.Team;
 import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.Repository.TeamRepository;
+import com.group2.SPEAR_Backend.Service.TeamInvitationService;
 import com.group2.SPEAR_Backend.Service.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,9 @@ public class TeamController {
 
     @Autowired
     private TeamRepository tRepo;
+
+    @Autowired
+    private TeamInvitationService invitationServ;
 
 //    @PostMapping("/student/create/{projectId}")
 //    public Team createTeam(@PathVariable int projectId, @RequestParam String groupName) {
@@ -138,11 +142,13 @@ public class TeamController {
     public ResponseEntity<Map<String, String>> addPreferredMember(
             @PathVariable int teamId,
             @RequestBody Map<String, Integer> requestBody) {
-        int requesterId = requestBody.get("requesterId"); // Extract requester ID
-        int memberId = requestBody.get("memberId"); // Extract new member ID
-        tServ.addPreferredMember(teamId, requesterId, memberId);
 
-        return ResponseEntity.ok(Map.of("message", "Member added successfully."));
+        int requesterId = requestBody.get("requesterId");
+        int memberId = requestBody.get("memberId");
+
+        invitationServ.inviteStudent(teamId, requesterId, memberId);
+
+        return ResponseEntity.ok(Map.of("message", "Invitation sent to the student."));
     }
 
     @GetMapping("/teams/all-active")

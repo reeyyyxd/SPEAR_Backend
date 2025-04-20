@@ -70,35 +70,40 @@ public class TeamService {
     }
 
     //all the leader functions
-    @Transactional
+//    @Transactional
+//    public void addPreferredMember(int teamId, int requesterId, int memberId) {
+//        Team team = tRepo.findById(teamId)
+//                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found."));
+//
+//        if (team.getLeader().getUid() != requesterId) {
+//            throw new IllegalStateException("Only the team leader can add members.");
+//        }
+//
+//        Classes teamClass = team.getClassRef();
+//        int maxTeamSize = teamClass.getMaxTeamSize();
+//
+//        if (!team.isRecruitmentOpen()) {
+//            throw new IllegalStateException("Cannot add members. Recruitment is closed.");
+//        }
+//
+//        User newMember = uRepo.findById(memberId)
+//                .orElseThrow(() -> new NoSuchElementException("User with ID " + memberId + " not found."));
+//
+//        if (!teamClass.getEnrolledStudents().contains(newMember)) {
+//            throw new IllegalStateException("The new member must be enrolled in the same class as the team.");
+//        }
+//        team.getMembers().add(newMember);
+//
+//        if (team.getMembers().size() >= maxTeamSize) {
+//            team.setRecruitmentOpen(false);
+//        }
+//
+//        tRepo.save(team);
+//    }
+
+    @Deprecated
     public void addPreferredMember(int teamId, int requesterId, int memberId) {
-        Team team = tRepo.findById(teamId)
-                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found."));
-
-        if (team.getLeader().getUid() != requesterId) {
-            throw new IllegalStateException("Only the team leader can add members.");
-        }
-
-        Classes teamClass = team.getClassRef();
-        int maxTeamSize = teamClass.getMaxTeamSize();
-
-        if (!team.isRecruitmentOpen()) {
-            throw new IllegalStateException("Cannot add members. Recruitment is closed.");
-        }
-
-        User newMember = uRepo.findById(memberId)
-                .orElseThrow(() -> new NoSuchElementException("User with ID " + memberId + " not found."));
-
-        if (!teamClass.getEnrolledStudents().contains(newMember)) {
-            throw new IllegalStateException("The new member must be enrolled in the same class as the team.");
-        }
-        team.getMembers().add(newMember);
-
-        if (team.getMembers().size() >= maxTeamSize) {
-            team.setRecruitmentOpen(false);
-        }
-
-        tRepo.save(team);
+        throw new UnsupportedOperationException("addPreferredMember is deprecated. Use TeamInvitationService.inviteStudent instead.");
     }
 
     public Team updateGroupName(int teamId, String groupName, int requesterId) {
