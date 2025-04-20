@@ -100,6 +100,12 @@ public class TeamRecuitmentService {
         if (isAccepted) {
             boolean alreadyAccepted = trRepo.findByStudentId(student.getUid()).stream()
                     .anyMatch(r -> r.getStatus() == TeamRecuitment.Status.ACCEPTED);
+
+            boolean isLeader = tRepo.existsByLeaderUid(student.getUid());
+
+            if (alreadyAccepted || isLeader) {
+                throw new IllegalStateException("This student is already in another team.");
+            }
             if (alreadyAccepted) {
                 throw new IllegalStateException("This student is already accepted into another team.");
             }

@@ -45,6 +45,9 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
     @Query("SELECT COUNT(t) > 0 FROM Team t WHERE t.leader = :leader AND t.classRef = :classRef")
     boolean existsByLeaderAndClassRef(@Param("leader") User leader, @Param("classRef") Classes classRef);
 
+    @Query("SELECT COUNT(t) > 0 FROM Team t WHERE t.leader.uid = :userId")
+    boolean existsByLeaderUid(@Param("userId") int userId);
+
     @Query("SELECT t FROM Team t WHERE t.schedule = :schedule")
     Optional<Team> findBySchedule(@Param("schedule") Schedule schedule);
 

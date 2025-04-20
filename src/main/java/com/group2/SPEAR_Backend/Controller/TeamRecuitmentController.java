@@ -37,14 +37,22 @@ public class TeamRecuitmentController {
     }
 
     @PostMapping("/student/review/{recruitmentId}")
-    public ResponseEntity<String> reviewApplication(
+    public ResponseEntity<?> reviewApplication(
             @PathVariable int recruitmentId,
             @RequestBody Map<String, Object> requestBody) {
-        boolean isAccepted = (boolean) requestBody.get("isAccepted");
-        String leaderReason = (String) requestBody.getOrDefault("leaderReason", null);
+        try {
+            boolean isAccepted = (boolean) requestBody.get("isAccepted");
+            String leaderReason = (String) requestBody.getOrDefault("leaderReason", null);
 
-        trServ.reviewApplication(recruitmentId, isAccepted, leaderReason);
-        return ResponseEntity.ok(isAccepted ? "Application accepted" : "Application rejected");
+            trServ.reviewApplication(recruitmentId, isAccepted, leaderReason);
+            return ResponseEntity.ok(isAccepted ? "Application accepted" : "Application rejected");
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", ex.getMessage()));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", ex.getMessage()));
+        }
     }
 
     @GetMapping("/team/{teamId}/pending-applications")
