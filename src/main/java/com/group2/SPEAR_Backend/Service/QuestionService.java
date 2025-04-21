@@ -6,6 +6,7 @@ import com.group2.SPEAR_Backend.Model.*;
 import com.group2.SPEAR_Backend.Repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -282,8 +283,13 @@ public class QuestionService {
         User teacher = userRepo.findByEmail(email)
                 .orElseThrow(() -> new NoSuchElementException("User not found with email: " + email));
 
-        QuestionTemplateSet newSet = new QuestionTemplateSet(templateSetName);
-        templateRepoSet.save(newSet);
+        QuestionTemplateSet newSet = new QuestionTemplateSet(templateSetName, teacher);
+
+        try {
+            templateRepoSet.save(newSet);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("A template set with this name already exists. Please choose another name.");
+        }
 
         List<Question> myQuestions = qRepo.findByEvaluationEid(evaluationId).stream()
                 .filter(q -> q.getCreatedBy().getUid() == teacher.getUid() && q.getTemplateSet() == null)

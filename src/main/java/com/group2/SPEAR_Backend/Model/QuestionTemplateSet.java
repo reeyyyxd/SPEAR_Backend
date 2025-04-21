@@ -18,10 +18,16 @@ public class QuestionTemplateSet {
     @OneToMany(mappedBy = "templateSet", cascade = CascadeType.ALL)
     private Set<QuestionTemplate> questions = new HashSet<>();
 
+    @ManyToOne
+    @JoinColumn(name = "created_by", referencedColumnName = "uid", nullable = false)
+    private User createdBy;
+
     public QuestionTemplateSet() {}
 
-    public QuestionTemplateSet(String name) {
+    public QuestionTemplateSet(String name, User createdBy) {
         this.name = name;
+        this.createdBy = createdBy;
+
     }
 
     public Long getId() { return id; }
@@ -32,5 +38,14 @@ public class QuestionTemplateSet {
 
     public Set<QuestionTemplate> getQuestions() { return questions; }
     public void setQuestions(Set<QuestionTemplate> questions) { this.questions = questions; }
+
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
 }
 

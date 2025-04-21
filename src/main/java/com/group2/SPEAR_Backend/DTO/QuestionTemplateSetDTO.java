@@ -10,6 +10,7 @@
             private Long id;
             private String name;
             private List<QuestionTemplateDTO> questions;
+            private Integer createdByUserId;
 
             public QuestionTemplateSetDTO() {}
 
@@ -17,6 +18,8 @@
                 this.id = set.getId();
                 this.name = set.getName();
                 this.questions = set.getQuestions().stream().map(QuestionTemplateDTO::new).collect(Collectors.toList());
+                this.createdByUserId = set.getCreatedBy() != null ? set.getCreatedBy().getUid() : null;
+
             }
 
             public Long getId() { return id; }
@@ -27,5 +30,13 @@
 
             public List<QuestionTemplateDTO> getQuestions() { return questions; }
             public void setQuestions(List<QuestionTemplateDTO> questions) { this.questions = questions; }
+
+            public Integer getCreatedByUserId() {
+                return createdByUserId;
+            }
+
+            public void setCreatedByUserId(Integer createdByUserId) {
+                this.createdByUserId = createdByUserId;
+            }
         }
 

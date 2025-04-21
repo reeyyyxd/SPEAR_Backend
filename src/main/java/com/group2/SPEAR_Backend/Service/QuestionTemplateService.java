@@ -9,6 +9,7 @@ import com.group2.SPEAR_Backend.Repository.QuestionTemplateRepository;
 import com.group2.SPEAR_Backend.Repository.QuestionTemplateSetRepository;
 import com.group2.SPEAR_Backend.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -30,8 +31,29 @@ public class QuestionTemplateService {
     private UserRepository userRepo;
 
     public QuestionTemplateSetDTO createSet(String name) {
-        QuestionTemplateSet set = new QuestionTemplateSet(name);
-        return new QuestionTemplateSetDTO(setRepo.save(set));
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+            User creator = userRepo.findByEmail(email)
+                    .orElseThrow(() -> new NoSuchElementException("User not found with email: " + email));
+
+            QuestionTemplateSet set = new QuestionTemplateSet(name, creator);
+            return new QuestionTemplateSetDTO(setRepo.save(set));
+        } catch (DataIntegrityViolationException ex) {
+            throw new IllegalArgumentException("This name has been used. Try another.");
+        }
+    }
+
+    public List<QuestionTemplateSetDTO> getTemplateSetsByCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        User creator = userRepo.findByEmail(email)
+                .orElseThrow(() -> new NoSuchElementException("User not found with email: " + email));
+
+        return setRepo.findAll().stream()
+                .filter(set -> set.getCreatedBy().getUid() == creator.getUid())
+                .map(QuestionTemplateSetDTO::new)
+                .collect(Collectors.toList());
     }
 
     public QuestionTemplateDTO addQuestionToSet(Long setId, QuestionTemplateDTO dto) {
@@ -74,7 +96,14 @@ public class QuestionTemplateService {
     }
 
     public void deleteSet(Long setId) {
-        setRepo.deleteById(setId);
+        QuestionTemplateSet set = setRepo.findById(setId)
+                .orElseThrow(() -> new IllegalArgumentException("Set not found."));
+
+        if (!set.getQuestions().isEmpty()) {
+            throw new IllegalStateException("Cannot delete: This set is currently in use.");
+        }
+
+        setRepo.delete(set);
     }
 
     public void deleteQuestion(Long questionId) {

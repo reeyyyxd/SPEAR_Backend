@@ -4,9 +4,12 @@ import com.group2.SPEAR_Backend.DTO.QuestionTemplateDTO;
 import com.group2.SPEAR_Backend.DTO.QuestionTemplateSetDTO;
 import com.group2.SPEAR_Backend.Service.QuestionTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/templates")
@@ -46,10 +49,28 @@ public class QuestionTemplateController {
         return service.getTemplatesByCurrentUser();
     }
 
+    @GetMapping("/admin/my-template-sets")
+    public List<QuestionTemplateSetDTO> getMyAdminTemplateSets() {
+        return service.getTemplateSetsByCurrentUser();
+    }
+
     @DeleteMapping("/admin/delete-set/{setId}")
     public void deleteSet(@PathVariable Long setId) {
         service.deleteSet(setId);
     }
+
+    @DeleteMapping("/teacher/delete-set/{setId}")
+    public ResponseEntity<?> deleteSetTeacher(@PathVariable Long setId) {
+        try {
+            service.deleteSet(setId);
+            return ResponseEntity.ok().body(Map.of("message", "Deleted successfully."));
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Unexpected server error"));
+        }
+    }
+
 
     @DeleteMapping("/admin/delete-question/{questionId}")
     public void deleteQuestion(@PathVariable Long questionId) {
