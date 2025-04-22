@@ -175,7 +175,7 @@ public class TeamController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
         }
     }
-
+    //teacher-student
     @GetMapping("/teacher/teams/adviser/{adviserId}")
     public ResponseEntity<?> getTeamsByAdviser(@PathVariable int adviserId) {
         try {
@@ -189,8 +189,18 @@ public class TeamController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
         }
     }
+    //student-adviser
+    @GetMapping("/team/{teamId}/members-and-adviser")
+    public ResponseEntity<Map<String, Object>> getTeamMembersAndAdviser(@PathVariable int teamId) {
+        try {
+            Map<String, Object> data = tServ.getTeamMembersAndAdviser(teamId);
+            return ResponseEntity.ok(data);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        }
+    }
 
-
+    //this might be ?????
     @GetMapping("/team/my/{classId}/{userId}")
     public ResponseEntity<?> getMyTeam(@PathVariable int userId, @PathVariable int classId) {
         try {
@@ -203,6 +213,8 @@ public class TeamController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
         }
     }
+
+
     @GetMapping("/team/myTeam/{classId}/{userId}")
     public ResponseEntity<?> getMyTeamQueueitVersion(@PathVariable int userId, @PathVariable int classId) {
         try {

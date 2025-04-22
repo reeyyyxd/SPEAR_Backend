@@ -213,7 +213,6 @@ public class QuestionService {
         return mapToDTO(savedQuestion);
     }
 
-    // Updated importTemplateSet method to set the template set reference
     public List<QuestionDTO> importTemplateSet(Long setId, Long classId, Long evaluationId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
@@ -229,24 +228,24 @@ public class QuestionService {
         Evaluation evaluation = eRepo.findById(evaluationId)
                 .orElseThrow(() -> new NoSuchElementException("Evaluation not found with ID: " + evaluationId));
 
-        List<Question> questions = set.getQuestions().stream().map(template -> {
+        // Only add new questions; do not remove any previous ones
+        List<Question> newQuestions = set.getQuestions().stream().map(template -> {
             Question q = new Question();
             q.setQuestionTitle(template.getQuestionTitle());
             q.setQuestionDetails(template.getQuestionDetails());
             q.setQuestionType(template.getQuestionType());
             q.setClasses(clazz);
             q.setEvaluation(evaluation);
-            q.setCreatedBy(template.getCreatedBy());
+            q.setCreatedBy(teacher); // optional: set the current teacher instead of template creator
             q.setEditable(false);
-            q.setTemplateSet(set); // Set the reference to track which set this question came from
+            q.setTemplateSet(set); // Maintain origin tracking
             return q;
         }).collect(Collectors.toList());
 
-        List<Question> saved = qRepo.saveAll(questions);
+        List<Question> saved = qRepo.saveAll(newQuestions);
 
         return saved.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
-
     public List<QuestionTemplateSetDTO> getImportedTemplateSetsByEvaluation(Long evaluationId) {
         return qRepo.findByEvaluationEid(evaluationId).stream()
                 .map(Question::getTemplateSet)

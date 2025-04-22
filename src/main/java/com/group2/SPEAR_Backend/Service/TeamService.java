@@ -573,6 +573,38 @@ public class TeamService {
                 .collect(Collectors.toList());
     }
 
+    public Map<String, Object> getTeamMembersAndAdviser(int teamId) {
+        Team team = tRepo.findById(teamId)
+                .orElseThrow(() -> new NoSuchElementException("Team not found"));
+
+        // Get member names and IDs
+        List<String> memberNames = new ArrayList<>();
+        List<Integer> memberIds = new ArrayList<>();
+        for (User member : team.getMembers()) {
+            memberNames.add(member.getFirstname() + " " + member.getLastname());
+            memberIds.add(member.getUid());
+        }
+
+        // Get adviser name and ID
+        String adviserName = "No Adviser Assigned";
+        Integer adviserId = null;
+        if (team.getAdviser() != null) {
+            adviserName = team.getAdviser().getFirstname() + " " + team.getAdviser().getLastname();
+            adviserId = team.getAdviser().getUid();
+        }
+
+        // Build response
+        Map<String, Object> result = new HashMap<>();
+        result.put("teamId", team.getTid());
+        result.put("groupName", team.getGroupName());
+        result.put("memberNames", memberNames);
+        result.put("memberIds", memberIds);
+        result.put("adviserName", adviserName);
+        result.put("adviserId", adviserId);
+
+        return result;
+    }
+
 //    public List<UserDTO> getQualifiedAdvisersForClass(Long classId) {
 //        List<User> advisers = cRepo.findQualifiedAdvisersByClassId(classId);
 //
