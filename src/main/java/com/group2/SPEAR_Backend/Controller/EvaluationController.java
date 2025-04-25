@@ -1,9 +1,13 @@
 package com.group2.SPEAR_Backend.Controller;
 
 import com.group2.SPEAR_Backend.DTO.EvaluationDTO;
+import com.group2.SPEAR_Backend.DTO.MemberSubmissionDTO;
+import com.group2.SPEAR_Backend.DTO.TeamSummaryDTO;
 import com.group2.SPEAR_Backend.Model.Evaluation;
 import com.group2.SPEAR_Backend.Model.EvaluationType;
+import com.group2.SPEAR_Backend.Model.Team;
 import com.group2.SPEAR_Backend.Repository.EvaluationRepository;
+import com.group2.SPEAR_Backend.Repository.TeamRepository;
 import com.group2.SPEAR_Backend.Service.EvaluationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +27,9 @@ public class EvaluationController {
 
     @Autowired
     private EvaluationRepository eRepo;
+
+    @Autowired
+    private TeamRepository tRepo;
 
     @PostMapping("teacher/create-evaluation/{classId}")
     public ResponseEntity<?> createEvaluation(
@@ -136,6 +143,76 @@ public class EvaluationController {
         }
         return ResponseEntity.ok(teamId);
     }
+
+    @GetMapping("/teacher/evaluation/{evaluationId}/team/{teamId}/submitted-members")
+    public ResponseEntity<?> getSubmittedMembers(
+            @PathVariable Long evaluationId,
+            @PathVariable int teamId) {
+        try {
+
+            Team team = tRepo.findById(teamId)
+                    .orElseThrow(() -> new NoSuchElementException("Team not found: " + teamId));
+
+            List<MemberSubmissionDTO> result =
+                    eServ.getSubmittedMembersForTeam(evaluationId, teamId);
+            return ResponseEntity.ok(Map.of(
+                    "teamId",   teamId,
+                    "submitted", result,
+                    "teamName",  team.getGroupName()
+            ));
+        } catch (NoSuchElementException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", ex.getMessage()));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", ex.getMessage()));
+        }
+    }
+
+    // summary first
+    @GetMapping("/teacher/evaluation/{evaluationId}/teams")
+    public ResponseEntity<?> getTeamsForEvaluation(@PathVariable Long evaluationId) {
+        try {
+            List<TeamSummaryDTO> teams = eServ.getTeamsForEvaluation(evaluationId);
+            return ResponseEntity.ok(teams);
+        } catch (NoSuchElementException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", ex.getMessage()));
+        }
+    }
+
+    @GetMapping("/teacher/evaluation/{evaluationId}/team/{teamId}/pending-members")
+    public ResponseEntity<?> getPendingMembers(
+            @PathVariable Long evaluationId,
+            @PathVariable int teamId) {
+        try {
+            Team team = tRepo.findById(teamId)
+                    .orElseThrow(() -> new NoSuchElementException("Team not found: " + teamId));
+
+            List<MemberSubmissionDTO> result =
+                    eServ.getPendingMembersForTeam(evaluationId, teamId);
+            return ResponseEntity.ok(Map.of(
+                    "teamId",  teamId,
+                    "teamName", team.getGroupName(),
+                    "pending", result
+            ));
+        } catch (NoSuchElementException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", ex.getMessage()));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", ex.getMessage()));
+        }
+    }
+
+
+
+
+
+
+
+
+
     //for admin download
     @GetMapping("/admin/students-to-adviser-evaluations")
     public ResponseEntity<List<EvaluationDTO>> getAllStudentsToAdviserEvaluations() {

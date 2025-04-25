@@ -1,6 +1,8 @@
 package com.group2.SPEAR_Backend.Service;
 
 import com.group2.SPEAR_Backend.DTO.EvaluationDTO;
+import com.group2.SPEAR_Backend.DTO.MemberSubmissionDTO;
+import com.group2.SPEAR_Backend.DTO.TeamSummaryDTO;
 import com.group2.SPEAR_Backend.Model.Classes;
 import com.group2.SPEAR_Backend.Model.Evaluation;
 import com.group2.SPEAR_Backend.Model.EvaluationType;
@@ -11,10 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +33,15 @@ public class EvaluationService {
 
     @Autowired
     private TeamRepository tRepo;
+
+    @Autowired
+    private SubmissionRepository submissionRepo;
+
+    private void ensureClosed(Evaluation eval) {
+        if ("Open".equalsIgnoreCase(eval.getAvailability())) {
+            throw new IllegalStateException("Evaluation is still ongoing.");
+        }
+    }
 
     public EvaluationDTO createEvaluation(Evaluation evaluation, Long classId, EvaluationType evaluationType) {
         Classes classes = cRepo.findById(classId)
@@ -244,6 +252,65 @@ public class EvaluationService {
                 })
                 .collect(Collectors.toList()); // Flatten into a single list
     }
+
+    // summary first
+    public List<TeamSummaryDTO> getTeamsForEvaluation(Long evaluationId) {
+        Evaluation eval = eRepo.findById(evaluationId)
+                .orElseThrow(() -> new NoSuchElementException("Evaluation not found: " + evaluationId));
+        Long classId = eval.getClassRef().getCid();
+
+        List<Team> teams = tRepo.findTeamsByClassId(classId);
+        return teams.stream()
+                .map(t -> new TeamSummaryDTO(t.getTid(), t.getGroupName()))
+                .toList();
+    }
+
+    public List<MemberSubmissionDTO> getSubmittedMembersForTeam(Long evaluationId, int teamId) {
+        Evaluation eval = eRepo.findById(evaluationId)
+                .orElseThrow(() -> new NoSuchElementException("Evaluation not found: " + evaluationId));
+        ensureClosed(eval);
+
+        Team team = tRepo.findById(teamId)
+                .orElseThrow(() -> new NoSuchElementException("Team not found: " + teamId));
+
+        // collect all evaluatorIds who submitted
+        Set<Integer> submittedIds = submissionRepo.findByEvaluationEid(evaluationId).stream()
+                .map(s -> s.getEvaluator().getUid())
+                .collect(Collectors.toSet());
+
+        return team.getMembers().stream()
+                .filter(member -> submittedIds.contains(member.getUid()))
+                .map(member -> new MemberSubmissionDTO(
+                        member.getUid(),
+                        member.getFirstname() + " " + member.getLastname(),
+                        member.getUid()
+                ))
+                .toList();
+    }
+
+    public List<MemberSubmissionDTO> getPendingMembersForTeam(Long evaluationId, int teamId) {
+        Evaluation eval = eRepo.findById(evaluationId)
+                .orElseThrow(() -> new NoSuchElementException("Evaluation not found: " + evaluationId));
+        ensureClosed(eval);
+
+        Team team = tRepo.findById(teamId)
+                .orElseThrow(() -> new NoSuchElementException("Team not found: " + teamId));
+
+        Set<Integer> submittedIds = submissionRepo.findByEvaluationEid(evaluationId).stream()
+                .map(s -> s.getEvaluator().getUid())
+                .collect(Collectors.toSet());
+
+        return team.getMembers().stream()
+                .filter(member -> !submittedIds.contains(member.getUid()))
+                .map(member -> new MemberSubmissionDTO(
+                        member.getUid(),
+                        member.getFirstname() + " " + member.getLastname(),
+                        null
+                ))
+                .toList();
+    }
+
+
 
 
 
