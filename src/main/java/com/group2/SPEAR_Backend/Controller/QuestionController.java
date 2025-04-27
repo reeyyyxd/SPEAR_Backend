@@ -118,13 +118,21 @@ public class QuestionController {
         }
     }
 
-    @DeleteMapping("/teacher/delete-questions-by-set/{templateSetId}")
-    public ResponseEntity<?> deleteQuestionsByTemplateSet(@PathVariable Long templateSetId) {
+    @DeleteMapping("/teacher/delete-questions-by-set/{setId}/for-evaluation/{evalId}")
+    public ResponseEntity<?> deleteQuestionsBySetForEval(
+            @PathVariable("setId") Long setId,
+            @PathVariable("evalId") Long evalId
+    ) {
         try {
-            qServ.deleteQuestionsByTemplateSetId(templateSetId);
-            return ResponseEntity.ok().body(Map.of("message", "All questions from this template set have been deleted"));
+            qServ.deleteQuestionsByTemplateSetForEvaluation(setId, evalId);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Questions from template set " + setId +
+                            " for evaluation " + evalId + " were deleted."
+            ));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 

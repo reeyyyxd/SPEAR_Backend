@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/templates")
@@ -39,14 +40,9 @@ public class QuestionTemplateController {
         return service.updateQuestion(questionId, dto);
     }
 
-    @GetMapping("/teacher/get-template-sets")
-    public List<QuestionTemplateSetDTO> getAllSets() {
-        return service.getAllSets();
-    }
-
-    @GetMapping("/teacher/my-templates")
-    public List<QuestionTemplateDTO> getMyTemplates() {
-        return service.getTemplatesByCurrentUser();
+    @DeleteMapping("/admin/delete-question/{questionId}")
+    public void deleteQuestion(@PathVariable Long questionId) {
+        service.deleteQuestion(questionId);
     }
 
     @GetMapping("/admin/my-template-sets")
@@ -57,6 +53,56 @@ public class QuestionTemplateController {
     @DeleteMapping("/admin/delete-set/{setId}")
     public void deleteSet(@PathVariable Long setId) {
         service.deleteSet(setId);
+    }
+    @PutMapping("/rename-template-set/{setId}")
+    public ResponseEntity<?> renameTemplateSet(
+            @PathVariable Long setId,
+            @RequestBody Map<String, String> body
+    ) {
+        String newName = body.get("name");
+        if (newName == null || newName.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "New name must be provided"));
+        }
+
+        try {
+            QuestionTemplateSetDTO updated = service.renameSet(setId, newName);
+            return ResponseEntity.ok(updated);
+        } catch (NoSuchElementException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Unexpected server error"));
+        }
+    }
+
+
+
+    //teacher owner
+
+    @PostMapping("/teacher/add-question/{setId}")
+    public QuestionTemplateDTO teacherAddQuestionToSet(@PathVariable Long setId, @RequestBody QuestionTemplateDTO dto) {
+        return service.addQuestionToSet(setId, dto);
+    }
+
+    @PutMapping("/teacher/update-question/{questionId}")
+    public QuestionTemplateDTO teacherUpdateQuestion(@PathVariable Long questionId, @RequestBody QuestionTemplateDTO dto) {
+        return service.updateQuestion(questionId, dto);
+    }
+
+    @DeleteMapping("/teacher/delete-question/{questionId}")
+    public void teacherDeleteQuestion(@PathVariable Long questionId) {
+        service.deleteQuestion(questionId);
+    }
+
+
+    @GetMapping("/teacher/get-template-sets")
+    public List<QuestionTemplateSetDTO> getAllSets() {
+        return service.getAllSets();
+    }
+
+    @GetMapping("/teacher/my-templates")
+    public List<QuestionTemplateDTO> getMyTemplates() {
+        return service.getTemplatesByCurrentUser();
     }
 
     @DeleteMapping("/teacher/delete-set/{setId}")
@@ -72,8 +118,5 @@ public class QuestionTemplateController {
     }
 
 
-    @DeleteMapping("/admin/delete-question/{questionId}")
-    public void deleteQuestion(@PathVariable Long questionId) {
-        service.deleteQuestion(questionId);
-    }
+
 }

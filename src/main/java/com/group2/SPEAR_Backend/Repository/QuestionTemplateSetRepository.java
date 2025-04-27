@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface QuestionTemplateSetRepository extends JpaRepository<QuestionTemplateSet, Long> {
-
+    boolean existsByName(String name);
 
 }
 

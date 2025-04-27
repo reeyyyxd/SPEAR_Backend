@@ -28,10 +28,10 @@ public class QuestionTemplate {
     @JoinColumn(name = "created_by", referencedColumnName = "uid", nullable = false)
     private User createdBy;
 
-    public QuestionTemplate() {
-    }
+    public QuestionTemplate() {}
 
-    public QuestionTemplate(String questionTitle, String questionDetails, QuestionType questionType, QuestionTemplateSet templateSet, User createdBy) {
+    public QuestionTemplate(String questionTitle, String questionDetails, QuestionType questionType,
+                            QuestionTemplateSet templateSet, User createdBy) {
         this.questionTitle = questionTitle;
         this.questionDetails = questionDetails;
         this.questionType = questionType;
@@ -39,21 +39,51 @@ public class QuestionTemplate {
         this.createdBy = createdBy;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getQuestionTitle() { return questionTitle; }
-    public void setQuestionTitle(String questionTitle) { this.questionTitle = questionTitle; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getQuestionDetails() { return questionDetails; }
-    public void setQuestionDetails(String questionDetails) { this.questionDetails = questionDetails; }
+    public String getQuestionTitle() {
+        return questionTitle;
+    }
 
-    public QuestionType getQuestionType() { return questionType; }
-    public void setQuestionType(QuestionType questionType) { this.questionType = questionType; }
+    public void setQuestionTitle(String questionTitle) {
+        this.questionTitle = questionTitle;
+    }
 
-    public QuestionTemplateSet getTemplateSet() { return templateSet; }
-    public void setTemplateSet(QuestionTemplateSet templateSet) { this.templateSet = templateSet; }
+    public String getQuestionDetails() {
+        return questionDetails;
+    }
 
-    public User getCreatedBy() { return createdBy; }
-    public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
+    public void setQuestionDetails(String questionDetails) {
+        this.questionDetails = questionDetails;
+    }
+
+    public QuestionType getQuestionType() {
+        return questionType;
+    }
+
+    public void setQuestionType(QuestionType questionType) {
+        this.questionType = questionType;
+    }
+
+    public QuestionTemplateSet getTemplateSet() {
+        return templateSet;
+    }
+
+    public void setTemplateSet(QuestionTemplateSet templateSet) {
+        this.templateSet = templateSet;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
 }

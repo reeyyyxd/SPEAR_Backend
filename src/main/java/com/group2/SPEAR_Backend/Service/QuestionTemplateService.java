@@ -8,6 +8,7 @@ import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.Repository.QuestionTemplateRepository;
 import com.group2.SPEAR_Backend.Repository.QuestionTemplateSetRepository;
 import com.group2.SPEAR_Backend.Repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
@@ -95,14 +96,10 @@ public class QuestionTemplateService {
         return new QuestionTemplateDTO(templateRepo.save(question));
     }
 
+    @Transactional
     public void deleteSet(Long setId) {
         QuestionTemplateSet set = setRepo.findById(setId)
                 .orElseThrow(() -> new IllegalArgumentException("Set not found."));
-
-        if (!set.getQuestions().isEmpty()) {
-            throw new IllegalStateException("Cannot delete: This set is currently in use.");
-        }
-
         setRepo.delete(set);
     }
 
@@ -120,5 +117,18 @@ public class QuestionTemplateService {
                 .filter(template -> template.getCreatedBy() != null && template.getCreatedBy().getUid() == creator.getUid())
                 .map(QuestionTemplateDTO::new)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public QuestionTemplateSetDTO renameSet(Long setId, String newName) {
+        QuestionTemplateSet set = setRepo.findById(setId)
+                .orElseThrow(() -> new NoSuchElementException("Template set not found with ID: " + setId));
+
+        if (setRepo.existsByName(newName)) {
+            throw new IllegalArgumentException("A template set with this name already exists.");
+        }
+
+        set.setName(newName);
+        return new QuestionTemplateSetDTO(set);
     }
 }

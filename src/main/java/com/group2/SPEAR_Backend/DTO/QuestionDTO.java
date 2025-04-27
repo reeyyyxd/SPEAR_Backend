@@ -51,32 +51,77 @@ public class QuestionDTO {
     }
 
 
-    public Long getQid() { return qid; }
-    public void setQid(Long qid) { this.qid = qid; }
+    public Long getQid() {
+        return qid;
+    }
 
-    public String getQuestionTitle() { return questionTitle; }
-    public void setQuestionTitle(String questionTitle) { this.questionTitle = questionTitle; }
+    public void setQid(Long qid) {
+        this.qid = qid;
+    }
 
-    public String getQuestionDetails() { return questionDetails; }
-    public void setQuestionDetails(String questionDetails) { this.questionDetails = questionDetails; }
+    public String getQuestionTitle() {
+        return questionTitle;
+    }
 
-    public Long getEvaluationId() { return evaluationId; }
-    public void setEvaluationId(Long evaluationId) { this.evaluationId = evaluationId; }
+    public void setQuestionTitle(String questionTitle) {
+        this.questionTitle = questionTitle;
+    }
 
-    public Long getClassId() { return classId; }
-    public void setClassId(Long classId) { this.classId = classId; }
+    public String getQuestionDetails() {
+        return questionDetails;
+    }
 
-    public QuestionType getQuestionType() { return questionType; }
-    public void setQuestionType(QuestionType questionType) { this.questionType = questionType; }
+    public void setQuestionDetails(String questionDetails) {
+        this.questionDetails = questionDetails;
+    }
 
-    public Integer getCreatedByUserId() { return createdByUserId; }
-    public void setCreatedByUserId(Integer createdByUserId) { this.createdByUserId = createdByUserId; }
+    public Long getEvaluationId() {
+        return evaluationId;
+    }
 
-    public String getCreatedByName() { return createdByName; }
-    public void setCreatedByName(String createdByName) { this.createdByName = createdByName; }
+    public void setEvaluationId(Long evaluationId) {
+        this.evaluationId = evaluationId;
+    }
 
-    public boolean isEditable() { return isEditable; }
-    public void setEditable(boolean editable) { isEditable = editable; }
+    public Long getClassId() {
+        return classId;
+    }
+
+    public void setClassId(Long classId) {
+        this.classId = classId;
+    }
+
+    public QuestionType getQuestionType() {
+        return questionType;
+    }
+
+    public void setQuestionType(QuestionType questionType) {
+        this.questionType = questionType;
+    }
+
+    public Integer getCreatedByUserId() {
+        return createdByUserId;
+    }
+
+    public void setCreatedByUserId(Integer createdByUserId) {
+        this.createdByUserId = createdByUserId;
+    }
+
+    public String getCreatedByName() {
+        return createdByName;
+    }
+
+    public void setCreatedByName(String createdByName) {
+        this.createdByName = createdByName;
+    }
+
+    public boolean isEditable() {
+        return isEditable;
+    }
+
+    public void setEditable(boolean editable) {
+        isEditable = editable;
+    }
 
     public Long getTemplateSetId() {
         return templateSetId;

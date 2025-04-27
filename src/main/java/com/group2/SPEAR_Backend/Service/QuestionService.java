@@ -255,12 +255,15 @@ public class QuestionService {
                 .collect(Collectors.toList());
     }
     @Transactional
-    public void deleteQuestionsByTemplateSetId(Long templateSetId) {
-        List<Question> questions = qRepo.findByTemplateSetId(templateSetId);
-        if (questions.isEmpty()) {
-            throw new NoSuchElementException("No questions found from template set with ID: " + templateSetId);
+    public void deleteQuestionsByTemplateSetForEvaluation(Long templateSetId, Long evaluationId) {
+        List<Question> toDelete = qRepo.findByTemplateSetIdAndEvaluationEid(templateSetId, evaluationId);
+        if (toDelete.isEmpty()) {
+            throw new NoSuchElementException(
+                    "No questions found for template set " + templateSetId +
+                            " in evaluation " + evaluationId
+            );
         }
-        qRepo.deleteAll(questions);
+        qRepo.deleteAll(toDelete);
     }
 
     public List<QuestionDTO> getMyOwnQuestionsByEvaluation(Long evaluationId) {
