@@ -912,7 +912,7 @@ public class TeamService {
                 day,
                 startTime,
                 endTime,
-                team.getAdviser().getUid()
+                team.getAdviser() == null? -1:team.getAdviser().getUid()
         );
     }
 
@@ -1101,11 +1101,11 @@ public class TeamService {
                     team.getClassRef().getCid(),
                     team.getMembers().stream().map(User::getUid).toList(),
                     memberNames,
-                    team.getSchedule().getDay(),
-                    team.getSchedule().getStartTime(),
-                    team.getSchedule().getEndTime(),
-                    team.getAdviser().getUid(),
-                    team.getAdviser().getFirstname()+" "+team.getAdviser().getLastname()
+                    team.getSchedule() == null? null:team.getSchedule().getDay(),
+                    team.getSchedule() == null? null:team.getSchedule().getStartTime(),
+                    team.getSchedule() == null? null:team.getSchedule().getEndTime(),
+                    team.getAdviser() == null? -1 : team.getAdviser().getUid(),
+                    team.getAdviser() == null? null:team.getAdviser().getFirstname()+" "+team.getAdviser().getLastname()
             ));
         }
         return teamDTOs;
