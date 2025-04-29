@@ -117,6 +117,7 @@ public class TeamDTO {
         this.adviserName = (adviserName != null) ? adviserName : "No Adviser Assigned";
         this.scheduleDay = (scheduleDay != null) ? scheduleDay : "No Schedule Set";
         this.scheduleTime = (scheduleTime != null) ? scheduleTime : "No Schedule Set";
+
     }
 
     //for advisory (last na ni pramis)
@@ -149,6 +150,25 @@ public class TeamDTO {
         this.classId = classId;
         this.memberNames = memberNames;
     }
+
+    public TeamDTO(int tid, String groupName, Long classId, List<Integer> memberIds, List<String> memberNames,
+                   Integer adviserId, String adviserName, String courseDescription,
+                   DayOfWeek scheduledDay, LocalTime start, LocalTime end) {
+
+        this.tid = tid;
+        this.groupName = groupName;
+        this.classId = classId;
+        this.memberIds = memberIds;
+        this.memberNames = memberNames;
+        this.adviserId = adviserId;
+        this.adviserName = adviserName;
+        this.courseDescription = courseDescription;
+        this.scheduledDay = scheduledDay;  // DayOfWeek
+        this.start = start;  // LocalTime
+        this.end = end;  // LocalTime
+    }
+
+
 
 
 

@@ -977,22 +977,50 @@ public class TeamService {
         return (HashSet<Integer>) userIDList;
     }
 
+
+    //THIS IS THE UNIVERSAL!!!!!!!
     public TeamDTO getStudentTeam(Long studentId, Long classId) {
         Team team = tRepo.findTeamByStudentAndClass(studentId, classId);
         if (team == null) return null;
 
-        // Extract member names and IDs
+        // Extract member IDs and names
         List<Integer> memberIds = team.getMembers()
                 .stream()
                 .map(User::getUid)  // Extract ID
-                .toList();
+                .collect(Collectors.toList());
 
         List<String> memberNames = team.getMembers()
                 .stream()
                 .map(m -> m.getFirstname() + " " + m.getLastname())
-                .toList();
+                .collect(Collectors.toList());
 
-        return new TeamDTO((long) team.getTid(), team.getGroupName(), team.getClassRef().getCid(), memberIds, memberNames);
+        // Extract advisor details
+        User adviser = team.getAdviser();
+        Integer adviserId = adviser != null ? adviser.getUid() : null;
+        String adviserName = adviser != null ? adviser.getFirstname() + " " + adviser.getLastname() : "No Adviser Assigned";
+
+        // Extract course description (Assuming it's a field in the 'Classes' entity)
+        String courseDescription = team.getClassRef() != null ? team.getClassRef().getCourseDescription() : "No Course Description Available";
+
+        // Extract the schedule details
+        DayOfWeek scheduledDay = team.getSchedule() != null ? team.getSchedule().getDay() : null;
+        LocalTime start = team.getSchedule() != null ? team.getSchedule().getStartTime() : null;
+        LocalTime end = team.getSchedule() != null ? team.getSchedule().getEndTime() : null;
+
+        // Return the TeamDTO
+        return new TeamDTO(
+                team.getTid(),  // teamId
+                team.getGroupName(),
+                team.getClassRef() != null ? team.getClassRef().getCid() : null,  // classId
+                memberIds,
+                memberNames,
+                adviserId,
+                adviserName,
+                courseDescription,
+                scheduledDay,  // DayOfWeek type
+                start,  // LocalTime type
+                end  // LocalTime type
+        );
     }
 
     public AdviserDTO getAdviserByTeam(Long studentId, Long classId) {

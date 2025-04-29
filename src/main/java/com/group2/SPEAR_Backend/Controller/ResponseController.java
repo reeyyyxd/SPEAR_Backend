@@ -19,9 +19,27 @@ public class ResponseController {
     @PostMapping("/submit")
     public String submitResponses(
             @RequestBody List<Response> responses,
-            @RequestParam int teamId) {
-        rServ.submitResponses(responses, teamId);
+            @RequestParam Long evaluationId,
+            @RequestParam int evaluatorId,
+            @RequestParam Long classId) {
+
+
+//        System.out.println("Received " + responses.size() + " responses");
+//        responses.forEach(r -> System.out.println("Eval: " + r.getEvaluator() + ", Eval'd: " + r.getEvaluatee()));
+
+        rServ.submitResponses(responses, evaluationId, evaluatorId, classId);
         return "Responses submitted successfully";
+    }
+
+    @PostMapping("/submit-adviser")
+    public String submitAdviserResponses(
+            @RequestBody List<Response> responses,
+            @RequestParam Long evaluationId,
+            @RequestParam int evaluatorId,
+            @RequestParam Long classId) {
+
+        rServ.submitAdviserResponses(responses, evaluationId, evaluatorId, classId);
+        return "Adviser responses submitted successfully";
     }
 
     @GetMapping("/evaluator/{evaluatorId}")

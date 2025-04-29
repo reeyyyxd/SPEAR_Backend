@@ -73,6 +73,7 @@ public class EvaluationService {
                 false // Evaluated status fetched dynamically
         );
     }
+
     public EvaluationDTO updateEvaluation(Long id, Evaluation updatedEvaluation, EvaluationType evaluationType) {
         validateDates(updatedEvaluation.getDateOpen(), updatedEvaluation.getDateClose());
 
@@ -193,13 +194,79 @@ public class EvaluationService {
 
 
     public List<EvaluationDTO> getEvaluationsForAdviser(Long adviserId) {
-        return eRepo.findOpenEvaluationsForAdviser(adviserId).stream()
-                .flatMap(evaluation -> {
-                    // Fetch all teams for the adviser within the evaluation's class
-                    List<Team> teams = tRepo.findByClassIdAndAdviserId(evaluation.getClassRef().getCid(), adviserId);
+        // Fetch open evaluations for the adviser
+        List<Evaluation> evaluations = eRepo.findOpenEvaluationsForAdviser(adviserId);
 
-                    // Map each team separately
-                    return teams.stream().map(team -> new EvaluationDTO(
+        // Merge evaluations with the same properties but different teams
+        Map<Long, EvaluationDTO> mergedEvaluations = new HashMap<>();
+
+        for (Evaluation evaluation : evaluations) {
+            // Fetch teams for the evaluation
+            List<Team> teams = tRepo.findByClassIdAndAdviserId(evaluation.getClassRef().getCid(), adviserId);
+
+            // Check if the evaluation already exists in the map, if so, merge the teams
+            EvaluationDTO existingEvaluation = mergedEvaluations.get(evaluation.getEid());
+
+            List<Long> teamIds = teams.stream()
+                    .map(team -> (long) team.getTid()) // Convert Integer to Long
+                    .collect(Collectors.toList());
+
+            if (existingEvaluation != null) {
+                // Combine team names and merge team IDs
+                String combinedTeamName = existingEvaluation.getTeamName() + ", " + teams.get(0).getGroupName();
+                existingEvaluation.setTeamName(combinedTeamName);
+
+                List<Long> combinedTeamIds = new ArrayList<>(existingEvaluation.getTeamIds());
+                combinedTeamIds.addAll(teamIds);
+                existingEvaluation.setTeamIds(combinedTeamIds);
+            } else {
+                // Create a new EvaluationDTO if not already in the map
+                String teamNames = teams.stream()
+                        .map(Team::getGroupName)
+                        .collect(Collectors.joining(", "));
+                mergedEvaluations.put(evaluation.getEid(), new EvaluationDTO(
+                        evaluation.getEid(),
+                        evaluation.getEvaluationType(),
+                        evaluation.getAvailability(),
+                        evaluation.getDateOpen(),
+                        evaluation.getDateClose(),
+                        evaluation.getPeriod(),
+                        evaluation.getClassRef().getCid(),
+                        evaluation.getClassRef().getCourseCode(),
+                        evaluation.getClassRef().getSection(),
+                        evaluation.getClassRef().getCourseDescription(),
+                        teamNames, // Set the team names
+                        teams.get(0).getAdviser() != null
+                                ? teams.get(0).getAdviser().getFirstname() + " " + teams.get(0).getAdviser().getLastname()
+                                : "Unknown Adviser",
+                        null, // Evaluators
+                        null, // Evaluatees
+                        false,  // Evaluated status
+                        teamIds  // Set the list of teamIds
+                ));
+            }
+        }
+
+        // Return the combined evaluations
+        return new ArrayList<>(mergedEvaluations.values());
+    }
+
+    //for admin download
+    public List<EvaluationDTO> getAllStudentsToAdviserEvaluations() {
+        return eRepo.findAllStudentsToAdviserEvaluations().stream()
+                .map(evaluation -> {
+                    // Get all teams in the class
+                    List<Team> teams = tRepo.findTeamsByClassId(evaluation.getClassRef().getCid());
+
+                    // Get all distinct adviser names for those teams
+                    String adviserNames = teams.stream()
+                            .map(Team::getAdviser)
+                            .filter(Objects::nonNull)
+                            .map(a -> a.getFirstname() + " " + a.getLastname())
+                            .distinct()
+                            .collect(Collectors.joining(", "));
+
+                    return new EvaluationDTO(
                             evaluation.getEid(),
                             evaluation.getEvaluationType(),
                             evaluation.getAvailability(),
@@ -210,47 +277,14 @@ public class EvaluationService {
                             evaluation.getClassRef().getCourseCode(),
                             evaluation.getClassRef().getSection(),
                             evaluation.getClassRef().getCourseDescription(),
-                            team.getGroupName(), // Fetch correct team name
-                            team.getAdviser() != null
-                                    ? team.getAdviser().getFirstname() + " " + team.getAdviser().getLastname()
-                                    : "Unknown Adviser",
-                            null, // Evaluators
-                            null, // Evaluatees
-                            false  // Evaluated status
-                    ));
+                            null,           // teamName
+                            adviserNames,   // combined advisers
+                            null,
+                            null,
+                            false
+                    );
                 })
                 .collect(Collectors.toList());
-    }
-    //for admin download
-    public List<EvaluationDTO> getAllStudentsToAdviserEvaluations() {
-        return eRepo.findAllStudentsToAdviserEvaluations().stream()
-                .flatMap(evaluation -> {
-                    // Retrieve all teams for the given class
-                    List<Team> teams = tRepo.findTeamsByClassId(evaluation.getClassRef().getCid());
-
-                    // Extract unique advisers and create separate DTOs for each
-                    return teams.stream()
-                            .map(Team::getAdviser)
-                            .filter(Objects::nonNull) // Remove null values
-                            .map(adviser -> new EvaluationDTO(
-                                    evaluation.getEid(),
-                                    evaluation.getEvaluationType(),
-                                    evaluation.getAvailability(),
-                                    evaluation.getDateOpen(),
-                                    evaluation.getDateClose(),
-                                    evaluation.getPeriod(),
-                                    evaluation.getClassRef().getCid(),
-                                    evaluation.getClassRef().getCourseCode(),
-                                    evaluation.getClassRef().getSection(),
-                                    evaluation.getClassRef().getCourseDescription(),
-                                    null,  // Team Name (optional)
-                                    adviser.getFirstname() + " " + adviser.getLastname(), // Separate rows per adviser
-                                    null,  // Evaluators
-                                    null,  // Evaluatees
-                                    false  // Evaluated status
-                            ));
-                })
-                .collect(Collectors.toList()); // Flatten into a single list
     }
 
     // summary first
@@ -309,6 +343,64 @@ public class EvaluationService {
                 ))
                 .toList();
     }
+
+
+    public Map<String, List<Map<String, Object>>> getAdviserSubmissionStatus(Long evaluationId) {
+        Evaluation evaluation = eRepo.findById(evaluationId)
+                .orElseThrow(() -> new NoSuchElementException("Evaluation not found: " + evaluationId));
+
+        if (evaluation.getEvaluationType() != EvaluationType.ADVISER_TO_STUDENT) {
+            throw new IllegalArgumentException("Evaluation is not of type ADVISER_TO_STUDENT.");
+        }
+
+        Long classId = evaluation.getClassRef().getCid();
+
+        // Get all teams in the class that have advisers assigned
+        List<Team> teams = tRepo.findTeamsByClassId(classId).stream()
+                .filter(t -> t.getAdviser() != null)
+                .toList();
+
+        // Collect all unique adviser IDs from teams
+        Map<Integer, String> allAdvisers = new HashMap<>();
+        for (Team team : teams) {
+            allAdvisers.put(team.getAdviser().getUid(),
+                    team.getAdviser().getFirstname() + " " + team.getAdviser().getLastname());
+        }
+
+        // Get all adviser submissions for this evaluation
+        Set<Integer> submittedAdviserIds = submissionRepo.findByEvaluationEid(evaluationId).stream()
+                .map(sub -> sub.getEvaluator().getUid())
+                .collect(Collectors.toSet());
+
+        List<Map<String, Object>> submitted = new ArrayList<>();
+        List<Map<String, Object>> notSubmitted = new ArrayList<>();
+
+        for (Map.Entry<Integer, String> entry : allAdvisers.entrySet()) {
+            Map<String, Object> adviserInfo = Map.of(
+                    "adviserId", entry.getKey(),
+                    "adviserName", entry.getValue()
+            );
+            if (submittedAdviserIds.contains(entry.getKey())) {
+                submitted.add(adviserInfo);
+            } else {
+                notSubmitted.add(adviserInfo);
+            }
+        }
+
+        return Map.of(
+                "submitted", submitted,
+                "notSubmitted", notSubmitted
+        );
+    }
+
+
+
+
+
+
+
+
+
 
 
 

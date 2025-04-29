@@ -169,6 +169,8 @@ public class EvaluationController {
         }
     }
 
+
+
     // summary first
     @GetMapping("/teacher/evaluation/{evaluationId}/teams")
     public ResponseEntity<?> getTeamsForEvaluation(@PathVariable Long evaluationId) {
@@ -205,47 +207,21 @@ public class EvaluationController {
         }
     }
 
-
-
-
-
-
-
-
-
+    @GetMapping("/teacher/evaluation/{evaluationId}/advisers/submission-status")
+    public ResponseEntity<?> getAdviserSubmissionStatus(@PathVariable Long evaluationId) {
+        try {
+            Map<String, List<Map<String, Object>>> result = eServ.getAdviserSubmissionStatus(evaluationId);
+            return ResponseEntity.ok(result);
+        } catch (NoSuchElementException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", ex.getMessage()));
+        }
+    }
     //for admin download
     @GetMapping("/admin/students-to-adviser-evaluations")
     public ResponseEntity<List<EvaluationDTO>> getAllStudentsToAdviserEvaluations() {
         List<EvaluationDTO> evaluations = eServ.getAllStudentsToAdviserEvaluations();
         return ResponseEntity.ok(evaluations);
     }
-
-//    @GetMapping("/admin/download/adviser-to-student-evaluations/csv")
-//    public ResponseEntity<byte[]> downloadAdviserToStudentEvaluationsCSV() {
-//        List<EvaluationDTO> evaluations = eServ.getAllAdviserToStudentEvaluations();
-//
-//        StringBuilder csvData = new StringBuilder("Evaluation ID, Type, Availability, Date Open, Date Close, Period, Course Code, Section, Description\n");
-//
-//        for (EvaluationDTO eval : evaluations) {
-//            csvData.append(eval.getEid()).append(",")
-//                    .append(eval.getEvaluationType()).append(",")
-//                    .append(eval.getAvailability()).append(",")
-//                    .append(eval.getDateOpen()).append(",")
-//                    .append(eval.getDateClose()).append(",")
-//                    .append(eval.getPeriod()).append(",")
-//                    .append(eval.getCourseCode()).append(",")
-//                    .append(eval.getSection()).append(",")
-//                    .append(eval.getCourseDescription()).append("\n");
-//        }
-//
-//        byte[] csvBytes = csvData.toString().getBytes();
-//
-//        return ResponseEntity.ok()
-//                .header("Content-Disposition", "attachment; filename=adviser_to_student_evaluations.csv")
-//                .header("Content-Type", "text/csv")
-//                .body(csvBytes);
-//    }
-
 
 
 

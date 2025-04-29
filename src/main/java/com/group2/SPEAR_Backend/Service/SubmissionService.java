@@ -42,6 +42,9 @@ public class SubmissionService {
         return submissionRepo.save(submission);
     }
 
+
+
+
     public List<SubmissionDTO> getSubmissionsByEvaluation(Long evaluationId) {
         return submissionRepo.findSubmissionsByEvaluationWithDetails(evaluationId);
     }
@@ -83,6 +86,8 @@ public class SubmissionService {
                 submission.getStatus()
         );
     }
+
+
 
 
 

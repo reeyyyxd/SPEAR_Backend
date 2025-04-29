@@ -25,7 +25,7 @@ public class EvaluationDTO {
     private List<String> evaluatorNames;
     private List<String> evaluateeNames;
     private boolean isEvaluated;
-    private Long teamId;
+    private List<Long> teamIds;
 
 
     public EvaluationDTO() {}
@@ -64,6 +64,28 @@ public class EvaluationDTO {
         this.courseCode = courseCode;
         this.section = section;
         this.courseDescription = courseDescription;
+    }
+
+    public EvaluationDTO(Long eid, EvaluationType evaluationType, String availability, LocalDate dateOpen,
+                         LocalDate dateClose, String period, Long classId, String courseCode, String section,
+                         String courseDescription, String teamName, String adviserName,
+                         List<String> evaluatorNames, List<String> evaluateeNames, boolean isEvaluated, List<Long> teamIds) {
+        this.eid = eid;
+        this.evaluationType = evaluationType;
+        this.availability = availability;
+        this.dateOpen = dateOpen;
+        this.dateClose = dateClose;
+        this.period = period;
+        this.classId = classId;
+        this.courseCode = courseCode;
+        this.section = section;
+        this.courseDescription = courseDescription;
+        this.teamName = teamName;
+        this.adviserName = adviserName;
+        this.evaluatorNames = evaluatorNames;
+        this.evaluateeNames = evaluateeNames;
+        this.isEvaluated = isEvaluated;
+        this.teamIds = teamIds;
     }
 
 
@@ -191,5 +213,13 @@ public class EvaluationDTO {
 
     public void setEvaluated(boolean evaluated) {
         isEvaluated = evaluated;
+    }
+
+    public List<Long> getTeamIds() {
+        return teamIds;
+    }
+
+    public void setTeamIds(List<Long> teamIds) {
+        this.teamIds = teamIds;
     }
 }

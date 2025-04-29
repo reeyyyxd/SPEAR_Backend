@@ -362,7 +362,7 @@ public class TeamController {
         }
     }
 
-        //for evaluation student-student
+        //UNIVERSAL!
         @GetMapping("evaluation/{studentId}/class/{classId}/team")
         public ResponseEntity<TeamDTO> getStudentTeam(@PathVariable Long studentId, @PathVariable Long classId) {
             TeamDTO teamDTO = tServ.getStudentTeam(studentId, classId);

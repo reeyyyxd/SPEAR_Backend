@@ -28,60 +28,71 @@ public class ResponseService {
     @Autowired
     private TeamService tServ;
 
-    @Autowired
-    private ResultService resServ;
+//    @Autowired
+//    private ResultService resServ;
 
 
-    public void submitResponses(List<Response> responses, int teamId) {
-        TeamDTO teamDTO = tServ.getTeamById(teamId);
+    public void submitResponses(List<Response> responses, Long evaluationId, int evaluatorId, Long classId) {
+        TeamDTO teamDTO = tServ.getStudentTeam((long) evaluatorId, classId);
         if (teamDTO == null || teamDTO.getMemberIds().isEmpty()) {
-            throw new IllegalArgumentException("Invalid team or no members in the team.");
+            throw new IllegalArgumentException("Evaluator is not part of any team.");
         }
 
         List<Integer> validMembers = teamDTO.getMemberIds();
 
-        // Filter valid responses
         List<Response> validResponses = responses.stream()
                 .filter(response -> {
                     if (response == null || response.getEvaluator() == null || response.getEvaluatee() == null ||
                             response.getQuestion() == null || response.getEvaluation() == null) {
-                        System.out.println("Warning: Skipping invalid response: " + response);
                         return false;
                     }
                     boolean isValidEvaluator = validMembers.contains(response.getEvaluator().getUid());
                     boolean isValidEvaluatee = validMembers.contains(response.getEvaluatee().getUid());
-                    if (!isValidEvaluator || !isValidEvaluatee) {
-                        System.out.println("Warning: Invalid evaluator or evaluatee in response: " + response);
-                    }
                     return isValidEvaluator && isValidEvaluatee;
                 })
                 .toList();
 
-        if (validResponses.isEmpty()) {
-            System.out.println("No valid responses were provided.");
-            return;
-        }
+        if (validResponses.isEmpty()) return;
 
-        // Save valid responses
         rRepo.saveAll(validResponses);
 
-        // Process evaluatees for results
-        Long evaluationId = validResponses.get(0).getEvaluation().getEid();
         validResponses.stream()
                 .map(Response::getEvaluatee)
                 .distinct()
                 .forEach(evaluatee -> {
                     int evaluateeId = evaluatee.getUid();
-                    resServ.calculateAndSaveResult(evaluationId, evaluateeId);
+                    // resServ.calculateAndSaveResult(evaluationId, evaluateeId);
                 });
 
-        // Create submission for the evaluator
-        int evaluatorId = validResponses.get(0).getEvaluator().getUid();
         subServ.createSubmission(evaluationId, evaluatorId);
 
-        // Update evaluation status
         checkAndUpdateEvaluationStatus(evaluationId);
     }
+
+    public void submitAdviserResponses(List<Response> responses, Long evaluationId, int evaluatorId, Long classId) {
+        if (responses == null || responses.isEmpty()) {
+            throw new IllegalArgumentException("No responses provided");
+        }
+
+        // Validate that each response points to the right evaluation
+        for (Response response : responses) {
+            if (response.getEvaluation() == null || !response.getEvaluation().getEid().equals(evaluationId)) {
+                throw new IllegalArgumentException("Response evaluation ID mismatch");
+            }
+            if (response.getEvaluator() == null || response.getEvaluator().getUid() != evaluatorId) {
+                throw new IllegalArgumentException("Evaluator ID mismatch");
+            }
+            if (response.getEvaluatee() == null || response.getEvaluatee().getUid() == 0) {
+                throw new IllegalArgumentException("Evaluatee (adviser) ID is missing or invalid");
+            }
+        }
+
+        rRepo.saveAll(responses);
+
+        // Optional: Create a submission record separately
+        subServ.createSubmission(evaluationId, evaluatorId);
+    }
+
 
 
 

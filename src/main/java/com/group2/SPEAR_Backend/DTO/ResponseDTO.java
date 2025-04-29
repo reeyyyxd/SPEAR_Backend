@@ -1,4 +1,5 @@
 package com.group2.SPEAR_Backend.DTO;
+import com.group2.SPEAR_Backend.Model.QuestionType;
 
 public class ResponseDTO {
 
@@ -11,11 +12,15 @@ public class ResponseDTO {
     private double score;
     private String questionName;
     private String evaluationPeriod;
+    private String questionDetails;
+    private String textResponse;
+    private QuestionType questionType;
 
     public ResponseDTO() {}
 
     public ResponseDTO(Long rid, int evaluatorId, String evaluatorName, int evaluateeId, String evaluateeName,
-                       Long questionId, String questionName, String evaluationPeriod, double score) {
+                       Long questionId, String questionName, String evaluationPeriod,
+                       double score, String textResponse, String questionDetails, QuestionType questionType) {
         this.rid = rid;
         this.evaluatorId = evaluatorId;
         this.evaluatorName = evaluatorName;
@@ -25,6 +30,9 @@ public class ResponseDTO {
         this.questionName = questionName;
         this.evaluationPeriod = evaluationPeriod;
         this.score = score;
+        this.textResponse = textResponse;
+        this.questionDetails = questionDetails;
+        this.questionType = questionType;
     }
 
 
@@ -98,5 +106,28 @@ public class ResponseDTO {
 
     public void setEvaluationPeriod(String evaluationPeriod) {
         this.evaluationPeriod = evaluationPeriod;
+    }
+    public String getTextResponse() {
+        return textResponse;
+    }
+
+    public void setTextResponse(String textResponse) {
+        this.textResponse = textResponse;
+    }
+
+    public String getQuestionDetails() {
+        return questionDetails;
+    }
+
+    public void setQuestionDetails(String questionDetails) {
+        this.questionDetails = questionDetails;
+    }
+
+    public QuestionType getQuestionType() {
+        return questionType;
+    }
+
+    public void setQuestionType(QuestionType questionType) {
+        this.questionType = questionType;
     }
 }
