@@ -70,6 +70,10 @@ public interface AdviserRequestRepository extends JpaRepository<AdviserRequest, 
 
     List<AdviserRequest> findByTeamTidAndStatus(int teamId, RequestStatus status);
 
+    @Modifying
+    @Query("DELETE FROM AdviserRequest ar WHERE ar.team.tid = :teamId")
+    void deleteByTeamTid(@Param("teamId") int teamId);
+
 
 
 

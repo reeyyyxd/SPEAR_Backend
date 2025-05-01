@@ -1,5 +1,7 @@
 package com.group2.SPEAR_Backend.Controller;
 
+import com.group2.SPEAR_Backend.DTO.PasswordResetDTO;
+import com.group2.SPEAR_Backend.DTO.PasswordResetRequestDTO;
 import com.group2.SPEAR_Backend.DTO.PasswordUpdateDTO;
 import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.DTO.UserDTO;
@@ -170,6 +172,20 @@ public class UserController {
     @GetMapping("/admin/users/deleted")
     public ResponseEntity<List<UserDTO>> getAllSoftDeletedUsers() {
         return ResponseEntity.ok(uServ.getAllSoftDeletedUsers());
+    }
+
+    @PostMapping("/user/forgot-password")
+    public ResponseEntity<UserDTO> forgotPassword(@RequestBody PasswordResetRequestDTO req) {
+        UserDTO result = uServ.sendResetCode(req);
+        return new ResponseEntity<>(result,
+                HttpStatus.valueOf(result.getStatusCode()));
+    }
+
+    @PostMapping("/user/reset-password")
+    public ResponseEntity<UserDTO> resetPassword(@RequestBody PasswordResetDTO req) {
+        UserDTO result = uServ.resetPassword(req);
+        return new ResponseEntity<>(result,
+                HttpStatus.valueOf(result.getStatusCode()));
     }
 
 

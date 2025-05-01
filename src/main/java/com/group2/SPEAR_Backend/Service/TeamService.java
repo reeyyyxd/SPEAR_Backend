@@ -203,18 +203,29 @@ public class TeamService {
     public void deleteTeam(int teamId, int requesterId) {
         Team team = tRepo.findById(teamId)
                 .orElseThrow(() -> new NoSuchElementException("Team not found"));
+        // … leader & member checks …
 
-        if (team.getLeader().getUid() != requesterId) {
-            throw new IllegalStateException("Only the team leader can delete the team.");
+        // 3) soft-delete & unlink *every* proposal, even those already soft-deleted
+        List<ProjectProposal> proposals = ppRepo.findAllByTeamIdIncludeDeleted(teamId);
+        for (ProjectProposal p : proposals) {
+            p.setDeleted(true);
+            p.setTeamProject(null);
         }
+        ppRepo.saveAll(proposals);
+        ppRepo.flush();  // force those UPDATEs before the DELETE
 
-        if (team.getMembers().size() > 1) {
-            throw new IllegalStateException("Cannot delete the team. Remove all members first.");
-        }
+        // 4) cleanup members/advisor
+        tRepo.deleteTeamMembers(teamId);
+        arRepo.deleteByTeamTid(teamId);
+
+        // 5) unlink schedule
         team.setSchedule(null);
         tRepo.save(team);
+
+        // 6) finally delete the team
         tRepo.deleteById(teamId);
     }
+
     //scheduling
     //schedule to change
     public List<ScheduleDTO> getAvailableSchedulesForAdviser(int adviserId) {
@@ -298,6 +309,41 @@ public class TeamService {
                 .toList();
     }
 
+    public List<TeamMembersDTO> getTeamsWithMembers(Long classId) {
+        List<Team> teams = tRepo.findActiveTeamsByClassId(classId.intValue());
+
+        return teams.stream()
+                .map(team -> new TeamMembersDTO(
+                        team.getTid(),
+                        team.getGroupName(),
+                        team.getMembers().stream()
+                                .map(member -> new MemberDTO(
+                                        member.getUid(),
+                                        member.getFirstname() + " " + member.getLastname()
+                                ))
+                                .collect(Collectors.toList())
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteTeamAndUnlinkProposals(int teamId) {
+        // 1) load team
+        Team team = tRepo.findById(teamId)
+                .orElseThrow(() -> new RuntimeException("Team not found"));
+
+        // 2) nullify the foreign key on any proposal
+        List<ProjectProposal> proposals = ppRepo.findByTeamId(teamId);
+        for (ProjectProposal p : proposals) {
+            p.setTeamProject(null);
+        }
+        ppRepo.saveAll(proposals);
+
+        // 3) finally delete the team
+        tRepo.delete(team);
+    }
+
+
     //leader
     @Transactional
     public String dropAdviserAndSchedule(int teamId, int requesterId) {
@@ -362,27 +408,27 @@ public class TeamService {
     }
 
     //for team recuitment only
-    public List<TeamDTO> getOpenTeamsForRecruitment() {
-        List<Team> openTeams = tRepo.findOpenTeamsForRecruitment();
-
+    public List<TeamDTO> getOpenTeamsForRecruitment(Long classId) {
+        List<Team> openTeams = tRepo.findOpenTeamsForRecruitmentByClassId(classId);
         return openTeams.stream()
                 .map(team -> new TeamDTO(
                         team.getTid(),
                         team.getGroupName(),
-                        (team.getProject() != null) ? team.getProject().getProjectName() : "No Project Assigned",
-                        (team.getProject() != null) ? team.getProject().getPid() : null,
+                        team.getProject()!=null?team.getProject().getProjectName():"No Project Assigned",
+                        team.getProject()!=null?team.getProject().getPid():null,
                         team.getLeader().getFirstname() + " " + team.getLeader().getLastname(),
                         team.getClassRef().getCid(),
                         team.getMembers().stream().map(User::getUid).toList(),
                         team.isRecruitmentOpen(),
                         null,
-                        (team.getProject() != null) ? team.getProject().getDescription() : "No Description Available",
-                        (team.getAdviser() != null) ? team.getAdviser().getUid() : null,
-                        (team.getSchedule() != null) ? team.getSchedule().getSchedid() : null,
+                        team.getProject()!=null?team.getProject().getDescription():"No Description Available",
+                        team.getAdviser()!=null?team.getAdviser().getUid():null,
+                        team.getSchedule()!=null?team.getSchedule().getSchedid():null,
                         team.getClassRef().getMaxTeamSize()
                 ))
                 .toList();
     }
+
 
 
 

@@ -96,28 +96,33 @@ public class TeamRecuitmentService {
 
         Team team = recruitment.getTeam();
         User student = recruitment.getStudent();
+        Long classId = team.getClassRef().getCid();
 
         if (isAccepted) {
-            boolean alreadyAccepted = trRepo.findByStudentId(student.getUid()).stream()
-                    .anyMatch(r -> r.getStatus() == TeamRecuitment.Status.ACCEPTED);
+            // 1) only block if the student is already in *this* class
+            boolean alreadyAcceptedInThisClass = trRepo.findByStudentId(student.getUid()).stream()
+                    .anyMatch(r ->
+                            r.getStatus() == TeamRecuitment.Status.ACCEPTED &&
+                                    r.getTeam().getClassRef().getCid().equals(classId)
+                    );
 
-            boolean isLeader = tRepo.existsByLeaderUid(student.getUid());
+            boolean isLeaderInThisClass = tRepo.findByLeaderUid(student.getUid()).stream()
+                    .anyMatch(t2 -> t2.getClassRef().getCid().equals(classId));
 
-            if (alreadyAccepted || isLeader) {
-                throw new IllegalStateException("This student is already in another team.");
-            }
-            if (alreadyAccepted) {
-                throw new IllegalStateException("This student is already accepted into another team.");
+            if (alreadyAcceptedInThisClass || isLeaderInThisClass) {
+                throw new IllegalStateException("This student is already in a team in this class.");
             }
 
             if (team.getMembers().size() >= team.getClassRef().getMaxTeamSize()) {
                 throw new IllegalStateException("Team is already full.");
             }
 
+            // accept them
             recruitment.setStatus(TeamRecuitment.Status.ACCEPTED);
             recruitment.setReason("Accepted by leader.");
             team.getMembers().add(student);
 
+            // expire any other pending apps from this student in *other* teams
             trRepo.updateOtherApplicationsAsExpired(student.getUid(), team.getTid());
         } else {
             recruitment.setStatus(TeamRecuitment.Status.REJECTED);

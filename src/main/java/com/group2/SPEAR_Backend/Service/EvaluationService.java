@@ -43,15 +43,27 @@ public class EvaluationService {
         }
     }
 
-    public EvaluationDTO createEvaluation(Evaluation evaluation, Long classId, EvaluationType evaluationType) {
+    public EvaluationDTO createEvaluation(Evaluation evaluation,
+                                          Long classId,
+                                          EvaluationType evaluationType) {
         Classes classes = cRepo.findById(classId)
                 .orElseThrow(() -> new NoSuchElementException("Class not found with ID: " + classId));
 
-        validateDates(evaluation.getDateOpen(), evaluation.getDateClose());
+        // ←── add this block
+        if (!classes.isNeedsAdvisory() &&
+                (evaluationType == EvaluationType.STUDENT_TO_ADVISER
+                        || evaluationType == EvaluationType.ADVISER_TO_STUDENT)) {
+            throw new IllegalArgumentException(
+                    "This class does not require advisory; cannot create a "
+                            + evaluationType + " evaluation.");
+        }
 
+        validateDates(evaluation.getDateOpen(), evaluation.getDateClose());
         evaluation.setClassRef(classes);
         evaluation.setEvaluationType(evaluationType);
-        evaluation.setAvailability(calculateAvailability(evaluation.getDateOpen(), evaluation.getDateClose()));
+        evaluation.setAvailability(
+                calculateAvailability(evaluation.getDateOpen(), evaluation.getDateClose())
+        );
 
         Evaluation savedEvaluation = eRepo.save(evaluation);
 

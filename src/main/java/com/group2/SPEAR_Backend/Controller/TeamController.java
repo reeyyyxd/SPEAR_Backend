@@ -295,13 +295,21 @@ public class TeamController {
         }
     }
 
-    //for team recuitment only
-    @GetMapping("/teams/open-for-recruitment")
-    public ResponseEntity<List<TeamDTO>> getOpenTeamsForRecruitment() {
-        List<TeamDTO> openTeams = tServ.getOpenTeamsForRecruitment();
-        return ResponseEntity.ok(openTeams);
+    @GetMapping("/class/{classId}/members")
+    public ResponseEntity<List<TeamMembersDTO>> getTeamsWithMembers(
+            @PathVariable Long classId) {
+        List<TeamMembersDTO> teams = tServ.getTeamsWithMembers(classId);
+        return ResponseEntity.ok(teams);
     }
 
+
+    //for team recuitment only
+    @GetMapping("/teams/class/{classId}/open-for-recruitment")
+    public ResponseEntity<List<TeamDTO>> getOpenTeamsForRecruitmentByClass(
+            @PathVariable Long classId) {
+        List<TeamDTO> openTeams = tServ.getOpenTeamsForRecruitment(classId);
+        return ResponseEntity.ok(openTeams);
+    }
     @GetMapping("/user/{userId}/leader-teams")
     public ResponseEntity<List<TeamDTO>> getTeamsLedByUser(@PathVariable int userId) {
         List<Team> teams = tRepo.findByLeaderUid(userId);

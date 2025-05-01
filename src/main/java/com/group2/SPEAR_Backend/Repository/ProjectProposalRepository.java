@@ -43,4 +43,8 @@ public interface ProjectProposalRepository extends JpaRepository<ProjectProposal
     @Query("SELECT p FROM ProjectProposal p WHERE p.isDeleted = true")
     List<ProjectProposal> findAllDeleted();
 
+    // In ProjectProposalRepository
+    @Query("SELECT p FROM ProjectProposal p WHERE p.teamProject.tid = :teamId")
+    List<ProjectProposal> findAllByTeamIdIncludeDeleted(@Param("teamId") int teamId);
+
 }

@@ -1,5 +1,12 @@
 package com.group2.SPEAR_Backend.Service;
+import com.group2.SPEAR_Backend.DTO.PasswordResetDTO;
+import com.group2.SPEAR_Backend.DTO.PasswordResetRequestDTO;
+import com.group2.SPEAR_Backend.Model.PasswordResetToken;
+import com.group2.SPEAR_Backend.Repository.PasswordResetTokenRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,15 +21,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserDetailsService {
-
 
     @Autowired
     private UserRepository userRepo;
@@ -33,6 +38,11 @@ public class UserService implements UserDetailsService {
     private AuthenticationManager authenticationManager;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JavaMailSender mailSender;
+    @Autowired
+    private PasswordResetTokenRepository tokenRepo;
+
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -40,49 +50,85 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public UserDTO register(UserDTO registrationRequest) {
+    public UserDTO register(UserDTO req) {
         UserDTO resp = new UserDTO();
 
         try {
-            Optional<User> existingUser = userRepo.findByEmail(registrationRequest.getEmail());
-            if (existingUser.isPresent()) {
+            Optional<User> opt = userRepo.findByEmail(req.getEmail());
+            if (opt.isPresent()) {
+                User existing = opt.get();
+
+                if (Boolean.TRUE.equals(existing.getIsDeleted())) {
+                    // revive isDeleted acc
+                    existing.setIsDeleted(false);
+                    existing.setFirstname(req.getFirstname());
+                    existing.setLastname(req.getLastname());
+                    existing.setPassword(passwordEncoder.encode(req.getPassword()));
+
+                    String role = Optional.ofNullable(req.getRole())
+                            .filter(r -> !r.isBlank())
+                            .map(String::toUpperCase)
+                            .orElse("STUDENT");
+                    existing.setRole(role);
+
+                    if ("TEACHER".equalsIgnoreCase(role)) {
+                        existing.setInterests(req.getInterests());
+                        existing.setDepartment(req.getDepartment());
+                    } else {
+                        existing.setInterests("N/A");
+                        existing.setDepartment("N/A");
+                    }
+
+                    User restored = userRepo.save(existing);
+                    resp.setStatusCode(200);
+                    resp.setMessage("Account restored successfully.");
+                    resp.setUid(restored.getUid());
+                    resp.setFirstname(restored.getFirstname());
+                    resp.setLastname(restored.getLastname());
+                    resp.setEmail(restored.getEmail());
+                    resp.setRole(restored.getRole());
+                    resp.setInterests(restored.getInterests());
+                    resp.setDepartment(restored.getDepartment());
+                    return resp;
+                }
+                // still here? you madame/sir is an active user
                 resp.setStatusCode(400);
                 resp.setMessage("This email is already registered.");
                 return resp;
             }
+
+            //none
             User newUser = new User();
-            newUser.setEmail(registrationRequest.getEmail());
-            newUser.setFirstname(registrationRequest.getFirstname());
-            newUser.setLastname(registrationRequest.getLastname());
-            String role = registrationRequest.getRole();
-            if (role == null || role.trim().isEmpty()) {
-                role = "N/A";
-            }
-            newUser.setRole(role.toUpperCase());
+            newUser.setEmail(req.getEmail());
+            newUser.setFirstname(req.getFirstname());
+            newUser.setLastname(req.getLastname());
+
+            String role = Optional.ofNullable(req.getRole())
+                    .filter(r -> !r.isBlank())
+                    .map(String::toUpperCase)
+                    .orElse("STUDENT");
+            newUser.setRole(role);
 
             if ("TEACHER".equalsIgnoreCase(role)) {
-                newUser.setInterests(registrationRequest.getInterests());
-                newUser.setDepartment(registrationRequest.getDepartment());
+                newUser.setInterests(req.getInterests());
+                newUser.setDepartment(req.getDepartment());
             } else {
                 newUser.setInterests("N/A");
                 newUser.setDepartment("N/A");
             }
 
-            newUser.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
+            newUser.setPassword(passwordEncoder.encode(req.getPassword()));
+            User saved = userRepo.save(newUser);
 
-            User savedUser = userRepo.save(newUser);
-            if (savedUser.getUid() > 0) {
-                resp.setUser(savedUser);
-                resp.setMessage("User registered successfully.");
-                resp.setStatusCode(200);
-                resp.setUid(savedUser.getUid());
-                resp.setFirstname(savedUser.getFirstname());
-                resp.setLastname(savedUser.getLastname());
-                resp.setEmail(savedUser.getEmail());
-                resp.setRole(savedUser.getRole());
-                resp.setInterests(savedUser.getInterests());
-                resp.setDepartment(savedUser.getDepartment());
-            }
+            resp.setStatusCode(200);
+            resp.setMessage("User registered successfully.");
+            resp.setUid(saved.getUid());
+            resp.setFirstname(saved.getFirstname());
+            resp.setLastname(saved.getLastname());
+            resp.setEmail(saved.getEmail());
+            resp.setRole(saved.getRole());
+            resp.setInterests(saved.getInterests());
+            resp.setDepartment(saved.getDepartment());
 
         } catch (Exception e) {
             resp.setStatusCode(500);
@@ -471,6 +517,100 @@ public class UserService implements UserDetailsService {
                 .map(student -> new UserDTO(student.getFirstname(), student.getLastname(), student.getEmail(), student.getUid()))
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public UserDTO sendResetCode(PasswordResetRequestDTO req) {
+        UserDTO resp = new UserDTO();
+
+        // 1) lookup & guard
+        User user = userRepo.findByEmail(req.email())
+                .filter(u -> !u.getIsDeleted())
+                .orElse(null);
+        if (user == null) {
+            resp.setStatusCode(404);
+            resp.setMessage("User not found");
+            return resp;
+        }
+
+        // 2) find existing token, if any
+        Optional<PasswordResetToken> tokOpt = tokenRepo.findByUser(user);
+        String code = String.valueOf(new Random().nextInt(900_000) + 100_000);
+        Instant newExpiry = Instant.now().plus(3, ChronoUnit.MINUTES);
+
+        if (tokOpt.isPresent()) {
+            PasswordResetToken tok = tokOpt.get();
+            if (tok.getExpiresAt().isAfter(Instant.now())) {
+                // still valid → bail
+                resp.setStatusCode(429);
+                resp.setMessage("A reset code was already sent. Please wait until it expires.");
+                return resp;
+            }
+            // expired → just overwrite it
+            tok.setToken(code);
+            tok.setExpiresAt(newExpiry);
+            tokenRepo.save(tok);
+        } else {
+            // no existing row → create one
+            PasswordResetToken tok = new PasswordResetToken();
+            tok.setUser(user);
+            tok.setToken(code);
+            tok.setExpiresAt(newExpiry);
+            tokenRepo.save(tok);
+        }
+
+        // 3) email out
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setTo(user.getEmail());
+        msg.setSubject("Your SPEAR Password Reset Code");
+        msg.setText(String.join("\n",
+                "Hi " + user.getFirstname() + ",",
+                "",
+                "Use this code to reset your SPEAR password: " + code,
+                "It expires in 3 minutes.",
+                "",
+                "– The SPEAR Team"
+        ));
+        mailSender.send(msg);
+
+        resp.setStatusCode(200);
+        resp.setMessage("Reset code sent to email");
+        return resp;
+    }
+
+    @Transactional
+    // 2) Verify code & reset password
+    public UserDTO resetPassword(PasswordResetDTO req) {
+        UserDTO resp = new UserDTO();
+        Optional<User> userOpt = userRepo.findByEmail(req.email());
+        if (userOpt.isEmpty() || userOpt.get().getIsDeleted()) {
+            resp.setStatusCode(404);
+            resp.setMessage("User not found");
+            return resp;
+        }
+        User user = userOpt.get();
+
+        Optional<PasswordResetToken> tokenOpt = tokenRepo.findByToken(req.token());
+        if (tokenOpt.isEmpty() || tokenOpt.get().getExpiresAt().isBefore(Instant.now())) {
+            resp.setStatusCode(400);
+            resp.setMessage("Invalid or expired reset code");
+            return resp;
+        }
+
+        // all good → update password
+        user.setPassword(passwordEncoder.encode(req.newPassword()));
+        userRepo.save(user);
+
+        // clean up token
+        tokenRepo.delete(tokenOpt.get());
+
+        resp.setStatusCode(200);
+        resp.setMessage("Password has been reset");
+        return resp;
+    }
+
+
+
+
 
 
 

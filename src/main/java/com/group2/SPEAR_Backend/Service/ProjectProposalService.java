@@ -236,6 +236,7 @@ public class ProjectProposalService {
     }
 
   //delete a proposal
+  @Transactional
   public String deleteProjectProposal(int id, int userId) {
       ProjectProposal proposal = ppRepo.findById(id)
               .orElseThrow(() -> new RuntimeException("Project proposal with ID " + id + " not found"));
@@ -246,8 +247,12 @@ public class ProjectProposalService {
       }
 
       if (!proposal.getIsDeleted()) {
+          // 1) flag as deleted
           proposal.setDeleted(true);
-          ppRepo.save(proposal);
+          // 2) null out the FK so it won't block any team deletes
+          proposal.setTeamProject(null);
+          // 3) persist immediately
+          ppRepo.saveAndFlush(proposal);
           return "Project proposal with ID " + id + " has been deleted.";
       } else {
           return "Project proposal with ID " + id + " is already deleted.";
@@ -275,17 +280,23 @@ public class ProjectProposalService {
        ProjectProposal proposal = ppRepo.findById(proposalId)
                .orElseThrow(() -> new RuntimeException("Proposal not found with ID: " + proposalId));
 
+       // only the original owner can open it
        if (proposal.getProposedBy().getUid() != userId) {
            throw new IllegalArgumentException("You are not authorized to update this proposal.");
        }
 
        if (proposal.getStatus() == ProjectStatus.APPROVED) {
+           // 1) mark it OPEN…
            proposal.setStatus(ProjectStatus.OPEN);
+           // 2) …and null out the owning team FK so it truly becomes un‐assigned
+           proposal.setTeamProject(null);
+
            ppRepo.save(proposal);
        } else {
            throw new RuntimeException("Proposal is not in APPROVED status");
        }
    }
+
     //take over the project
     @Transactional
     public void takeOwnershipOfProject(int proposalId, int userId) {

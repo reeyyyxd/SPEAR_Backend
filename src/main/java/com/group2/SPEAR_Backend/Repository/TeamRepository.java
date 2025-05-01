@@ -74,8 +74,15 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
     List<Team> retrieveScheduledTeamsForMeetingAutomation(@Param("day") DayOfWeek day);
 
     //for team recruitment only
-    @Query("SELECT t FROM Team t JOIN t.classRef c WHERE t.isRecruitmentOpen = true AND SIZE(t.members) < c.maxTeamSize")
-    List<Team> findOpenTeamsForRecruitment();
+    @Query("""
+       SELECT t 
+         FROM Team t 
+         JOIN t.classRef c 
+        WHERE c.cid = :classId 
+          AND t.isRecruitmentOpen = true 
+          AND SIZE(t.members) < c.maxTeamSize
+    """)
+    List<Team> findOpenTeamsForRecruitmentByClassId(@Param("classId") Long classId);
 
     @Query("SELECT t FROM Team t WHERE t.leader.uid = :userId")
     List<Team> findByLeaderUid(@Param("userId") int userId);
@@ -83,8 +90,17 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
     @Query("SELECT t FROM Team t WHERE t.adviser.uid = :adviserId AND t.schedule IS NOT NULL")
     List<Team> findTeamsByAdviserAndSchedule(@Param("adviserId") int adviserId);
 
-    @Query("SELECT t FROM Team t JOIN t.members m WHERE m.uid = :studentId AND t.classRef.cid = :classId")
-    Team findTeamByStudentAndClass(@Param("studentId") Long studentId, @Param("classId") Long classId);
+    @Query("""
+    SELECT t
+      FROM Team t
+     WHERE t.classRef.cid = :classId
+       AND (
+             t.leader.uid = :studentId
+             OR :studentId IN (SELECT m.uid FROM t.members m)
+           )
+  """)
+    Team findTeamByStudentAndClass(@Param("studentId") Long studentId,
+                                   @Param("classId") Long classId);
 
     @Query("SELECT t FROM Team t WHERE t.groupName = :teamName")
     Optional<Team> findByTeamName(@Param("teamName") String teamName);
