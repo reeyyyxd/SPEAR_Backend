@@ -40,6 +40,12 @@ public class TeamService {
     @Autowired
     private AdviserRequestRepository arRepo;
 
+    @Autowired
+    private ResponseRepository rRepo;
+
+    @Autowired
+    private TeamInvitationRepository tiRepo;
+
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("h:mm a");
 
 
@@ -160,22 +166,40 @@ public class TeamService {
     @Transactional
     public void kickMember(int teamId, int requesterId, int memberId) {
         Team team = tRepo.findById(teamId)
-                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found."));
-
+                .orElseThrow(() -> new NoSuchElementException("Team not found"));
         if (team.getLeader().getUid() != requesterId) {
             throw new IllegalStateException("Only the team leader can remove members.");
         }
 
-        User memberToRemove = team.getMembers().stream()
-                .filter(member -> member.getUid() == memberId)
+        // 1) delete pending invites & apps
+        tiRepo.deleteByTeamIdAndStudentId(teamId, memberId);
+        trRepo.deleteByTeamIdAndStudentId(teamId, memberId);
+
+        // 2) delete all peer‐evaluation responses for that user
+        rRepo.deleteByParticipant(memberId);
+
+        // 3) soft‐delete + unlink any project proposals they authored
+        ppRepo.findByTeamId(teamId)
+                .stream()
+                .filter(p -> p.getProposedBy().getUid() == memberId)
+                .forEach(p -> {
+                    p.setDeleted(true);
+                    p.setTeamProject(null);
+                });
+        ppRepo.saveAll(ppRepo.findByTeamId(teamId));
+
+        // 4) remove from members list
+        User toRemove = team.getMembers().stream()
+                .filter(m -> m.getUid() == memberId)
                 .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Member with ID " + memberId + " not found in the team."));
+                .orElseThrow(() -> new NoSuchElementException("Member not in team"));
+        team.getMembers().remove(toRemove);
 
-        team.getMembers().remove(memberToRemove);
-
-        Optional<TeamRecuitment> recruitmentRecord = trRepo.findByTeamIdAndStudentId(teamId, memberId);
-        recruitmentRecord.ifPresent(trRepo::delete);
-
+        // 5) if you’d like to re-open recruitment when you fall below max
+        int maxSize = team.getClassRef().getMaxTeamSize();
+        if (team.getMembers().size() < maxSize) {
+            team.setRecruitmentOpen(true);
+        }
         tRepo.save(team);
     }
 
@@ -203,26 +227,47 @@ public class TeamService {
     public void deleteTeam(int teamId, int requesterId) {
         Team team = tRepo.findById(teamId)
                 .orElseThrow(() -> new NoSuchElementException("Team not found"));
-        // … leader & member checks …
 
-        // 3) soft-delete & unlink *every* proposal, even those already soft-deleted
+        // Only the leader can delete the team
+        if (team.getLeader().getUid() != requesterId) {
+            throw new IllegalStateException("Only the team leader can delete this team.");
+        }
+
+        // Check if there are any other members besides the leader
+        boolean hasOtherMembers = team.getMembers().stream()
+                .anyMatch(member -> member.getUid() != requesterId);
+
+        if (hasOtherMembers) {
+            throw new IllegalStateException("Remove all members before deleting the team.");
+        }
+
+        // 1) Delete pending invitations
+        tiRepo.deleteByTeamId(teamId);
+
+        // 2) Delete recruitment applications
+        trRepo.deleteByTeamId(teamId);
+
+        // 3) Delete peer-evaluation responses
+        rRepo.deleteByTeamMembers(teamId);
+
+        // 4) Soft-delete project proposals
         List<ProjectProposal> proposals = ppRepo.findAllByTeamIdIncludeDeleted(teamId);
         for (ProjectProposal p : proposals) {
             p.setDeleted(true);
             p.setTeamProject(null);
         }
         ppRepo.saveAll(proposals);
-        ppRepo.flush();  // force those UPDATEs before the DELETE
 
-        // 4) cleanup members/advisor
+        // 5) Remove members and adviser relationship
         tRepo.deleteTeamMembers(teamId);
         arRepo.deleteByTeamTid(teamId);
 
-        // 5) unlink schedule
+        // 6) Unlink schedule and adviser
         team.setSchedule(null);
+        team.setAdviser(null);
         tRepo.save(team);
 
-        // 6) finally delete the team
+        // 7) Delete the team
         tRepo.deleteById(teamId);
     }
 
@@ -411,21 +456,37 @@ public class TeamService {
     public List<TeamDTO> getOpenTeamsForRecruitment(Long classId) {
         List<Team> openTeams = tRepo.findOpenTeamsForRecruitmentByClassId(classId);
         return openTeams.stream()
-                .map(team -> new TeamDTO(
-                        team.getTid(),
-                        team.getGroupName(),
-                        team.getProject()!=null?team.getProject().getProjectName():"No Project Assigned",
-                        team.getProject()!=null?team.getProject().getPid():null,
-                        team.getLeader().getFirstname() + " " + team.getLeader().getLastname(),
-                        team.getClassRef().getCid(),
-                        team.getMembers().stream().map(User::getUid).toList(),
-                        team.isRecruitmentOpen(),
-                        null,
-                        team.getProject()!=null?team.getProject().getDescription():"No Description Available",
-                        team.getAdviser()!=null?team.getAdviser().getUid():null,
-                        team.getSchedule()!=null?team.getSchedule().getSchedid():null,
-                        team.getClassRef().getMaxTeamSize()
-                ))
+                .map(team -> {
+                    TeamDTO dto = new TeamDTO(
+                            team.getTid(),
+                            team.getGroupName(),
+                            team.getProject() != null
+                                    ? team.getProject().getProjectName()
+                                    : "No Project Assigned",
+                            team.getProject() != null
+                                    ? team.getProject().getPid()
+                                    : null,
+                            team.getLeader().getFirstname() + " " + team.getLeader().getLastname(),
+                            team.getClassRef().getCid(),
+                            team.getMembers().stream()
+                                    .map(User::getUid)
+                                    .toList(),
+                            team.isRecruitmentOpen(),
+                            null,  // features
+                            team.getProject() != null
+                                    ? team.getProject().getDescription()
+                                    : "No Description Available",
+                            team.getAdviser() != null
+                                    ? team.getAdviser().getUid()
+                                    : null,
+                            team.getSchedule() != null
+                                    ? team.getSchedule().getSchedid()
+                                    : null,
+                            team.getClassRef().getMaxTeamSize()
+                    );
+                    dto.setLeaderId(team.getLeader().getUid());
+                    return dto;
+                })
                 .toList();
     }
 
@@ -437,22 +498,40 @@ public class TeamService {
     @Transactional
     public void leaveTeam(int teamId, int userId) {
         Team team = tRepo.findById(teamId)
-                .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found."));
-
+                .orElseThrow(() -> new NoSuchElementException("Team not found"));
         User user = uRepo.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with ID " + userId + " not found."));
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
 
         if (!team.getMembers().contains(user)) {
             throw new IllegalStateException("User is not a member of this team.");
         }
-
         if (team.getLeader().getUid() == userId) {
-            throw new IllegalStateException("Leaders cannot leave their own team. Transfer leadership first.");
+            throw new IllegalStateException("Leader cannot leave their own team. Transfer leadership first.");
         }
+
+        // 1) remove from the in-memory members list
         team.getMembers().remove(user);
         tRepo.save(team);
+
+        // 2) remove any invites or applications
+        tiRepo.deleteByTeamIdAndStudentId(teamId, userId);
         trRepo.deleteByTeamIdAndStudentId(teamId, userId);
+
+        // 3) remove all peer‐evaluation responses to or from that user
+        rRepo.deleteByParticipant(userId);
+
+        // 4) soft‐delete and unlink any proposals that user authored on this team
+        ppRepo.findByTeamId(teamId)
+                .stream()
+                .filter(p -> p.getProposedBy().getUid() == userId)
+                .forEach(p -> {
+                    p.setDeleted(true);
+                    p.setTeamProject(null);
+                });
+        // (bulk‐save)
+        ppRepo.saveAll(ppRepo.findByTeamId(teamId));
     }
+
 
 
 

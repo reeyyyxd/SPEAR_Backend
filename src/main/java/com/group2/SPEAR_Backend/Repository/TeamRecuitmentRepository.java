@@ -55,6 +55,14 @@ public interface TeamRecuitmentRepository extends JpaRepository<TeamRecuitment, 
     @Query("DELETE FROM TeamRecuitment r WHERE r.team.tid = :teamId AND r.student.uid = :studentId")
     void deleteByTeamIdAndStudentId(@Param("teamId") int teamId, @Param("studentId") int studentId);
 
+    @Modifying
+    @Query("DELETE FROM TeamRecuitment tr WHERE tr.team.tid = :teamId")
+    void deleteByTeamId(@Param("teamId") int teamId);
+
+
+
+
+
 
 
 

@@ -34,24 +34,39 @@ public class TeamRecuitmentService {
         Team team = tRepo.findById(teamId)
                 .orElseThrow(() -> new NoSuchElementException("Team with ID " + teamId + " not found"));
 
-        // Get the student
+        if (!team.isRecruitmentOpen()) {
+            throw new IllegalStateException("This team is no longer accepting applications.");
+        }
+
         User student = uRepo.findById(studentId)
                 .orElseThrow(() -> new NoSuchElementException("Student with ID " + studentId + " not found"));
 
-        // Ensure the student is enrolled in the class
         if (!team.getClassRef().getEnrolledStudents().contains(student)) {
             throw new IllegalStateException("Student must be enrolled in the class to apply for a team.");
         }
 
-        // Check if the student already has a pending or accepted application
+        if (tRepo.findTeamByStudentAndClass((long) studentId, team.getClassRef().getCid()) != null) {
+            throw new IllegalStateException("Student is already in a team for this class.");
+        }
+
+        // Count current members + pending applications
+        int currentMembers = team.getMembers().size(); // excluding leader
+        int pendingApps = trRepo.findPendingByTeamId(teamId).size();
+        int totalSize = currentMembers + pendingApps + 1; // +1 for leader
+
+        if (totalSize >= team.getClassRef().getMaxTeamSize()) {
+            throw new IllegalStateException("Team is already full (including pending applications).");
+        }
+
         Optional<TeamRecuitment> existingApplication = trRepo.findByTeamIdAndStudentId(teamId, studentId);
         if (existingApplication.isPresent()) {
             TeamRecuitment existing = existingApplication.get();
             if (existing.getStatus() == TeamRecuitment.Status.PENDING ||
                     existing.getStatus() == TeamRecuitment.Status.ACCEPTED) {
-                throw new IllegalStateException("You already applied for this team. Please wait for the leader's decision");
+                throw new IllegalStateException("You already applied for this team. Please wait for the leader's decision.");
             }
-            // If rejected, allow re-application by resetting to pending
+
+            // Allow re-application if previously rejected
             existing.setStatus(TeamRecuitment.Status.PENDING);
             existing.setRole(role);
             existing.setReason(reason);
@@ -94,7 +109,7 @@ public class TeamRecuitmentService {
         TeamRecuitment recruitment = trRepo.findById(recruitmentId)
                 .orElseThrow(() -> new NoSuchElementException("Recruitment request not found"));
 
-        Team team = recruitment.getTeam();
+        Team team    = recruitment.getTeam();
         User student = recruitment.getStudent();
         Long classId = team.getClassRef().getCid();
 
@@ -105,32 +120,36 @@ public class TeamRecuitmentService {
                             r.getStatus() == TeamRecuitment.Status.ACCEPTED &&
                                     r.getTeam().getClassRef().getCid().equals(classId)
                     );
-
             boolean isLeaderInThisClass = tRepo.findByLeaderUid(student.getUid()).stream()
                     .anyMatch(t2 -> t2.getClassRef().getCid().equals(classId));
 
             if (alreadyAcceptedInThisClass || isLeaderInThisClass) {
                 throw new IllegalStateException("This student is already in a team in this class.");
             }
-
             if (team.getMembers().size() >= team.getClassRef().getMaxTeamSize()) {
                 throw new IllegalStateException("Team is already full.");
             }
 
-            // accept them
-            recruitment.setStatus(TeamRecuitment.Status.ACCEPTED);
-            recruitment.setReason("Accepted by leader.");
+            // add student to team
             team.getMembers().add(student);
+            tRepo.save(team);
 
-            // expire any other pending apps from this student in *other* teams
+            // expire any other pending apps from this student in other teams
             trRepo.updateOtherApplicationsAsExpired(student.getUid(), team.getTid());
-        } else {
-            recruitment.setStatus(TeamRecuitment.Status.REJECTED);
-            recruitment.setReason(leaderReason != null ? leaderReason : "No reason provided.");
-        }
 
-        tRepo.save(team);
-        trRepo.save(recruitment);
+            // delete *this* application record completely
+            trRepo.deleteById(recruitmentId);
+
+        } else {
+            // mark as rejected but keep the record
+            recruitment.setStatus(TeamRecuitment.Status.REJECTED);
+            recruitment.setReason(
+                    leaderReason != null
+                            ? leaderReason
+                            : "No reason provided."
+            );
+            trRepo.save(recruitment);
+        }
     }
 
     public List<TeamRecuitmentDTO> getPendingApplicationsByTeam(int teamId) {
@@ -184,6 +203,14 @@ public class TeamRecuitmentService {
                         app.getStatus()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteApplication(int recruitmentId) {
+        if (!trRepo.existsById(recruitmentId)) {
+            throw new NoSuchElementException("Recruitment request not found");
+        }
+        trRepo.deleteById(recruitmentId);
     }
 
 }

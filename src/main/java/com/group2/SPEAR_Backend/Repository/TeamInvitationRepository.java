@@ -5,6 +5,7 @@ import com.group2.SPEAR_Backend.Model.TeamInvitation;
 import com.group2.SPEAR_Backend.Model.User;
 import com.group2.SPEAR_Backend.Model.TeamInvitation.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -22,4 +23,15 @@ public interface TeamInvitationRepository extends JpaRepository<TeamInvitation, 
     List<TeamInvitation> findByTeamAndStatus(Team team, Status status);
 
     List<TeamInvitation> findByStudentAndStatus(User student, Status status);
+
+    @Modifying
+    @Query("DELETE FROM TeamInvitation i WHERE i.team.tid = :teamId")
+    void deleteByTeamId(@Param("teamId") int teamId);
+
+    @Modifying
+    @Query("DELETE FROM TeamInvitation i WHERE i.team.tid = :teamId AND i.student.uid = :studentId")
+    void deleteByTeamIdAndStudentId(@Param("teamId") int teamId,
+                                    @Param("studentId") int studentId);
+
+
 }

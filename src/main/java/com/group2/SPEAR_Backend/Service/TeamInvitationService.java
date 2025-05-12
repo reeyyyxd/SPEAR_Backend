@@ -31,6 +31,10 @@ public class TeamInvitationService {
         Team team = teamRepo.findById(teamId)
                 .orElseThrow(() -> new NoSuchElementException("Team not found"));
 
+        if (!team.isRecruitmentOpen()) {
+            throw new IllegalStateException("Team is no longer accepting members.");
+        }
+
         if (team.getLeader().getUid() != leaderId) {
             throw new IllegalStateException("Only the team leader can invite members.");
         }
@@ -44,6 +48,15 @@ public class TeamInvitationService {
 
         if (teamRepo.findTeamByStudentAndClass((long) studentId, team.getClassRef().getCid()) != null) {
             throw new IllegalStateException("Student is already in a team for this class.");
+        }
+
+        // Count current members + pending invitations
+        int currentMembers = team.getMembers().size(); // excluding leader
+        int pendingInvites = invitationRepo.findByTeamAndStatus(team, TeamInvitation.Status.PENDING).size();
+        int totalSize = currentMembers + pendingInvites + 1; // +1 for leader
+
+        if (totalSize >= team.getClassRef().getMaxTeamSize()) {
+            throw new IllegalStateException("Team already has enough members including pending invitations.");
         }
 
         Optional<TeamInvitation> existing = invitationRepo.findByTeamIdAndStudentId(teamId, studentId);
@@ -60,28 +73,36 @@ public class TeamInvitationService {
         TeamInvitation invitation = invitationRepo.findById(invitationId)
                 .orElseThrow(() -> new NoSuchElementException("Invitation not found"));
 
-        Team team = invitation.getTeam();
+        Team team   = invitation.getTeam();
         User student = invitation.getStudent();
 
-        if (teamRepo.findTeamByStudentAndClass((long) student.getUid(), team.getClassRef().getCid()) != null
+        // make sure they’re not already on a team
+        if (teamRepo.findTeamByStudentAndClass((long)student.getUid(), team.getClassRef().getCid()) != null
                 || teamRepo.existsByLeaderUid(student.getUid())) {
             throw new IllegalStateException("Student is already in a team or is a team leader.");
         }
 
+        // add member
         team.getMembers().add(student);
         invitation.setStatus(TeamInvitation.Status.ACCEPTED);
 
+        // if we’ve now reached max size (leader + members), close recruitment
+        int maxSize = team.getClassRef().getMaxTeamSize();
+        if (team.getMembers().size() >= maxSize) {
+            team.setRecruitmentOpen(false);
+        }
+
+        // persist both
         teamRepo.save(team);
-        invitationRepo.save(invitation);
+        invitationRepo.deleteById(invitationId);
     }
 
     @Transactional
     public void rejectInvitation(int invitationId) {
-        TeamInvitation invitation = invitationRepo.findById(invitationId)
-                .orElseThrow(() -> new NoSuchElementException("Invitation not found"));
-
-        invitation.setStatus(TeamInvitation.Status.REJECTED);
-        invitationRepo.save(invitation);
+        if (!invitationRepo.existsById(invitationId)) {
+            throw new NoSuchElementException("Invitation not found");
+        }
+        invitationRepo.deleteById(invitationId);
     }
 
     public List<TeamInvitationDTO> getPendingInvitationsByStudent(int studentId) {
@@ -110,5 +131,12 @@ public class TeamInvitationService {
                     );
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteInvitation(int invitationId) {
+        TeamInvitation inv = invitationRepo.findById(invitationId)
+                .orElseThrow(() -> new NoSuchElementException("Invitation not found"));
+        invitationRepo.delete(inv);
     }
 }

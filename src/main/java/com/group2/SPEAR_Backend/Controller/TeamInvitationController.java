@@ -52,4 +52,9 @@ public class TeamInvitationController {
     public ResponseEntity<List<TeamInvitationDTO>> getPendingInvitations(@PathVariable int studentId) {
         return ResponseEntity.ok(invitationService.getPendingInvitationsByStudent(studentId));
     }
+    @DeleteMapping("/delete-invitation/{invitationId}")
+    public ResponseEntity<?> deleteInvitation(@PathVariable int invitationId) {
+        invitationService.deleteInvitation(invitationId);
+        return ResponseEntity.ok(Map.of("message", "Invitation deleted."));
+    }
 }

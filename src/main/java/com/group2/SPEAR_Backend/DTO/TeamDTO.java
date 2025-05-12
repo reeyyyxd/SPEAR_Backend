@@ -27,6 +27,7 @@ public class TeamDTO {
     private int maxMembers;
     private String courseDescription;
     private Long teamId;
+    private Integer leaderId;
 
 
 
@@ -389,5 +390,13 @@ public class TeamDTO {
 
     public void setTeamId(Long teamId) {
         this.teamId = teamId;
+    }
+
+    public Integer getLeaderId() {
+        return leaderId;
+    }
+
+    public void setLeaderId(Integer leaderId) {
+        this.leaderId = leaderId;
     }
 }

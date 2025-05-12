@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/submissions")
@@ -70,5 +72,16 @@ public class SubmissionController {
     @GetMapping("/by-status/{status}")
     public List<SubmissionDTO> getSubmissionsByStatus(@PathVariable String status) {
         return submissionService.getSubmissionsByStatus(status);
+    }
+
+    @GetMapping("/check-status")
+    public ResponseEntity<Map<String, Boolean>> checkSubmissionStatus(
+            @RequestParam Long evaluationId,
+            @RequestParam int evaluatorId,
+            @RequestParam(required = false) Long classId) {
+        boolean hasSubmitted = submissionService.hasEvaluatorSubmitted(evaluationId, evaluatorId);
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("Submitted", hasSubmitted);
+        return ResponseEntity.ok(response);
     }
 }

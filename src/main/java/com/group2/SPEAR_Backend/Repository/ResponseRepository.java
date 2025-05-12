@@ -3,6 +3,7 @@ package com.group2.SPEAR_Backend.Repository;
 import com.group2.SPEAR_Backend.DTO.ResponseDTO;
 import com.group2.SPEAR_Backend.Model.Response;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -62,6 +63,36 @@ public interface ResponseRepository extends JpaRepository<Response, Long> {
             "JOIN r.evaluation evaluation " +
             "WHERE r.evaluation.eid = :evaluationId")
     List<ResponseDTO> findResponsesByEvaluationId(@Param("evaluationId") Long evaluationId);
+
+
+    @Modifying
+    @Query("DELETE FROM Response r WHERE r.question.qid IN (SELECT q.qid FROM Question q WHERE q.evaluation.eid = :evaluationId)")
+    void deleteResponsesByEvaluationId(@Param("evaluationId") Long evaluationId);
+
+    @Modifying
+    @Query("""
+    DELETE FROM Response r
+     WHERE r.evaluator.uid IN (
+         SELECT m.uid FROM Team t JOIN t.members m WHERE t.tid = :teamId
+       )
+       OR r.evaluatee.uid IN (
+         SELECT m.uid FROM Team t JOIN t.members m WHERE t.tid = :teamId
+       )
+""")
+    void deleteByTeamMembers(@Param("teamId") int teamId);
+
+    @Modifying
+    @Query("""
+       DELETE FROM Response r
+        WHERE r.evaluator.uid = :studentId
+           OR r.evaluatee.uid = :studentId
+    """)
+    void deleteByParticipant(@Param("studentId") int studentId);
+
+
+
+
+
 
 
 

@@ -74,6 +74,12 @@ public class TeamRecuitmentController {
         return ResponseEntity.ok(trServ.getApplicationsByStudent(studentId));
     }
 
+    @DeleteMapping("/delete-recruitment/{recruitmentId}")
+    public ResponseEntity<?> deleteApplication(@PathVariable int recruitmentId) {
+        trServ.deleteApplication(recruitmentId);
+        return ResponseEntity.ok(Map.of("message", "Application deleted."));
+    }
+
 
 
 }

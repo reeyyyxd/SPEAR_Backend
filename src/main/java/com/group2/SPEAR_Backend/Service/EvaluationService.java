@@ -8,6 +8,7 @@ import com.group2.SPEAR_Backend.Model.Evaluation;
 import com.group2.SPEAR_Backend.Model.EvaluationType;
 import com.group2.SPEAR_Backend.Model.Team;
 import com.group2.SPEAR_Backend.Repository.*;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,9 @@ public class EvaluationService {
     @Autowired
     private SubmissionRepository submissionRepo;
 
+    @Autowired
+    private ResponseRepository reRepo;
+
     private void ensureClosed(Evaluation eval) {
         if ("Open".equalsIgnoreCase(eval.getAvailability())) {
             throw new IllegalStateException("Evaluation is still ongoing.");
@@ -49,7 +53,6 @@ public class EvaluationService {
         Classes classes = cRepo.findById(classId)
                 .orElseThrow(() -> new NoSuchElementException("Class not found with ID: " + classId));
 
-        // ←── add this block
         if (!classes.isNeedsAdvisory() &&
                 (evaluationType == EvaluationType.STUDENT_TO_ADVISER
                         || evaluationType == EvaluationType.ADVISER_TO_STUDENT)) {
@@ -119,13 +122,20 @@ public class EvaluationService {
     }
 
 
-    public String deleteEvaluation(Long id) {
-        if (eRepo.existsById(id)) {
-            eRepo.deleteById(id);
-            return "Evaluation deleted successfully";
-        } else {
-            throw new NoSuchElementException("Evaluation not found with ID: " + id);
+    @Transactional
+    public void deleteEvaluation(Long eid) {
+        if (!eRepo.existsById(eid)) {
+            throw new NoSuchElementException("Evaluation not found.");
         }
+
+        // Delete responses first (lowest level)
+        reRepo.deleteResponsesByEvaluationId(eid);
+
+        // Then delete questions
+        qRepo.deleteQuestionsByEvaluationId(eid);
+
+        // Finally, delete the evaluation
+        eRepo.deleteById(eid);
     }
 
     //all get functions

@@ -81,12 +81,16 @@ public class EvaluationController {
     @DeleteMapping("teacher/delete-evaluation/{id}")
     public ResponseEntity<?> deleteEvaluation(@PathVariable Long id) {
         try {
-            String result = eServ.deleteEvaluation(id);
-            return ResponseEntity.ok(Map.of("message", result));
+            eServ.deleteEvaluation(id); // ✅ No assignment
+            return ResponseEntity.ok(Map.of("message", "Evaluation deleted successfully."));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace(); // Optional: logs detailed error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
         }
     }
+
 
     //get functions
     //get evaluations for a specific class

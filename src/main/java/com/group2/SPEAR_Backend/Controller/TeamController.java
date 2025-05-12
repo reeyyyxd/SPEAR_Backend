@@ -130,7 +130,7 @@ public class TeamController {
             @PathVariable int memberId,
             @RequestBody Map<String, Integer> requestBody
     ) {
-        int requesterId = requestBody.get("requesterId"); // Extract requester ID
+        int requesterId = requestBody.get("requesterId");
         tServ.kickMember(teamId, requesterId, memberId);
 
         return ResponseEntity.ok(Map.of("message", "A member has been removed from the team."));

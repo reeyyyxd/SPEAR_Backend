@@ -42,13 +42,9 @@ public class SubmissionService {
         return submissionRepo.save(submission);
     }
 
-
-
-
     public List<SubmissionDTO> getSubmissionsByEvaluation(Long evaluationId) {
         return submissionRepo.findSubmissionsByEvaluationWithDetails(evaluationId);
     }
-
 
     public List<SubmissionDTO> getSubmissionsByEvaluator(int evaluatorId) {
         return submissionRepo.findByEvaluatorUid(evaluatorId).stream()
@@ -77,6 +73,15 @@ public class SubmissionService {
         return submissionRepo.save(submission);
     }
 
+    public boolean hasEvaluatorSubmitted(Long evaluationId, int evaluatorId) {
+        List<Submission> submissions = submissionRepo.findByEvaluationEid(evaluationId);
+        return submissions.stream()
+                .anyMatch(submission ->
+                        submission.getEvaluator().getUid() == evaluatorId &&
+                                (submission.getStatus().equals("Submitted") || submission.getStatus().equals("Late"))
+                );
+    }
+
     private SubmissionDTO toDTO(Submission submission) {
         return new SubmissionDTO(
                 submission.getSid(),
@@ -86,10 +91,4 @@ public class SubmissionService {
                 submission.getStatus()
         );
     }
-
-
-
-
-
-
 }
