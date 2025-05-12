@@ -68,10 +68,12 @@ public class AdviserRequestService {
             team.setSchedule(schedule);
             tRepo.save(team);
 
+            // Save status as accepted first (optional depending on consistency)
             request.setStatus(RequestStatus.ACCEPTED);
             request.setReason(null);
             arRepo.save(request);
 
+            // Reject other pending requests for same team
             List<AdviserRequest> allTeamPending = arRepo.findPendingByTeam(team.getTid());
             for (AdviserRequest r : allTeamPending) {
                 if (!r.getArid().equals(requestId)) {
@@ -81,6 +83,7 @@ public class AdviserRequestService {
                 }
             }
 
+            // Reject other conflicting adviser schedule requests
             List<AdviserRequest> conflicts = arRepo.findByScheduleAndAdviserAndStatus(schedule, adviser, RequestStatus.PENDING);
             for (AdviserRequest r : conflicts) {
                 if (!r.getArid().equals(requestId)) {
@@ -89,6 +92,8 @@ public class AdviserRequestService {
                     arRepo.save(r);
                 }
             }
+
+            arRepo.deleteById(requestId);
 
         } else {
             request.setStatus(RequestStatus.REJECTED);
